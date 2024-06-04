@@ -8,10 +8,6 @@ Before installation of the DLMS, make sure that Python 3.8+ and Node >= 10, <= 1
 
 Create a python venv 
 
-### Env File
-
-Duplicate `env.example` from the /dlms directory, change the appropriate values, and rename it `.env`. This step must be done before the following steps will work.
-
 ### Python virutal envirorment 
 ```bash
 python -m venv <EnvirormentName>
@@ -26,9 +22,6 @@ Should look like this when activated
 (venv) D:\SollarSpell\solarspell-dlms\venv\Scripts>
 
 ### Python Dependencies
-
-
-
 
 To install python dependencies, run this command in the base directory.
 #### psycopg2
@@ -52,6 +45,11 @@ python -m pip install Pillow
 ```bash
 pip install -r requirements.txt
 ```
+
+### Env File
+
+Duplicate `env.example` from the /dlms directory, change the appropriate values, and rename it `.env`. This step must be done before the following steps will work.
+
 Inside env file specify 
 DATABASE_URL=postgres://username:password@hostname:port/database
 
