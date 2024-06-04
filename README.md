@@ -6,19 +6,36 @@ This is the latest repository for the DLMS, which is one tool used to create the
 
 Before installation of the DLMS, make sure that Python 3.8+ and Node >= 10, <= 16 are installed.
 
-### Python Dependencies
-
 Create a python venv 
-To install python dependencies, run this command in the base directory.
 
+### Env File
+
+Duplicate `env.example` from the /dlms directory, change the appropriate values, and rename it `.env`. This step must be done before the following steps will work.
+
+### Python virutal envirorment 
 ```bash
-pip install -r requirements.txt
+python -m venv <EnvirormentName>
 ```
 
-## Troubleshooting
+Activate to enter in envirorment
+Navigate to venv\Scripts
+```bash
+python acitvate
+```
+Should look like this when activated 
+(venv) D:\SollarSpell\solarspell-dlms\venv\Scripts>
 
+### Python Dependencies
+
+
+
+
+To install python dependencies, run this command in the base directory.
 #### psycopg2
-For errors encountered installing psycopg2: link[https://stackoverflow.com/questions/5420789/how-to-install-psycopg2-with-pip-on-python] 
+Install psycopg2
+```bash
+pip install psycopg2-binary
+```
 
 #### Pillow
 For errors encountered installing Pillow: link[https://pillow.readthedocs.io/en/latest/installation.html]
@@ -26,6 +43,17 @@ It seems like the version of Pillow listed in the requirements.txt is too old fo
 Pillow might also be completely unused? This needs to be tested though.
 
 djangorestframework needs to be updated?
+Install pillow 
+```bash
+python -m pip install Pillow 
+```
+
+#### After pillow and psycopg2
+```bash
+pip install -r requirements.txt
+```
+Inside env file specify 
+DATABASE_URL=postgres://username:password@hostname:port/database
 
 ### Database
 
@@ -37,17 +65,21 @@ sudo -u postgres psql
 ALTER USER username WITH PASSWORD 'password'
 ```
 
-### Env File
-
-Duplicate `env.example` from the /dlms directory, change the appropriate values, and rename it `.env`. This step must be done before the following steps will work.
-
 ### DB Migration
 
-To initialize the database with the proper schema, you must run the folliwng command in the base directory.
+To initialize the database with the proper schema, you must run the following command in the base directory.
 
 ```bash
 python manage.py migrate
 ```
+
+### Load in data 
+
+In psql tool 
+
+Include single quotes 
+
+\i 'path to sql file' 
 
 ### Starting the Server
 
@@ -90,3 +122,5 @@ npm run-script build-bash
 ```
 npm run-script winbuild
 ```
+### 
+After building front end 
