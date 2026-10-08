@@ -60,6 +60,15 @@ server pagination and subtree search. Metadata choices load only when opening an
 editor. For larger metadata vocabularies, add paginated autocomplete rather than
 fetching every metadata value for that editor.
 
+## Protected central library and downloads
+
+Record this as a future milestone: a protected central archive of authorised
+PDF versions, with authenticated per-device downloads when a Kuwala box
+reconnects. Hosting under `kuwala.space`, authentication and the sync design
+remain open decisions. Preserve offline operation and activate only verified,
+complete releases. See [the deferred requirements](OASIS_CENTRAL_LIBRARY_FUTURE.md).
+The current local Pi/Jetson setup remains the immediate priority.
+
 ## Existing parallel work
 
 Chat streaming, Jetson inference, extraction/vector maintenance, remote trial
