@@ -77,7 +77,18 @@ class Command(BaseCommand):
             folder.library_content.add(document)
             documents[library] = (document, folder)
         documents['Learning'][1].library_content.add(documents['Water'][0])
+        for library, section_name in (
+            ('Farming', 'Crop records (synthetic)'),
+            ('Water', 'Water records (synthetic)'),
+            ('Learning', 'Learning records (synthetic)'),
+        ):
+            section, _ = LibraryFolder.objects.get_or_create(
+                version=version, parent=documents[library][1], folder_name=section_name,
+            )
+            section.library_content.add(documents[library][0])
+            if library == 'Learning':
+                section.library_content.add(documents['Water'][0])
         Path(settings.PREVIEW_STATE_ROOT, 'synthetic-fixtures.json').write_text(json.dumps({
             'synthetic': True, 'version_id': version.id, 'version_number': version.version_number,
         }) + '\n')
-        self.stdout.write(self.style.SUCCESS('Synthetic preview fixtures seeded: 3 PDFs; Farming, Water and Learning.'))
+        self.stdout.write(self.style.SUCCESS('Synthetic preview fixtures seeded: 3 PDFs; Farming, Water and Learning with labelled sections.'))

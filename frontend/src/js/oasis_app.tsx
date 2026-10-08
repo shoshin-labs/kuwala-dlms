@@ -12,16 +12,17 @@ const CuratorWorkspace = lazy(
 
 const theme = createMuiTheme({
   palette: {
-    primary: { main: "#003c6c" },
-    secondary: { main: "#003c6c" },
-    text: { primary: "#17212b", secondary: "#3d4b57" },
+    primary: { main: "#006c67" },
+    secondary: { main: "#006c67" },
+    text: { primary: "#152536", secondary: "#4a5b6a" },
     background: { default: "#ffffff", paper: "#ffffff" },
   },
   typography: {
-    fontFamily: "Arial, Helvetica, system-ui, sans-serif",
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
     fontSize: 16,
   },
-  shape: { borderRadius: 6 },
+  shape: { borderRadius: 8 },
   overrides: {
     MuiButton: {
       root: {
@@ -34,7 +35,16 @@ const theme = createMuiTheme({
     MuiIconButton: { root: { minWidth: 48, minHeight: 48 } },
     MuiTab: { root: { minHeight: 48, textTransform: "none", fontWeight: 700 } },
     MuiInputBase: { input: { minHeight: 24 } },
-    MuiDialog: { paper: { maxWidth: "calc(100% - 32px)", margin: 16 } },
+    MuiDialog: {
+      paper: {
+        maxWidth: "calc(100% - 32px)",
+        margin: 16,
+        border: "1px solid #d4dde4",
+        borderRadius: 16,
+        boxShadow: "0 16px 70px #0b283b26",
+      },
+    },
+    MuiBackdrop: { root: { backgroundColor: "#0f243c45" } },
   },
 });
 export default function OasisApp() {
@@ -100,7 +110,9 @@ function Shell({
       url.searchParams.delete("workspace");
       url.searchParams.set("tab", next === "about" ? "about" : "contents");
     }
-    ["document", "library"].forEach((key) => url.searchParams.delete(key));
+    ["document", "library", "section", "q", "page"].forEach((key) =>
+      url.searchParams.delete(key),
+    );
     history.pushState({}, "", url.toString());
     setView(next);
     window.dispatchEvent(new PopStateEvent("popstate"));
@@ -153,7 +165,7 @@ function Shell({
               )}
             </nav>
             <label className="language-picker">
-              {s("language")}
+              <span className="sr-only">{s("language")}</span>
               <select
                 value={locale}
                 onChange={(event) => setLocale(event.target.value)}

@@ -1,13 +1,21 @@
 :root {
-  font-family: Arial, Helvetica, system-ui, sans-serif;
-  --ink: #17212b;
-  --muted: #3d4b57;
-  --blue: #003c6c;
-  --blue-hover: #002d52;
-  --line: #b9c4cc;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --ink: #152536;
+  --muted: #4a5b6a;
+  --brand: #064b7c;
+  --accent: #006c67;
+  --accent-hover: #00534f;
+  --accent-surface: #eaf5f3;
+  --blue: var(--accent);
+  --blue-hover: var(--accent-hover);
+  --line: #d4dde4;
   --paper: #fff;
   --surface: #f3f6f7;
-  --light-blue: #e6f0f6;
+  --light-blue: var(--accent-surface);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 * {
   box-sizing: border-box;
@@ -67,8 +75,8 @@ button {
   border-bottom: 1px solid var(--line);
 }
 .topbar-inner {
-  width: min(100% - 64px, 1160px);
-  min-height: 104px;
+  width: min(100% - 48px, 1200px);
+  min-height: 74px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -78,28 +86,27 @@ button {
 .brand {
   display: flex;
   align-items: baseline;
-  gap: 16px;
+  gap: 14px;
   text-decoration: none;
   white-space: nowrap;
 }
 .brand-name {
-  color: var(--blue);
-  font-size: 2rem;
+  color: var(--brand);
+  font-size: 1.9rem;
   font-weight: 750;
-  letter-spacing: -0.055em;
-  line-height: 1.1;
+  letter-spacing: -0.06em;
+  line-height: 1;
 }
 .brand-station {
   color: var(--muted);
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 550;
 }
 .topbar-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
 .topbar nav {
   display: flex;
@@ -109,12 +116,13 @@ button {
 }
 .nav-button {
   min-height: 48px;
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: var(--paper);
   color: var(--blue);
   border: 0;
-  border-radius: 6px;
-  font-weight: 700;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 .nav-button[aria-current="page"] {
   background: var(--light-blue);
@@ -127,8 +135,19 @@ button {
   gap: 8px;
   align-items: center;
   color: var(--muted);
-  font-size: 0.94rem;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 550;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 select,
 input {
@@ -140,8 +159,15 @@ input {
   border-radius: 6px;
 }
 .language-picker select {
-  border: 2px solid var(--blue);
-  font-weight: 700;
+  max-width: 158px;
+  padding: 7px 9px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 550;
+}
+.language-picker select:hover {
+  border-color: var(--line);
 }
 .workspace {
   width: min(100% - 64px, 1040px);
@@ -154,9 +180,10 @@ input {
 }
 h1 {
   margin: 0;
-  font-size: clamp(2rem, 4.2vw, 3rem);
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  font-weight: 650;
   line-height: 1.15;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
   overflow-wrap: anywhere;
 }
 h2 {
@@ -167,9 +194,11 @@ p {
   line-height: 1.6;
 }
 .intro-text {
-  margin: 14px 0 0;
+  margin: 13px 0 0;
   color: var(--muted);
-  font-size: 1.12rem;
+  max-width: 560px;
+  font-size: 1rem;
+  line-height: 1.55;
 }
 .section-label {
   margin: 0 0 18px;
@@ -531,48 +560,48 @@ summary {
   color: var(--ink);
 }
 @media (max-width: 960px) {
-  .topbar-inner {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 16px;
-    padding: 24px 0 20px;
-  }
-  .topbar-actions {
-    justify-content: space-between;
-    width: 100%;
+  .brand-station {
+    display: none;
   }
   .page-form {
     flex-basis: 100%;
     max-width: 650px;
   }
 }
+@media (max-width: 760px) {
+  .topbar-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: calc(100% - 28px);
+    min-height: 64px;
+    gap: 0 12px;
+    padding: 8px 0;
+  }
+  .brand {
+    min-height: 48px;
+    align-items: center;
+  }
+  .brand-name {
+    font-size: 1.75rem;
+  }
+  .topbar-actions {
+    display: contents;
+  }
+  .language-picker {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .topbar nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    gap: 2px;
+  }
+}
 @media (max-width: 600px) {
-  .topbar-inner,
   .workspace,
   .footer,
   .fixture-notice {
     width: calc(100% - 32px);
-  }
-  .topbar-inner {
-    padding: 22px 0 16px;
-  }
-  .brand-name {
-    font-size: 1.85rem;
-  }
-  .brand {
-    gap: 12px;
-  }
-  .topbar-actions {
-    gap: 12px;
-  }
-  .topbar nav {
-    gap: 0;
-  }
-  .nav-button {
-    padding: 10px 12px;
-  }
-  .language-picker {
-    font-size: 0.86rem;
   }
   .language-picker select {
     max-width: 126px;
@@ -629,6 +658,15 @@ summary {
   }
   .oasis-curator-home-grid {
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 380px) {
+  .topbar-inner {
+    width: calc(100% - 20px);
+    gap: 0 8px;
+  }
+  .brand-name {
+    font-size: 1.6rem;
   }
 }
 @media (prefers-reduced-motion: no-preference) {

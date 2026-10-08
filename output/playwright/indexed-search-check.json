@@ -1,0 +1,69 @@
+{
+  "synthetic_fixtures": true,
+  "model": "nomic-embed-text:latest",
+  "model_sha256": "0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f",
+  "checks": {
+    "lexical": {
+      "private_draft": true,
+      "catalogue_version": 1,
+      "folder_id": 2,
+      "snapshot": "v-8756977d48ff1055-121bc761",
+      "profile_used": "lexical",
+      "lexical_available": true,
+      "semantic_available": true,
+      "semantic_reason": null,
+      "blocked_reason": null,
+      "indexed_document_count": 1,
+      "eligible_document_count": 1,
+      "stale_document_count": 0,
+      "unindexed_document_count": 0,
+      "results": [
+        {
+          "document_id": 2,
+          "title": "Sample water record (synthetic)",
+          "filename": "oasis-synthetic-water.pdf",
+          "original_sha256": "9a01f16bad00c5b7f04b58b46a43194bca5cdcdf6ddf32d64860a753568d76ca",
+          "page": 1,
+          "text": "Sample water record (synthetic) Synthetic Oasis Library preview fixture. This is a catalogue example, not technical advice.",
+          "publisher": "Kuwala synthetic fixture development",
+          "authors": "Kuwala contributors",
+          "source_url": "https://example.invalid/oasis-library/synthetic-fixtures",
+          "licence": "CC0-1.0 (original synthetic fixture only)",
+          "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "original_page_url": "/api/oasis/index-search/original/a4702f44-3001-4799-9614-8918d785c449/2/#page=1"
+        }
+      ]
+    },
+    "semantic": {
+      "private_draft": true,
+      "catalogue_version": 1,
+      "folder_id": 2,
+      "snapshot": "v-8756977d48ff1055-121bc761",
+      "profile_used": "semantic",
+      "lexical_available": true,
+      "semantic_available": true,
+      "semantic_reason": null,
+      "blocked_reason": null,
+      "indexed_document_count": 1,
+      "eligible_document_count": 1,
+      "stale_document_count": 0,
+      "unindexed_document_count": 0,
+      "results": [
+        {
+          "document_id": 2,
+          "title": "Sample water record (synthetic)",
+          "filename": "oasis-synthetic-water.pdf",
+          "original_sha256": "9a01f16bad00c5b7f04b58b46a43194bca5cdcdf6ddf32d64860a753568d76ca",
+          "page": 1,
+          "text": "Sample water record (synthetic) Synthetic Oasis Library preview fixture. This is a catalogue example, not technical advice.",
+          "publisher": "Kuwala synthetic fixture development",
+          "authors": "Kuwala contributors",
+          "source_url": "https://example.invalid/oasis-library/synthetic-fixtures",
+          "licence": "CC0-1.0 (original synthetic fixture only)",
+          "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "original_page_url": "/api/oasis/index-search/original/a4702f44-3001-4799-9614-8918d785c449/2/#page=1"
+        }
+      ]
+    }
+  }
+}

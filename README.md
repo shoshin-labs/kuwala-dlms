@@ -42,7 +42,8 @@ run the explicit seed command, then start it again:
 .venv/bin/python scripts/preview.py run
 ```
 
-The seed creates three **synthetic** one-page PDFs in Farming, Water and Learning.
+The seed creates three **synthetic** one-page PDFs in Farming, Water and Learning,
+with labelled child sections for testing the folder hierarchy.
 The water record also belongs to Learning. The banner and document data identify
 these fixtures as examples, without technical-advice approval. Repeating `seed`
 reuses the existing records. Do not mix disposable fixture state into a real library.
@@ -63,7 +64,7 @@ or proxy the curator origin onto LAN, tailnet or internet: a proxy’s loopback 
 is not end-user authentication. No remote management exposure is provided here.
 The workspace saves real database records and original files. **Advanced tools**
 retains the existing metadata, catalogue-version and export workflows. See
-[private management and indexing handoff](docs/OASIS_LIBRARY_MANAGEMENT.md).
+[private management and indexing guide](docs/OASIS_LIBRARY_MANAGEMENT.md).
 
 Windows: activate `.venv\Scripts\activate` and use `python` in place of
 `.venv/bin/python`. Frontend clean/build commands use portable Node/npm scripts;
@@ -77,6 +78,12 @@ that remains available after its library host shuts down.
 
 - A visitor **library** is a root `LibraryFolder` in a selected `LibraryVersion`.
   Its documents include descendant folders and deduplicate stable content IDs.
+- Child folders appear as **sections**. The library overview and persistent navigation
+  keep other libraries and sections visible while a selected section filters the
+  documents. Curators can create sections under an existing library or section.
+- Search and document pagination run on the server, with 24 records per page and
+  a maximum API page size of 100. Folder summaries contain counts, not every PDF's
+  metadata; editor reference data loads when needed.
 - The existing many-to-many relationship supports multiple library membership.
   Metadata categories/tags remain separate; this PR does not rename data.
 - Curator **Library versions** manages the original export versions/folder tree.
@@ -85,8 +92,16 @@ that remains available after its library host shuts down.
   `folder`, `content_folder`, rights fields and original bytes remain compatible.
   The database filename is an upstream/Oasis importer contract.
 - Visitor search filters local document metadata. Exported metadata FTS remains
-  functional. This PR adds no extraction, vector jobs, chat, inference or ingestion
-  pipeline, and makes no invented indexing or approval claims.
+  functional. The private indexing adapter invokes the existing station maintenance
+  commands into new draft directories; chat, inference and ingestion implementations
+  remain in the station repository. Text and vector freshness are reported separately.
+- Manage Library also searches verified private draft passages using those existing
+  station readers. PDF-text search returns original page links and attribution;
+  AI semantic ranking requires matching local vectors and an installed embedding
+  model. Unavailable AI is labelled honestly. Public passage search awaits an
+  approved immutable release; private testing drafts remain restricted to curators.
+- Library uses Oasis chat's compact header, system typography and dark blue wordmark,
+  with a teal action accent. All interface assets are local.
 
 The catalogue is an authoring preview, not an approval-enforced published release.
 The upstream active flag and review date do not certify technical advice.
@@ -106,7 +121,20 @@ local original PDF access, exported originals/rights/schema/metadata FTS, and
 visitor/remote-peer mutation denials. GitHub Actions repeats build/backend checks.
 [Browser verification and desktop/mobile screenshots](docs/OASIS_LIBRARY_REBRAND.md)
 cover navigation, metadata search, details, original/PDF links, errors, About and
-the existing curator upload/export flow.
+the curator upload/export/indexing flow.
+
+An optional reproducible synthetic scale check uses its own `.preview/scale-check`
+database and leaves the main preview untouched:
+
+```bash
+.venv/bin/python scripts/benchmark_catalogue.py
+```
+
+It creates 5,000 labelled catalogue records sharing one synthetic PDF original,
+checks bounded page/section/search queries and prints a separate loopback preview
+command. It does not create or claim a 5,000-document index. The existing station
+importer limits each reviewed snapshot to 50 PDFs; larger index packages remain
+part of the separate maintenance pipeline work.
 
 English resources are bundled in `frontend/src/js/locales`. See
 [translation instructions](frontend/src/js/locales/README.md) for reviewed

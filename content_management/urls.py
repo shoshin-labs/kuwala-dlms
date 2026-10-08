@@ -10,6 +10,9 @@ from .views import (
     LibraryModuleViewSet, disk_info, oasis_config
 )
 from content_management.oasis_documents import OasisDocumentViewSet
+from content_management.oasis_indexing import OasisIndexJobViewSet, indexing_status
+from content_management.oasis_catalogue import catalogue, catalogue_documents
+from content_management.oasis_search import index_search, draft_original
 
 router = routers.DefaultRouter()
 router.register(r'contents', ContentViewSet)
@@ -21,10 +24,16 @@ router.register(r'library_folders', LibraryFolderViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'library_modules', LibraryModuleViewSet)
 router.register(r'oasis/documents', OasisDocumentViewSet, basename='oasis-document')
+router.register(r'oasis/index-jobs', OasisIndexJobViewSet, basename='oasis-index-job')
 
 
 urlpatterns = [
     path('api/oasis/config/', oasis_config, name='oasis-config'),
+    path('api/oasis/catalogue/', catalogue, name='oasis-catalogue'),
+    path('api/oasis/catalogue/documents/', catalogue_documents, name='oasis-catalogue-documents'),
+    path('api/oasis/indexing/', indexing_status, name='oasis-indexing'),
+    path('api/oasis/index-search/', index_search, name='oasis-index-search'),
+    path('api/oasis/index-search/original/<uuid:job_id>/<int:document_id>/', draft_original, name='oasis-draft-original'),
     path('api/', include(router.urls)),
     path('api/contents_upload/', BulkAddView.as_view(), name="contents-upload"),
     path('api/content_bulk_add/', BulkAddView.as_view(), name="content_bulk_add"),

@@ -13,6 +13,9 @@ def main():
         sub.add_parser(command)
     run = sub.add_parser('run', help='Serve only 127.0.0.1:8790, read-only by default.')
     run.add_argument('--curator', action='store_true', help='Enable private local development writes.')
+    worker = sub.add_parser('index-worker', help='Process private draft indexing jobs with existing station commands.')
+    worker.add_argument('--once', action='store_true', help='Process one queued job then stop.')
+    sub.add_parser('index-fixtures', help='Write an explicit private-testing manifest for labelled synthetic seed PDFs.')
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parent.parent
@@ -27,6 +30,8 @@ def main():
         'check': ['check'],
         'test': ['test', 'content_management', '--noinput'],
         'run': ['runserver', '127.0.0.1:8790', '--noreload'],
+        'index-worker': ['run_oasis_index_jobs'] + (['--once'] if getattr(args, 'once', False) else []),
+        'index-fixtures': ['seed_oasis_index_manifest'],
     }
     execute_from_command_line([str(root / 'manage.py')] + commands[args.command])
 

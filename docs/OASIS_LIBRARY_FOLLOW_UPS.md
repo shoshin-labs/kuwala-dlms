@@ -37,6 +37,14 @@ development boundary. Published readers must expose only approved immutable
 versions without staging/private authoring metadata. Upload and active flags
 do not establish approval; recorded review does not certify expert advice.
 
+Connect visitor PDF-text and semantic search to an explicitly approved immutable
+release. The current search adapter is restricted to private curator drafts and
+reuses the existing station providers. Verify semantic retrieval with the intended
+installed local model and real reviewed corpus before enabling it. The workstation
+preview now verifies Nomic against labelled synthetic fixtures. Preserve original/page attribution and honest
+unavailable states rather than exposing testing manifests or labelling keyword
+fallback as AI.
+
 Upstream export and bulk filesystem import trust a local curator. Validate
 filenames, archive/version paths, rights/source records and release artifacts
 before remote access. Export creates a local build; it does not activate or
@@ -47,11 +55,20 @@ publish it to Oasis.
 Add reviewed Chichewa, Swahili, Zulu and French visitor packs. Move remaining
 curator form/validation and backend error copy into resources without translating
 document attribution. Test long labels with speakers. Membership/counts load the
-selected version’s folder list; choosing a library fetches each descendant
-folder’s documents. Measure large catalogues before adding paginated server search.
+selected version's lightweight folder tree and counts; document lists use bounded
+server pagination and subtree search. Metadata choices load only when opening an
+editor. For larger metadata vocabularies, add paginated autocomplete rather than
+fetching every metadata value for that editor.
 
 ## Existing parallel work
 
 Chat streaming, Jetson inference, extraction/vector maintenance, remote trial
-exposure and release activation remain in their existing workstreams. This PR
-adds no second ingestion pipeline or changes to those components.
+exposure and release activation remain in their existing workstreams. The private
+index queue delegates to the existing station maintenance commands in new draft
+directories. It does not add a second ingestion pipeline or activate a reader release.
+Remote worker operation, cancellation, queue retention and production deployment
+need their own operational design; this worker is for the private local preview.
+The current station importer permits at most 50 PDFs in a reviewed snapshot.
+Larger index packages, scoped/incremental indexing and resource scheduling belong
+in that existing pipeline workstream; the paginated catalogue can browse more
+records without claiming those records have matching published indexes.

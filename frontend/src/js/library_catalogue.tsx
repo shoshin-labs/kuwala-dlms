@@ -1,48 +1,43 @@
 import React, { useEffect, useRef, useState } from "react";
-import { APP_URLS, get_data } from "./urls";
-import { LibraryFolder, LibraryVersion, SerializedContent } from "./types";
+import { get_data } from "./urls";
+import {
+  CatalogueFolder,
+  CatalogueTree,
+  CataloguedDocument,
+  DocumentPage,
+  catalogueQuery,
+  folderAncestors,
+  withinFolder,
+} from "./catalogue_tree";
 import { useStrings } from "./i18n";
+import "../css/catalogue.css";
 
 interface CatalogueLocation {
   version: string;
   library: string;
+  section: string;
   document: string;
+  q: string;
+  page: string;
 }
 function readLocation(): CatalogueLocation {
   const params = new URL(window.location.href).searchParams;
   return {
     version: params.get("version") || "",
     library: params.get("library") || "",
+    section: params.get("section") || "",
     document: params.get("document") || "",
+    q: params.get("q") || "",
+    page:
+      /^\d+$/.test(params.get("page") || "") && Number(params.get("page")) > 0
+        ? params.get("page")!
+        : "1",
   };
 }
-function documentTitle(document: SerializedContent) {
+function documentTitle(document: CataloguedDocument) {
   return document.display_title || document.title || document.file_name;
 }
-function descendants(
-  root: LibraryFolder,
-  folders: LibraryFolder[],
-): LibraryFolder[] {
-  const included = new Set<number>([root.id]);
-  let previousSize = 0;
-  while (previousSize !== included.size) {
-    previousSize = included.size;
-    folders.forEach((folder) => {
-      if (folder.parent !== null && included.has(folder.parent))
-        included.add(folder.id);
-    });
-  }
-  return folders.filter((folder) => included.has(folder.id));
-}
-function documentIds(root: LibraryFolder, folders: LibraryFolder[]) {
-  return new Set(
-    descendants(root, folders).reduce(
-      (ids: number[], folder) => ids.concat(folder.library_content),
-      [],
-    ),
-  );
-}
-function originalURL(document: SerializedContent) {
+function originalURL(document: CataloguedDocument) {
   if (document.content_file) {
     const url = new URL(document.content_file, window.location.origin);
     if (url.pathname.startsWith("/media/contents/")) return url.pathname;
@@ -51,139 +46,145 @@ function originalURL(document: SerializedContent) {
     ? "/media/contents/" + encodeURIComponent(document.file_name)
     : "";
 }
-
 export default function LibraryCatalogue() {
   const s = useStrings();
   const [location, setLocation] = useState(readLocation);
-  const [versions, setVersions] = useState<LibraryVersion[]>([]);
-  const [folders, setFolders] = useState<LibraryFolder[]>([]);
-  const [documents, setDocuments] = useState<SerializedContent[]>([]);
-  const [versionsLoading, setVersionsLoading] = useState(true);
-  const [foldersLoading, setFoldersLoading] = useState(false);
-  const [versionsError, setVersionsError] = useState(false);
-  const [foldersError, setFoldersError] = useState(false);
-  const loading = versionsLoading || foldersLoading;
-  const error = versionsError || foldersError;
+  const [tree, setTree] = useState<CatalogueTree | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [result, setResult] = useState<DocumentPage<CataloguedDocument> | null>(
+    null,
+  );
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [documentsError, setDocumentsError] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [documentAttempt, setDocumentAttempt] = useState(0);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(location.q);
   const heading = useRef<HTMLHeadingElement>(null);
   const navigated = useRef(false);
-  const version =
-    versions.find((item) => String(item.id) === location.version) ||
-    (!location.version ? versions[0] : undefined);
+  const folders = tree?.folders || [];
+  const versions = tree?.versions || [];
+  const version = versions.find((item) => item.id === tree?.catalogue_version);
   const libraries = folders.filter((folder) => folder.parent === null);
   const library = libraries.find(
     (folder) => String(folder.id) === location.library,
   );
-  const selectedDocument = documents.find(
-    (item) => String(item.id) === location.document,
+  const section = folders.find(
+    (folder) =>
+      String(folder.id) === location.section &&
+      library &&
+      folder.id !== library.id &&
+      withinFolder(folder, library, folders),
   );
-  function navigate(update: Partial<CatalogueLocation>) {
-    const next = { ...location, ...update };
+  const selected = section || library;
+  const sections = library
+    ? folders
+        .filter(
+          (folder) =>
+            folder.id !== library.id && withinFolder(folder, library, folders),
+        )
+        .sort((a, b) =>
+          folderAncestors(a, folders)
+            .map((item) => item.folder_name)
+            .join(" / ")
+            .localeCompare(
+              folderAncestors(b, folders)
+                .map((item) => item.folder_name)
+                .join(" / "),
+            ),
+        )
+    : [];
+  const children = selected
+    ? folders.filter((folder) => folder.parent === selected.id)
+    : [];
+  const selectedDocument = location.document
+    ? result?.results.find((item) => String(item.id) === location.document)
+    : undefined;
+  const countLabel = (count: number) =>
+    count === 1 ? s("one_document") : s("document_count", { count });
+  function navigate(update: Partial<CatalogueLocation>, replace = false) {
+    // Keep the canonical list context when an input debounce or browser
+    // navigation has changed the URL since this handler was rendered.
+    const next = { ...readLocation(), ...update };
     const url = new URL(window.location.href);
     Object.entries(next).forEach(([key, value]) =>
-      value ? url.searchParams.set(key, value) : url.searchParams.delete(key),
+      value && !(key === "page" && value === "1")
+        ? url.searchParams.set(key, value)
+        : url.searchParams.delete(key),
     );
     url.searchParams.set("tab", "contents");
-    history.pushState({}, "", url.toString());
-    navigated.current = true;
+    history[replace ? "replaceState" : "pushState"]({}, "", url.toString());
+    if (!replace) navigated.current = true;
     setLocation(next);
-    setSearch("");
+    setSearch(next.q);
   }
+  const choose = (root: CatalogueFolder, child?: CatalogueFolder) =>
+    navigate({
+      version: String(version!.id),
+      library: String(root.id),
+      section: child ? String(child.id) : "",
+      document: "",
+      q: "",
+      page: "1",
+    });
   useEffect(() => {
     const onPop = () => {
+      const next = readLocation();
       navigated.current = true;
-      setLocation(readLocation());
-      setSearch("");
+      setLocation(next);
+      setSearch(next.q);
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
   useEffect(() => {
     let current = true;
-    setVersionsLoading(true);
-    setVersionsError(false);
-    (async () => {
-      const all: LibraryVersion[] = [];
-      let page = 1;
-      let count = 0;
-      do {
-        const data = await get_data(APP_URLS.LIBRARY_VERSIONS(page++, 100));
-        all.push(...data.results);
-        count = data.count;
-      } while (all.length < count);
-      if (current) {
-        setVersions(all);
-        setVersionsLoading(false);
-      }
-    })().catch(() => {
-      if (current) {
-        setVersionsError(true);
-        setVersionsLoading(false);
-      }
-    });
-    return () => {
-      current = false;
-    };
-  }, [attempt]);
-  useEffect(() => {
-    if (!version) {
-      setFolders([]);
-      setFoldersLoading(false);
-      setFoldersError(false);
-      return;
-    }
-    let current = true;
-    setFoldersLoading(true);
-    setFoldersError(false);
-    setFolders([]);
-    get_data(APP_URLS.LIBRARY_VERSION_FOLDERS(version.id))
+    setLoading(true);
+    setError(false);
+    setTree(null);
+    get_data(
+      catalogueQuery("/api/oasis/catalogue/", {
+        catalogue_version: location.version,
+      }),
+    )
       .then((data) => {
         if (current) {
-          setFolders(data);
-          setFoldersLoading(false);
+          setTree(data);
+          setLoading(false);
         }
       })
       .catch(() => {
         if (current) {
-          setFoldersError(true);
-          setFoldersLoading(false);
+          setError(true);
+          setLoading(false);
         }
       });
     return () => {
       current = false;
     };
-  }, [version && version.id, attempt]);
+  }, [location.version, attempt]);
   useEffect(() => {
-    setDocuments([]);
+    let current = true;
+    setResult(null);
     setDocumentsError(false);
-    if (!library) {
+    if (!version || !selected || (location.section && !section)) {
       setDocumentsLoading(false);
       return;
     }
-    let current = true;
     setDocumentsLoading(true);
-    Promise.all(
-      descendants(library, folders).map((folder) =>
-        get_data(APP_URLS.LIBRARY_FOLDER_CONTENTS(folder.id)),
-      ),
+    get_data(
+      catalogueQuery("/api/oasis/catalogue/documents/", {
+        catalogue_version: version.id,
+        folder_id: selected.id,
+        document_id: location.document || undefined,
+        q: location.document ? undefined : location.q,
+        page: location.document ? 1 : Number(location.page),
+        size: 24,
+      }),
     )
-      .then((results) => {
-        const unique = new Map<number, SerializedContent>();
-        results.forEach((result) =>
-          result.files.forEach((item: SerializedContent) =>
-            unique.set(item.id, item),
-          ),
-        );
+      .then((data) => {
         if (current) {
-          setDocuments(
-            Array.from(unique.values()).sort((a, b) =>
-              documentTitle(a).localeCompare(documentTitle(b)),
-            ),
-          );
+          setResult(data);
           setDocumentsLoading(false);
         }
       })
@@ -196,55 +197,48 @@ export default function LibraryCatalogue() {
     return () => {
       current = false;
     };
-  }, [library, folders, documentAttempt]);
+  }, [
+    version?.id,
+    selected?.id,
+    location.section,
+    location.document,
+    location.q,
+    location.page,
+    documentAttempt,
+  ]);
+  useEffect(() => {
+    if (search === location.q) return;
+    const timer = window.setTimeout(
+      () => navigate({ q: search, page: "1", document: "" }, true),
+      300,
+    );
+    return () => window.clearTimeout(timer);
+  }, [search, location.q]);
   useEffect(() => {
     if (!loading && !documentsLoading && navigated.current) {
       heading.current?.focus();
       navigated.current = false;
     }
   }, [location, loading, documentsLoading]);
-  const countLabel = (count: number) =>
-    count === 1 ? s("one_document") : s("document_count", { count });
-  const filtered = documents.filter((item) =>
-    [
-      item.title,
-      item.display_title,
-      item.description,
-      item.file_name,
-      ...(item.metadata_info || []).map((metadata) => metadata.name),
-    ]
-      .join(" ")
-      .toLocaleLowerCase()
-      .includes(search.toLocaleLowerCase().trim()),
-  );
+  const documentLibraries = selectedDocument
+    ? libraries.filter((root) =>
+        (selectedDocument.catalogue_folder_ids || []).some((id) => {
+          const folder = folders.find((item) => item.id === id);
+          return folder && withinFolder(folder, root, folders);
+        }),
+      )
+    : [];
   return (
     <section className="catalogue">
       <div className="workspace-head">
-        {location.document && library ? (
-          <button
-            className="text-button"
-            onClick={() => navigate({ document: "" })}
-          >
-            ← {s("back_documents")}
-          </button>
-        ) : location.library ? (
-          <button
-            className="text-button"
-            onClick={() => navigate({ library: "", document: "" })}
-          >
-            ← {s("back_libraries")}
-          </button>
-        ) : null}
         <h1 ref={heading} tabIndex={-1}>
           {selectedDocument
             ? documentTitle(selectedDocument)
-            : library
-              ? library.folder_name
+            : selected
+              ? selected.folder_name
               : s("choose_library")}
         </h1>
-        {!location.library && (
-          <p className="intro-text">{s("catalogue_intro")}</p>
-        )}
+        {!library && <p className="intro-text">{s("catalogue_intro")}</p>}
       </div>
       {versions.length > 1 && (
         <div className="version-picker">
@@ -256,11 +250,13 @@ export default function LibraryCatalogue() {
               navigate({
                 version: event.target.value,
                 library: "",
+                section: "",
                 document: "",
+                q: "",
+                page: "1",
               })
             }
           >
-            {!version && <option value="">{s("not_available")}</option>}
             {versions.map((item) => (
               <option key={item.id} value={item.id}>
                 {s("version_label", {
@@ -281,7 +277,7 @@ export default function LibraryCatalogue() {
           <p>{s("load_error")}</p>
           <button
             className="quiet-button"
-            onClick={() => setAttempt(attempt + 1)}
+            onClick={() => setAttempt((value) => value + 1)}
           >
             {s("retry")}
           </button>
@@ -293,135 +289,296 @@ export default function LibraryCatalogue() {
         </div>
       ) : !version ? (
         <p role="alert">{s("missing_library")}</p>
-      ) : location.library && !library ? (
-        <p role="alert">{s("missing_library")}</p>
-      ) : !library ? (
-        <>
-          <h2 className="section-label">{s("libraries")}</h2>
-          {libraries.length ? (
-            <div className="library-list">
-              {libraries.map((item) => (
+      ) : (
+        <div className="catalogue-layout">
+          <aside
+            className="catalogue-navigation"
+            aria-labelledby="catalogue-library-nav-title"
+          >
+            <h2 id="catalogue-library-nav-title">{s("libraries")}</h2>
+            <nav className="catalogue-library-nav" aria-label={s("libraries")}>
+              {libraries.map((root) => (
                 <button
-                  className="library-choice"
-                  key={item.id}
-                  onClick={() =>
-                    navigate({
-                      version: String(version.id),
-                      library: String(item.id),
-                      document: "",
-                    })
-                  }
-                  aria-label={s("browse_library", { name: item.folder_name })}
+                  key={root.id}
+                  className={library?.id === root.id ? "is-selected" : ""}
+                  aria-current={library?.id === root.id ? "page" : undefined}
+                  onClick={() => choose(root)}
                 >
-                  <span className="library-choice-name">
-                    {item.folder_name}
-                  </span>
-                  <span className="library-choice-count">
-                    {countLabel(documentIds(item, folders).size)}
-                  </span>
-                  <span className="library-choice-arrow" aria-hidden="true">
-                    →
-                  </span>
+                  <strong>{root.folder_name}</strong>
+                  <span>{countLabel(root.document_count)}</span>
                 </button>
               ))}
-            </div>
-          ) : (
-            <div className="empty-state">
-              <h2>{s("no_libraries")}</h2>
-              <p>{s("no_libraries_help")}</p>
-            </div>
-          )}
-        </>
-      ) : documentsLoading ? (
-        <p role="status" className="empty-state">
-          {s("loading_documents")}
-        </p>
-      ) : documentsError ? (
-        <div role="alert" className="empty-state">
-          <p>{s("documents_error")}</p>
-          <button
-            className="quiet-button"
-            onClick={() => setDocumentAttempt(documentAttempt + 1)}
-          >
-            {s("retry")}
-          </button>
-        </div>
-      ) : location.document ? (
-        selectedDocument ? (
-          <DocumentDetail
-            document={selectedDocument}
-            libraries={libraries.filter((item) =>
-              documentIds(item, folders).has(selectedDocument.id),
-            )}
-          />
-        ) : (
-          <p role="alert">{s("missing_document")}</p>
-        )
-      ) : (
-        <>
-          <div className="document-toolbar">
-            <h2 className="section-label">
-              {s("documents")} <span className="count">{documents.length}</span>
-            </h2>
-            <div className="search-field">
-              <label htmlFor="library-search">{s("search")}</label>
-              <input
-                id="library-search"
-                type="search"
-                value={search}
-                placeholder={s("search_placeholder")}
-                onChange={(event) => setSearch(event.target.value)}
-                aria-describedby="search-help"
-              />
-              <p id="search-help">{s("search_help")}</p>
-            </div>
-          </div>
-          {!documents.length ? (
-            <p className="empty-state">{s("no_documents")}</p>
-          ) : !filtered.length ? (
-            <div className="empty-state">
-              <p>{s("no_results")}</p>
-              <button className="quiet-button" onClick={() => setSearch("")}>
-                {s("clear_search")}
-              </button>
-            </div>
-          ) : (
-            <ul className="document-list">
-              {filtered.map((item) => (
-                <li key={item.id}>
+            </nav>
+            {library && sections.length > 0 && (
+              <nav
+                className="catalogue-section-nav"
+                aria-label={s("sections_in", { name: library.folder_name })}
+              >
+                <h3>{s("sections")}</h3>
+                <button
+                  className={!section ? "is-selected" : ""}
+                  onClick={() => choose(library)}
+                  aria-current={!section ? "page" : undefined}
+                >
+                  <span>{s("all_library_documents")}</span>
+                  <span>{library.document_count}</span>
+                </button>
+                {sections.map((child) => (
                   <button
-                    className="document-choice"
-                    onClick={() => navigate({ document: String(item.id) })}
+                    key={child.id}
+                    className={section?.id === child.id ? "is-selected" : ""}
+                    aria-current={section?.id === child.id ? "page" : undefined}
+                    style={{
+                      paddingLeft:
+                        12 +
+                        Math.max(
+                          0,
+                          folderAncestors(child, folders).length - 2,
+                        ) *
+                          12,
+                    }}
+                    onClick={() => choose(library, child)}
                   >
-                    <span className="document-format">
-                      {item.file_name?.toLowerCase().endsWith(".pdf")
-                        ? s("pdf")
-                        : s("file")}
-                    </span>
-                    <span className="document-summary">
-                      <span className="document-name">
-                        {documentTitle(item)}
-                      </span>
-                      <span className="document-description">
-                        {item.description ||
-                          (item.metadata_info || [])
-                            .filter((meta) =>
-                              /creator|author|source/i.test(meta.type_name),
-                            )
-                            .map((meta) => meta.name)
-                            .join(" · ") ||
-                          s("not_available")}
-                      </span>
-                    </span>
-                    <span className="document-arrow" aria-hidden="true">
-                      →
-                    </span>
+                    <span>{child.folder_name}</span>
+                    <span>{child.document_count}</span>
                   </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
+                ))}
+              </nav>
+            )}
+          </aside>
+          <div className="catalogue-main">
+            {(location.library && !library) ||
+            (location.section && !section) ? (
+              <p role="alert">{s("missing_library")}</p>
+            ) : !library ? (
+              libraries.length ? (
+                <div className="catalogue-overview">
+                  {libraries.map((root) => (
+                    <article
+                      key={root.id}
+                      className="catalogue-overview-library"
+                    >
+                      <h2>
+                        <button onClick={() => choose(root)}>
+                          <span>{root.folder_name}</span>
+                          <span className="catalogue-overview-count">
+                            {countLabel(root.document_count)}{" "}
+                            <span aria-hidden="true">→</span>
+                          </span>
+                        </button>
+                      </h2>
+                      {folders.some((child) => child.parent === root.id) && (
+                        <>
+                          <h3>{s("sections")}</h3>
+                          <ul>
+                            {folders
+                              .filter((child) => child.parent === root.id)
+                              .map((child) => (
+                                <li key={child.id}>
+                                  <button onClick={() => choose(root, child)}>
+                                    <span>{child.folder_name}</span>
+                                    <span>
+                                      {countLabel(child.document_count)}{" "}
+                                      <span aria-hidden="true">→</span>
+                                    </span>
+                                  </button>
+                                </li>
+                              ))}
+                          </ul>
+                        </>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <h2>{s("no_libraries")}</h2>
+                  <p>{s("no_libraries_help")}</p>
+                </div>
+              )
+            ) : (
+              <>
+                {(section || location.document) && (
+                  <nav
+                    className="catalogue-breadcrumbs"
+                    aria-label={s("breadcrumb")}
+                  >
+                    <button onClick={() => choose(library)}>
+                      {library.folder_name}
+                    </button>
+                    {section &&
+                      folderAncestors(section, folders)
+                        .filter((item) => item.id !== library.id)
+                        .map((child) => (
+                          <React.Fragment key={child.id}>
+                            <span aria-hidden="true">/</span>
+                            <button onClick={() => choose(library, child)}>
+                              {child.folder_name}
+                            </button>
+                          </React.Fragment>
+                        ))}
+                    {location.document && (
+                      <button
+                        className="text-button"
+                        onClick={() => navigate({ document: "" })}
+                      >
+                        ← {s("back_documents")}
+                      </button>
+                    )}
+                  </nav>
+                )}
+                {!location.document && children.length > 0 && (
+                  <section className="catalogue-sections">
+                    <h2>{s("sections")}</h2>
+                    <div className="catalogue-section-cards">
+                      {children.map((child) => (
+                        <button
+                          key={child.id}
+                          onClick={() => choose(library, child)}
+                        >
+                          <strong>{child.folder_name}</strong>
+                          <span>{countLabel(child.document_count)}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                {!location.document && (
+                  <div className="document-toolbar">
+                    <h2 className="section-label">
+                      {s("documents")}{" "}
+                      <span className="count">
+                        {result?.count ?? selected!.document_count}
+                      </span>
+                    </h2>
+                    <div className="search-field">
+                      <label htmlFor="library-search">{s("search")}</label>
+                      <input
+                        id="library-search"
+                        type="search"
+                        value={search}
+                        placeholder={s("search_placeholder")}
+                        onChange={(event) => setSearch(event.target.value)}
+                        aria-describedby="search-help"
+                      />
+                      <p id="search-help">{s("search_help")}</p>
+                    </div>
+                  </div>
+                )}
+                {documentsLoading ? (
+                  <p role="status" className="empty-state">
+                    {s("loading_documents")}
+                  </p>
+                ) : documentsError ? (
+                  <div role="alert" className="empty-state">
+                    <p>{s("documents_error")}</p>
+                    <button
+                      className="quiet-button"
+                      onClick={() => setDocumentAttempt((value) => value + 1)}
+                    >
+                      {s("retry")}
+                    </button>
+                  </div>
+                ) : location.document ? (
+                  selectedDocument ? (
+                    <DocumentDetail
+                      key={selectedDocument.id}
+                      document={selectedDocument}
+                      libraries={documentLibraries}
+                    />
+                  ) : (
+                    <p role="alert">{s("missing_document")}</p>
+                  )
+                ) : !result?.results.length ? (
+                  <div className="empty-state">
+                    <p>{location.q ? s("no_results") : s("no_documents")}</p>
+                    {location.q && (
+                      <button
+                        className="quiet-button"
+                        onClick={() => navigate({ q: "", page: "1" }, true)}
+                      >
+                        {s("clear_search")}
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <ul className="document-list">
+                      {result.results.map((item) => (
+                        <li key={item.id}>
+                          <button
+                            className="document-choice"
+                            onClick={() =>
+                              navigate({ document: String(item.id) })
+                            }
+                          >
+                            <span className="document-format">
+                              {item.file_name?.toLowerCase().endsWith(".pdf")
+                                ? s("pdf")
+                                : s("file")}
+                            </span>
+                            <span className="document-summary">
+                              <span className="document-name">
+                                {documentTitle(item)}
+                              </span>
+                              <span className="document-description">
+                                {item.description ||
+                                  (item.metadata_info || [])
+                                    .filter((meta) =>
+                                      /creator|author|source/i.test(
+                                        meta.type_name,
+                                      ),
+                                    )
+                                    .map((meta) => meta.name)
+                                    .join(" · ") ||
+                                  s("not_available")}
+                              </span>
+                            </span>
+                            <span className="document-arrow" aria-hidden="true">
+                              →
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="catalogue-pagination">
+                      <p>
+                        {s("page_summary", {
+                          first: (result.page - 1) * result.page_size + 1,
+                          last: Math.min(
+                            result.page * result.page_size,
+                            result.count,
+                          ),
+                          count: result.count,
+                        })}
+                      </p>
+                      <div>
+                        <button
+                          className="quiet-button"
+                          disabled={!result.previous}
+                          onClick={() =>
+                            navigate({ page: String(result.page - 1) })
+                          }
+                        >
+                          {s("previous_page")}
+                        </button>
+                        <button
+                          className="quiet-button"
+                          disabled={!result.next}
+                          onClick={() =>
+                            navigate({ page: String(result.page + 1) })
+                          }
+                        >
+                          {s("next_page")}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       )}
     </section>
   );
@@ -431,8 +588,8 @@ function DocumentDetail({
   document,
   libraries,
 }: {
-  document: SerializedContent;
-  libraries: LibraryFolder[];
+  document: CataloguedDocument;
+  libraries: CatalogueFolder[];
 }) {
   const s = useStrings();
   const [page, setPage] = useState("1");

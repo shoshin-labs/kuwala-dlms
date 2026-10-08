@@ -15,8 +15,7 @@ from dlms.preview_middleware import is_loopback_request
 
 from content_management.file_lifecycle import delete_file_after_commit
 from content_management.models import Content, LibraryFolder, LibraryVersion, Metadata
-from content_management.paginators import PageNumberSizePagination
-from content_management.serializers import ContentSerializer
+from content_management.oasis_catalogue import CatalogueDocumentSerializer, CataloguePagination, queried_documents
 from content_management.standardize_format import build_response
 
 logger = logging.getLogger(__name__)
@@ -53,7 +52,7 @@ def file_digest(file_object):
     return digest.digest()
 
 
-class OasisDocumentSerializer(ContentSerializer):
+class OasisDocumentSerializer(CatalogueDocumentSerializer):
     # Validate originals here so replacement may reuse the current basename;
     # the legacy field validators reject it even when it belongs to this item.
     content_file = serializers.FileField(required=False, max_length=500)
@@ -61,8 +60,8 @@ class OasisDocumentSerializer(ContentSerializer):
     folder_ids = MultipartListField(child=serializers.IntegerField(min_value=1), required=False, write_only=True)
     metadata = MultipartListField(child=serializers.PrimaryKeyRelatedField(queryset=Metadata.objects.all()), required=False)
 
-    class Meta(ContentSerializer.Meta):
-        fields = ContentSerializer.Meta.fields + ('catalogue_version', 'folder_ids')
+    class Meta(CatalogueDocumentSerializer.Meta):
+        fields = CatalogueDocumentSerializer.Meta.fields + ('catalogue_version', 'folder_ids')
         read_only_fields = ('id', 'file_name', 'filesize', 'modified_on')
 
     def validate_content_file(self, upload):
@@ -172,21 +171,11 @@ class PrivateCuratorAccess(BasePermission):
 class OasisDocumentViewSet(viewsets.ModelViewSet):
     queryset = Content.objects.all()
     serializer_class = OasisDocumentSerializer
-    pagination_class = PageNumberSizePagination
+    pagination_class = CataloguePagination
     permission_classes = (PrivateCuratorAccess,)
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        version = self.request.query_params.get('catalogue_version')
-        if version is not None:
-            try:
-                version_id = int(version)
-            except (ValueError, TypeError):
-                raise serializers.ValidationError({'catalogue_version': 'Use a catalogue version ID.'})
-            if not LibraryVersion.objects.filter(pk=version_id).exists():
-                raise serializers.ValidationError({'catalogue_version': 'Catalogue version does not exist.'})
-            queryset = queryset.filter(libraryfolder__version_id=version_id).distinct()
-        return queryset.order_by('id')
+        return queried_documents(super().get_queryset(), self.request.query_params)
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

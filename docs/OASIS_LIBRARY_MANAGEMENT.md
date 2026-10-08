@@ -22,7 +22,10 @@ tailnet or public deployment. Visitor gateways must not forward management route
 ## Authoring model
 
 A catalogue version contains named libraries. Each library is an existing root
-`LibraryFolder`; descendant folders remain compatible with upstream organisation.
+`LibraryFolder`; descendant folders appear as sections. Create a library from the
+overview or a section within the selected library/section. Both can be renamed or
+removed. Their underlying folder IDs and parent relationships remain compatible
+with upstream organisation.
 `Content` records hold originals and metadata and can belong to several folders
 and catalogue versions. Choosing a library in the visitor catalogue aggregates
 its descendant documents and deduplicates stable numeric IDs.
@@ -45,43 +48,135 @@ the document records and originals. Previously exported bundles are unaffected
 by either action. The interface confirms these different consequences before
 deletion. **Advanced tools** retains upstream metadata, version and export screens.
 
-## Export and reindexing
+## Export and private draft indexing
 
 An export creates local originals and `solarspell.db` with the existing IDs,
 folder membership, rights and metadata FTS contract. Logos and banners are optional.
-It does not activate a release or update Oasis chat's passage/vector indexes.
+Export alone does not update Oasis chat's passage/vector indexes.
 
-The existing Kuwala station maintenance commands remain the indexing route:
+Manage Library shows **PDF text** and **Semantic vectors** separately. An indexed
+status requires a successful job, validation by the existing station reader and an
+exact match with the current document ID, filename and original SHA-256. Replacing
+an original makes the previous draft stale. Changed/corrupt artifacts are unavailable;
+a failed rebuild retains the previous successful draft. These are private draft
+states, not the status of a release currently served by Oasis chat.
+
+**Reindex document** and **Reindex library** queue durable jobs through
+`/api/oasis/index-jobs/`. This initial worker rebuilds the complete selected
+catalogue's enabled PDFs, including when requested for one document or library;
+the confirmation states the scope and document count. Library actions include
+PDFs in descendant folders. Each job exports to a fresh UUID directory under
+`.preview/indexing/jobs/`, invokes the station's existing `import_pdf_library`
+command and, for the optional hybrid profile, `index_pdf_vectors`. Existing
+published/evaluation roots are never selected as destinations. Logs, timestamps,
+queued/running/succeeded/failed states and worker heartbeat are real persisted data.
+
+The existing station importer limits a reviewed snapshot to 50 PDFs. The catalogue
+can browse thousands of records through server pagination; this worker does not
+claim to index thousands in one build. Larger packages and incremental jobs remain
+in the existing ingestion workstream.
+
+The adapter requires an explicit reviewed manifest that covers exactly the
+catalogue's enabled PDFs, with matching filenames and hashes. Uploading, an active
+flag or a recorded review date does not automatically approve a manifest. A new,
+replaced or removed PDF requires an updated manifest before another build.
+Unassigned documents and non-PDF originals are not eligible for this importer.
+The station manifest also binds library membership to exact exported folder IDs;
+when including its optional library definitions, review nested membership explicitly.
+
+## Configure the local worker
+
+Use an existing station checkout and its already installed PDF maintenance runtime.
+The paths below are this workstation's examples; configure your own explicit
+reviewed manifest for real documents. Set the same values in both server and worker
+terminals, then restart the preview:
 
 ```bash
-# Run from the station checkout, with an explicitly reviewed manifest and
-# a NEW staging destination; these commands are not run by this fork's UI.
-python -m scripts.import_pdf_library \
-  --bundle /path/to/export \
-  --manifest /path/to/reviewed-manifest.json \
-  --destination /path/to/new-staging-library
-
-# Run where the already installed local embedding model is available.
-python -m scripts.index_pdf_vectors --root /path/to/new-staging-library
+export OASIS_INDEXING_STATION_ROOT=/Users/tom/Dev/kuwala-station
+export OASIS_INDEXING_PYTHON=/Users/tom/Dev/kuwala-station/.venv/bin/python
+export OASIS_INDEXING_MANIFEST=/absolute/path/to/reviewed-manifest.json
+.venv/bin/python scripts/preview.py run --curator
 ```
 
-The importer validates original hashes and the review manifest, extracts pages
-and builds the local passage/lexical index. The existing vector builder creates
-the matching local semantic index. Station providers pin their snapshot at
-startup; switching packages also requires restarting the reader runtime through
-its existing release process. A replacement requires updated exact-file
-hashes in that manifest; a deletion requires a new complete release without the
-deleted document. Validate the complete new package before switching readers to
-it, retaining the previous published package for rollback.
+In the worker terminal:
 
-The current station manifest binds library membership to exact exported folder
-IDs, while this fork's visitor catalogue also includes descendant folders. An
-adapter must account for nested folders explicitly rather than claiming a
-recursive visitor group is already an importer-compatible release manifest.
+```bash
+# Set the same three environment variables above first.
+.venv/bin/python scripts/preview.py index-worker
+# Alternatively, process one queued request and stop:
+.venv/bin/python scripts/preview.py index-worker --once
+```
 
-Job submission, persisted diagnostics, index freshness and publication/rollback
-controls are a separate adapter to those existing commands. This fork does not
-show a successful index status or a reindex button without that connection.
-Uploading, an active flag or a recorded review date does not establish permission
-for all uses or expert approval of technical advice. See the
-[architecture](OASIS_LIBRARY_ARCHITECTURE.md) for that publication boundary.
+Jobs can be queued while the worker is stopped; the interface explains that they
+wait. One worker holds the private queue lock. A restarted worker marks interrupted
+running jobs as failed rather than pretending they completed. The worker is a local
+macOS/Linux development command, not a production process supervisor.
+
+Text indexing requires the existing local PDF extractor. Semantic indexing also
+requires an already installed embedding model and its local service. Optional
+`OASIS_INDEXING_MODEL` defaults to `nomic-embed-text:latest` and
+`OASIS_INDEXING_EMBED_URL` to `http://127.0.0.1:11434`. The adapter does not download
+models. A missing model disables the hybrid profile with the actual reason.
+Vector freshness also checks the model digest, so replacing a model under the
+same tag does not preserve an indexed status incorrectly.
+
+An operator can install the configured model explicitly before building vectors:
+
+```bash
+ollama pull nomic-embed-text:latest
+```
+
+This one-time download requires internet access. Keep the installed model and
+local Ollama service available for subsequent offline semantic indexing/search.
+
+For the disposable seeded preview only:
+
+```bash
+.venv/bin/python scripts/preview.py seed
+.venv/bin/python scripts/preview.py index-fixtures
+export OASIS_INDEXING_MANIFEST="$PWD/.preview/indexing/synthetic-reviewed-manifest.json"
+```
+
+`index-fixtures` accepts the generated synthetic seed corpus only. Its manifest
+explicitly uses `private-development-testing`, `testing_only` and
+`rights_review_pending`; it is not permission to publish or expert review of advice.
+Do not use it to approve uploaded community documents.
+
+## Search a private indexed draft
+
+Manage Library offers **Metadata**, **PDF text** and **AI semantic** search modes.
+Metadata searches the current catalogue's document records. PDF text searches
+passages in the latest successfully verified private draft through the existing
+station `PdfLibrary` reader. AI semantic uses the existing `SemanticSearch` provider
+and local embedding service, when matching vectors and the model are available.
+It ranks passages; it does not generate answers or certify technical advice.
+
+Text/AI searches run when submitted, with a 160-character query limit, at most ten
+passages, a 20-second subprocess timeout and ten submitted searches per minute.
+Library/section scope follows current folder memberships. Only documents whose
+current original hash matches the indexed bytes are searched. Results retain
+source, author, licence and page information; local PDF links are pinned to the
+verified draft original so replacement cannot silently change an existing result.
+A missing model, stale document, unavailable index or semantic provider failure is
+reported explicitly. Keyword fallback is never labelled as AI semantic search.
+
+These routes and draft originals are private curator endpoints. Visitor browsing
+continues to search metadata. Public document-text/AI search needs a separately
+configured approved immutable release; private testing manifests must not become
+public search sources. Nomic was installed explicitly on the workstation, and both
+PDF-text and semantic search were verified against the labelled synthetic draft.
+
+## Activating a release
+
+The importer validates hashes and review scope, extracts pages and builds local
+passage/lexical search. The existing vector builder creates a matching semantic
+index. Station providers pin their snapshot at startup; switching packages also
+requires restarting the reader through its existing release process. Validate a
+complete reviewed package before switching readers, retaining the previous
+published package for rollback. A deletion requires a release without the deleted
+document. This private worker does not switch the active reader, change Jetson
+inference or duplicate those release/ingestion pipelines.
+
+See the [architecture](OASIS_LIBRARY_ARCHITECTURE.md) for publication boundaries.
+Uploading a document does not establish permission for every use or approval for
+technical advice.
