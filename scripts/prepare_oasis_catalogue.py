@@ -291,7 +291,11 @@ def prepare(database, version_id, media_root, manifest_path):
                     fields['active'] = bool(fields['active']); fields['duplicatable'] = bool(fields['duplicatable'])
                 for field in ('modified_on', 'created_on'):
                     if field in fields and fields[field]:
-                        value = datetime.fromisoformat(fields[field])
+                        # Python 3.10 does not accept Django's UTC "Z" suffix.
+                        rendered = fields[field]
+                        if rendered.endswith('Z'):
+                            rendered = rendered[:-1] + '+00:00'
+                        value = datetime.fromisoformat(rendered)
                         # Django's USE_TZ SQLite storage is UTC without an offset.
                         if value.tzinfo is None:
                             value = value.replace(tzinfo=timezone.utc)
