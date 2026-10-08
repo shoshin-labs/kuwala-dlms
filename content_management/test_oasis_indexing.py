@@ -17,14 +17,14 @@ from django.utils import timezone
 from content_management.management.commands.run_oasis_index_jobs import execute_job
 from content_management.management.commands.seed_oasis_preview import sample_pdf
 from content_management.models import Content, LibraryFolder, LibraryVersion, OasisIndexJob
-from content_management.oasis_indexing import job_root, original_record, operator_config, verified_receipt, cached_artifact_receipt
+from content_management.oasis_indexing import heartbeat, job_root, original_record, operator_config, verified_receipt, cached_artifact_receipt
 from content_management import tests as contract_tests
 
 
 class PrivateIndexingTests(TestCase):
     def setUp(self):
         contract_tests.CatalogueContractTests.setUp(self)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name).resolve()
         self.private_settings = override_settings(BASE_DIR=self.root)
         self.private_settings.enable()
         self.addCleanup(self.private_settings.disable)
@@ -93,6 +93,60 @@ class PrivateIndexingTests(TestCase):
         self.assertEqual(response.status_code, 409)
         self.assertIn('exactly every enabled PDF', response.json()['error']['blocked_reason'])
         self.assertEqual(OasisIndexJob.objects.count(), 0)
+
+    def test_missing_station_release_is_reported_as_unavailable_without_queueing(self):
+        with patch.dict(os.environ, {'OASIS_INDEXING_STATION_ROOT': str(self.root / 'missing-station-release')}):
+            snapshot = self.snapshot()
+            self.assertFalse(snapshot['configuration']['configured'])
+            self.assertIn('station release root is unavailable', snapshot['configuration']['blocked_reason'])
+            response = self.post_job(document_id=self.first.id)
+            self.assertEqual(response.status_code, 409)
+            self.assertIn('station release root is unavailable', response.json()['error']['blocked_reason'])
+        self.assertFalse(OasisIndexJob.objects.exists())
+
+    def test_maintenance_sentinel_leaves_queued_jobs_and_skips_commands(self):
+        response = self.post_job(document_id=self.first.id)
+        self.assertEqual(response.status_code, 201)
+        job = OasisIndexJob.objects.get(pk=response.json()['data']['id'])
+        base = job_root(job).parent.parent
+        base.mkdir(parents=True, exist_ok=True)
+        sentinel = base / 'maintenance.json'
+        current_nonce = 'b' * 32
+        sentinel.write_text(json.dumps({'nonce': current_nonce}))
+        heartbeat(maintenance=True, maintenance_nonce='a' * 32)
+        with patch('content_management.management.commands.run_oasis_index_jobs.execute_job') as execute, \
+             patch('content_management.management.commands.run_oasis_index_jobs.heartbeat', wraps=heartbeat) as reported:
+            call_command('run_oasis_index_jobs', once=True, stdout=StringIO())
+            execute.assert_not_called()
+            self.assertEqual(reported.call_args_list[0].kwargs, {'maintenance': True, 'maintenance_nonce': current_nonce})
+        job.refresh_from_db()
+        self.assertEqual(job.state, 'queued')
+        self.assertFalse(job_root(job).exists())
+        response = self.post_job(document_id=self.first.id)
+        self.assertEqual(response.status_code, 409)
+        self.assertIn('paused', response.json()['error']['blocked_reason'])
+        sentinel.unlink()
+
+    def test_maintenance_requested_during_job_is_reported_only_after_it_finishes(self):
+        response = self.post_job(document_id=self.first.id)
+        self.assertEqual(response.status_code, 201)
+        job = OasisIndexJob.objects.get(pk=response.json()['data']['id'])
+        base = job_root(job).parent.parent
+
+        def existing_job_finishes(running):
+            (base / 'maintenance.json').write_text(json.dumps({'nonce': 'c' * 32}))
+            state = json.loads((base / 'worker.json').read_text())
+            self.assertFalse(state['maintenance'])
+            running.state = 'succeeded'
+            running.save(update_fields=['state'])
+
+        # The second sleep follows the paused heartbeat; exit without stopping a job.
+        with patch('content_management.management.commands.run_oasis_index_jobs.execute_job', side_effect=existing_job_finishes), \
+             patch('content_management.management.commands.run_oasis_index_jobs.time.sleep', side_effect=[None, KeyboardInterrupt]):
+            with self.assertRaises(KeyboardInterrupt):
+                call_command('run_oasis_index_jobs', stdout=StringIO())
+        job.refresh_from_db()
+        self.assertEqual(job.state, 'succeeded')
 
     def test_document_and_folder_actions_queue_full_catalogue_with_explicit_worker_status(self):
         snapshot = self.snapshot()

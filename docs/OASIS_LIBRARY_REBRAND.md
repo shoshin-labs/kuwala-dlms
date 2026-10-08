@@ -127,7 +127,8 @@ page and document dialog do not overflow. These checks do not establish producti
 The modern manager uses scoped English language resources and the selected shell
 locale; advanced legacy form text remains English. Visitors search metadata; private
 curators can search indexed document passages. The existing importer limits a
-reviewed snapshot to 50 PDFs; the 5,000-record fixture is a catalogue scalability
+reviewed snapshot to 128 PDFs in the current station runtime; the adapter follows
+that shared limit. The 5,000-record fixture is a catalogue scalability
 check, not a 5,000-document index. Private draft indexing does not establish expert approval or
 activate the Oasis chat reader. Remote management authentication remains a separate
 follow-up. PDF page count is reported only when backed by a verified draft index.

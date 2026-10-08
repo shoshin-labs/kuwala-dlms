@@ -19,21 +19,32 @@ from rest_framework.exceptions import ValidationError
 from content_management.models import Content, LibraryFolder, LibraryVersion, OasisIndexJob
 from content_management.oasis_documents import PrivateCuratorAccess
 from content_management.standardize_format import build_response
+from dlms.private_paths import checked_directory, checked_path, require_disjoint
+
+CONFIG_FIELDS = ('root', 'python', 'manifest', 'model', 'base_url', 'dependency_path')
 
 
 def staging_base():
-    root = Path(settings.BASE_DIR).resolve() / '.preview' / 'indexing'
-    for path in (root.parent, root, root / 'jobs'):
-        if path.is_symlink():
-            raise ValueError('Private indexing staging directories must not be symlinks.')
+    configured = getattr(settings, 'OASIS_INDEXING_STATE_ROOT', None) or os.environ.get('OASIS_INDEXING_STATE_ROOT')
+    default = Path(settings.BASE_DIR).resolve() / '.preview' / 'indexing'
+    root = checked_directory(configured or default, 'Private indexing staging directory', create=False)
+    protected = [settings.MEDIA_ROOT, settings.BUILDS_ROOT, *getattr(settings, 'OASIS_INDEXING_PROTECTED_ROOTS', ())]
+    station = os.environ.get('OASIS_INDEXING_STATION_ROOT')
+    if station:
+        protected.append(station)
+    if root != default:
+        protected.append(settings.BASE_DIR)
+    require_disjoint(root, protected, 'Private indexing staging directory')
+    checked_directory(root / 'jobs', 'Private indexing jobs directory')
+    for filename in ('worker.json', 'worker.tmp', 'worker.lock', 'maintenance.json'):
+        path = checked_path(root / filename, 'Private worker state file')
+        if path.exists() and not path.is_file():
+            raise ValueError('Private worker state must be a regular file.')
     return root
 
 
 def job_root(job):
-    root = staging_base() / 'jobs' / str(job.id)
-    if root.is_symlink():
-        raise ValueError('Private job root must not be a symlink.')
-    return root
+    return checked_directory(staging_base() / 'jobs' / str(job.id), 'Private job root')
 
 
 def worker_active():
@@ -44,11 +55,34 @@ def worker_active():
         return False
 
 
-def heartbeat(active=True):
+def maintenance_requested():
+    """Pause new work only; a deployment must never interrupt a running job."""
+    return (staging_base() / 'maintenance.json').is_file()
+
+
+def maintenance_request():
+    path = staging_base() / 'maintenance.json'
+    try:
+        if path.stat().st_size > 4096:
+            raise ValueError('Private maintenance request exceeds its size limit.')
+        request = json.loads(path.read_text(encoding='utf-8'))
+    except FileNotFoundError:
+        return None
+    except (OSError, UnicodeError, ValueError) as exc:
+        raise ValueError('Private maintenance request must be valid bounded JSON.') from exc
+    nonce = request.get('nonce') if isinstance(request, dict) else None
+    if not isinstance(nonce, str) or not re.fullmatch(r'[a-f0-9]{32}', nonce):
+        raise ValueError('Private maintenance request requires a unique 32-character hexadecimal nonce.')
+    return nonce
+
+
+def heartbeat(active=True, *, maintenance=False, maintenance_nonce=None):
     base = staging_base()
     base.mkdir(parents=True, exist_ok=True)
     temporary = base / 'worker.tmp'
-    temporary.write_text(json.dumps({'active': active, 'last_seen': time.time(), 'pid': os.getpid()}))
+    temporary.write_text(json.dumps({'active': active, 'maintenance': maintenance,
+                                    'maintenance_nonce': maintenance_nonce if maintenance else None,
+                                    'last_seen': time.time(), 'pid': os.getpid()}))
     temporary.replace(base / 'worker.json')
 
 
@@ -58,21 +92,51 @@ def operator_config():
     missing = [name for name, value in values.items() if not value]
     if missing:
         raise ValueError('Configure the private station adapter: ' + ', '.join(missing) + '. A reviewed manifest is required.')
-    root = Path(values[names[0]]).expanduser().resolve()
+    station = Path(values[names[0]])
+    if not station.is_absolute() or '..' in station.parts:
+        raise ValueError('Configured station root must be an absolute path without parent traversal.')
+    # Pin a versioned station current symlink to its exact release for this job.
+    try:
+        root = station.resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise ValueError('Configured station release root is unavailable.') from exc
     # Keep the venv executable path: resolving its symlink would bypass its
     # installed importer dependencies and invoke the system interpreter.
-    python = Path(values[names[1]]).expanduser().absolute()
-    manifest = Path(values[names[2]]).expanduser().absolute()
+    python = Path(values[names[1]])
+    if not python.is_absolute() or '..' in python.parts:
+        raise ValueError('Configured station Python must be an absolute executable path.')
+    manifest = checked_path(values[names[2]], 'Reviewed manifest')
     if not (root / 'scripts' / 'import_pdf_library.py').is_file() or not (root / 'scripts' / 'index_pdf_vectors.py').is_file():
         raise ValueError('Configured station root does not contain the existing PDF maintenance commands.')
     if not python.is_file() or not os.access(python, os.X_OK):
         raise ValueError('Configured station Python is not executable.')
     if not manifest.is_file() or manifest.stat().st_size > 256 * 1024:
         raise ValueError('Configure a small, explicit reviewed manifest JSON file.')
+    dependency_path = os.environ.get('OASIS_INDEXING_DEPENDENCY_PATH', '')
+    if dependency_path:
+        dependency_path = checked_directory(dependency_path, 'Reviewed station dependency directory', create=False)
+        if not dependency_path.is_dir():
+            raise ValueError('Reviewed station dependency directory must exist.')
     staging_base()
     return {'root': root, 'python': python, 'manifest': manifest,
             'model': os.environ.get('OASIS_INDEXING_MODEL', 'nomic-embed-text:latest'),
-            'base_url': os.environ.get('OASIS_INDEXING_EMBED_URL', 'http://127.0.0.1:11434')}
+            'base_url': os.environ.get('OASIS_INDEXING_EMBED_URL', 'http://127.0.0.1:11434'),
+            'dependency_path': str(dependency_path)}
+
+
+def station_environment(config):
+    """Use only reviewed module roots; inherited Python paths never add code."""
+    environment = dict(os.environ)
+    for name in ('PYTHONPATH', 'PYTHONHOME', 'PYTHONSTARTUP'):
+        environment.pop(name, None)
+    paths = [str(config['root'])]
+    if config.get('dependency_path'):
+        dependency = checked_directory(config['dependency_path'], 'Reviewed station dependency directory', create=False)
+        if not dependency.is_dir():
+            raise ValueError('Reviewed station dependency directory must exist.')
+        paths.append(str(dependency))
+    environment.update(PYTHONPATH=os.pathsep.join(paths), PYTHONDONTWRITEBYTECODE='1', PYTHONNOUSERSITE='1')
+    return environment
 
 
 def run_probe(config, *, manifest=None, root=None, artifacts_only=False):
@@ -85,7 +149,7 @@ def run_probe(config, *, manifest=None, root=None, artifacts_only=False):
     if artifacts_only:
         command += ['--artifacts-only']
     try:
-        result = subprocess.run(command, cwd=config['root'], capture_output=True, text=True, timeout=15, check=False)
+        result = subprocess.run(command, cwd=config['root'], env=station_environment(config), capture_output=True, text=True, timeout=15, check=False)
         payload = json.loads(result.stdout)
     except (OSError, subprocess.TimeoutExpired, ValueError) as exc:
         raise ValueError('Configured station validator is unavailable: ' + str(exc))
@@ -96,18 +160,18 @@ def run_probe(config, *, manifest=None, root=None, artifacts_only=False):
 
 @lru_cache(maxsize=64)
 def cached_probe(config_key, manifest, root, signatures, time_window):
-    config = dict(zip(('root', 'python', 'manifest', 'model', 'base_url'), config_key))
+    config = dict(zip(CONFIG_FIELDS, config_key))
     return run_probe(config, manifest=manifest or None, root=root or None)
 
 
 def configuration_probe(config):
-    key = tuple(str(config[name]) for name in ('root', 'python', 'manifest', 'model', 'base_url'))
+    key = tuple(str(config[name]) for name in CONFIG_FIELDS)
     return cached_probe(key, str(config['manifest']), '', (file_signature(config['manifest']),), int(time.time() // 5))
 
 
 @lru_cache(maxsize=64)
 def cached_artifact_receipt(config_key, root, signatures):
-    config = dict(zip(('root', 'python', 'manifest', 'model', 'base_url'), config_key))
+    config = dict(zip(CONFIG_FIELDS, config_key))
     return run_probe(config, root=root, artifacts_only=True)['receipt']
 
 
@@ -132,7 +196,7 @@ def verified_receipt(config, job):
     vector = draft / 'semantic' / snapshot.name / 'vectors.sqlite3'
     files += [draft / 'semantic', vector.parent, vector]
     signatures = tuple(artifact_signature(path) for path in files)
-    key = tuple(str(config[name]) for name in ('root', 'python', 'manifest', 'model', 'base_url'))
+    key = tuple(str(config[name]) for name in CONFIG_FIELDS)
     # Immutable originals/indexes need no repeated full-file hashing while all
     # signatures remain unchanged. Installed model state has a separate bounded
     # refresh, and the semantic provider rechecks it at query time as well.
@@ -229,7 +293,7 @@ def preflight(version, profile='lexical'):
     if set(reviewed) != {document.id for document in documents}:
         raise ValueError('The reviewed manifest must cover exactly every enabled PDF in this catalogue. Review newly added or removed documents first.')
     # Reject incomplete review coverage before reading thousands of unrelated
-    # originals. The existing station importer caps reviewed snapshots at 50.
+    # originals. The configured station validator enforces its shared limits.
     validate_export_sources(version)
     records = [original_record(document) for document in documents]
     for record in records:
@@ -422,11 +486,16 @@ class OasisIndexJobViewSet(viewsets.ViewSet):
             if not Content.objects.filter(pk__in=eligible_ids, libraryfolder__id__in=descendants).exists():
                 raise ValidationError({'folder_id': 'This library has no enabled PDFs to index.'})
         try:
+            if maintenance_requested():
+                raise ValueError('Private indexing is paused for device maintenance. Existing queued jobs are preserved.')
             config, probe, records = preflight(version, profile)
         except ValueError as exc:
             return build_response(status=status.HTTP_409_CONFLICT, success=False, error={'blocked_reason': str(exc)})
         with transaction.atomic():
             LibraryVersion.objects.select_for_update().get(pk=version.id)
+            if maintenance_requested():
+                return build_response(status=status.HTTP_409_CONFLICT, success=False,
+                                      error={'blocked_reason': 'Private indexing is paused for device maintenance.'})
             if OasisIndexJob.objects.filter(catalogue_version=version.id, state__in=('queued', 'running')).exists():
                 return build_response(status=status.HTTP_409_CONFLICT, success=False, error={'blocked_reason': 'An indexing job is already queued or running for this catalogue.'})
             manifest = probe['manifest']

@@ -1,0 +1,24 @@
+[Unit]
+Description=Oasis Library private draft index queue
+After=network.target ollama.service
+
+[Service]
+Type=simple
+User=oasis-library
+Group=oasis-library
+WorkingDirectory=/opt/oasis-library/current/app
+EnvironmentFile=/opt/oasis-library/env
+Environment=DJANGO_SETTINGS_MODULE=dlms.device_settings PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1
+ExecStart=/opt/oasis-library/venv/bin/python -B manage.py run_oasis_index_jobs
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=45
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/oasis-library/data
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+# Private device runtime: Python >=3.10. Install into its own isolated venv.
+# The visitor station environment and legacy requirements.txt remain separate.
+asgiref==3.12.1
+Django==5.2.18
+django-environ==0.12.1
+django-extensions==4.1
+django-filter==25.2
+djangorestframework==3.16.1
+sqlparse==0.6.0
+xlsxwriter==3.2.9
+gunicorn==26.2.0
+whitenoise==6.12.0

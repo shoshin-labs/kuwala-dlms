@@ -66,9 +66,10 @@ Chat streaming, Jetson inference, extraction/vector maintenance, remote trial
 exposure and release activation remain in their existing workstreams. The private
 index queue delegates to the existing station maintenance commands in new draft
 directories. It does not add a second ingestion pipeline or activate a reader release.
-Remote worker operation, cancellation, queue retention and production deployment
-need their own operational design; this worker is for the private local preview.
-The current station importer permits at most 50 PDFs in a reviewed snapshot.
+The [private device deployment process](OASIS_DEVICE_DEPLOYMENT.md) now supplies
+supervised operation, durable queued jobs, maintenance, backups and paired recovery.
+Remote management exposure, cancellation and resource scheduling remain follow-ups.
+The adapter follows the station importer's shared limit, currently 128 PDFs in a reviewed snapshot.
 Larger index packages, scoped/incremental indexing and resource scheduling belong
 in that existing pipeline workstream; the paginated catalogue can browse more
 records without claiming those records have matching published indexes.

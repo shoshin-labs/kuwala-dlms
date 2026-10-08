@@ -26,3 +26,28 @@ jobs:
       - run: python scripts/preview.py prepare
       - run: python scripts/preview.py check
       - run: python scripts/preview.py test
+  device-runtime:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements-device.lock.txt
+      - run: python -m pip install -r requirements-device.lock.txt
+      - run: python -m pip check
+      - name: Check device settings, WSGI, media, maintenance and indexing boundaries
+        run: >-
+          python -W ignore::RuntimeWarning manage.py test
+          content_management.test_device_runtime
+          content_management.test_curator_request_security
+          content_management.test_oasis_indexing
+          content_management.test_oasis_search
+          --settings=dlms.preview_settings
+      - name: Check offline release staging and rollback
+        run: python -m unittest discover -s deploy -p 'test_*.py'

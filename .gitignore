@@ -12,3 +12,5 @@ dlms.log.*
 *.sqlite3
 /.venv/
 /.preview/
+/collected-static/
+/dist/

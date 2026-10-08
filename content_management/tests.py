@@ -21,7 +21,7 @@ from content_management.oasis_documents import OasisDocumentSerializer
 class CatalogueContractTests(TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        root = Path(self.temp.name)
+        root = Path(self.temp.name).resolve()
         (root / 'media' / 'contents').mkdir(parents=True)
         urlconf = ModuleType('catalogue_test_urls')
         urlconf.urlpatterns = [

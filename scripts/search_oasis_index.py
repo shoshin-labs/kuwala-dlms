@@ -16,7 +16,7 @@ def main():
     parser.add_argument('--base-url', default='http://127.0.0.1:11434')
     args = parser.parse_args()
     sys.path.insert(0, args.station_root)
-    from app.library.index import PdfLibrary, _load_manifest
+    from app.library.index import MAX_DOCUMENTS, PdfLibrary, _load_manifest
     from app.library.semantic import SemanticSearch
 
     library = PdfLibrary(Path(args.root))
@@ -25,7 +25,7 @@ def main():
     manifest = _load_manifest(library._snapshot / 'manifest.json')
     records = {item['id']: item for item in manifest['documents']}
     sources = json.loads(args.sources)
-    if not isinstance(sources, list) or not sources or len(sources) > 50 or any(source not in records for source in sources):
+    if not isinstance(sources, list) or not sources or len(sources) > MAX_DOCUMENTS or any(not isinstance(source, str) or source not in records for source in sources):
         raise ValueError('Use existing reviewed document identifiers within the selected scope.')
     provider = library
     if args.profile == 'semantic':

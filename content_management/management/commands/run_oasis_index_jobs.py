@@ -12,13 +12,13 @@ from django.test.utils import override_settings
 from django.utils import timezone
 
 from content_management.models import LibraryVersion, OasisIndexJob
-from content_management.oasis_indexing import heartbeat, job_root, preflight, run_probe, staging_base
+from content_management.oasis_indexing import heartbeat, job_root, maintenance_request, preflight, run_probe, staging_base, station_environment
 from content_management.utils import LibraryBuildUtil
 
 
 def run_command(command, config, job, label):
     log = job_root(job) / (label + '.log')
-    environment = dict(os.environ, PYTHONPATH=str(config['root']), PYTHONDONTWRITEBYTECODE='1')
+    environment = station_environment(config)
     timeout = min(3600, max(15, int(os.environ.get('OASIS_INDEXING_JOB_TIMEOUT', '1800'))))
     with log.open('wb') as output:
         process = subprocess.Popen(command, cwd=config['root'], env=environment, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
@@ -100,6 +100,13 @@ class Command(BaseCommand):
             OasisIndexJob.objects.filter(state='running').update(state='failed', finished_on=timezone.now(), diagnostics='Worker stopped before draft validation completed. Submit a new job.')
             try:
                 while True:
+                    maintenance_nonce = maintenance_request()
+                    if maintenance_nonce is not None:
+                        heartbeat(maintenance=True, maintenance_nonce=maintenance_nonce)
+                        if options['once']:
+                            break
+                        time.sleep(1)
+                        continue
                     heartbeat()
                     with transaction.atomic():
                         job = OasisIndexJob.objects.select_for_update().filter(state='queued').order_by('created_on').first()

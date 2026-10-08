@@ -1,0 +1,24 @@
+[Unit]
+Description=Oasis Library private curator
+After=network.target
+
+[Service]
+Type=simple
+User=oasis-library
+Group=oasis-library
+WorkingDirectory=/opt/oasis-library/current/app
+EnvironmentFile=/opt/oasis-library/env
+Environment=DJANGO_SETTINGS_MODULE=dlms.device_settings PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1
+ExecStart=/opt/oasis-library/venv/bin/python -B -m gunicorn dlms.wsgi:application --bind 127.0.0.1:8790 --workers 2 --timeout 300 --graceful-timeout 30 --error-logfile -
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=45
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/oasis-library/data
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

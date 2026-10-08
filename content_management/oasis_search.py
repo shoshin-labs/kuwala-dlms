@@ -13,7 +13,7 @@ from rest_framework.throttling import SimpleRateThrottle
 
 from content_management.models import Content, LibraryFolder, OasisIndexJob
 from content_management.oasis_documents import PrivateCuratorAccess
-from content_management.oasis_indexing import job_root, operator_config, original_record, selected_version, subtree_ids, verified_receipt
+from content_management.oasis_indexing import job_root, operator_config, original_record, selected_version, station_environment, subtree_ids, verified_receipt
 from content_management.standardize_format import build_response
 from dlms.preview_middleware import PrivatePreviewMiddleware
 
@@ -39,7 +39,7 @@ def run_search(config, job, query, sources, profile):
                '--query=' + query, '--sources', json.dumps(sources), '--profile', profile,
                '--model', config['model'], '--base-url', config['base_url']]
     try:
-        result = subprocess.run(command, cwd=config['root'], capture_output=True, text=True, timeout=20, check=False)
+        result = subprocess.run(command, cwd=config['root'], env=station_environment(config), capture_output=True, text=True, timeout=20, check=False)
         if len(result.stdout) > 256 * 1024:
             raise ValueError('Private search exceeded its bounded response size.')
         payload = json.loads(result.stdout)
