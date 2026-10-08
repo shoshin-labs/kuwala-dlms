@@ -2,7 +2,7 @@ import os
 import sqlite3
 from sqlite3 import Error
 
-from dlms import settings
+from django.conf import settings
 
 
 class LibraryDbUtil:

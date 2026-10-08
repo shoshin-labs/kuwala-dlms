@@ -34,6 +34,17 @@ from rest_framework.permissions import BasePermission
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from django.middleware.csrf import get_token
+from django.conf import settings
+from dlms.preview_middleware import is_loopback_request
+
+
+@api_view(['GET'])
+def oasis_config(request):
+    """Expose UI capabilities; access is enforced separately by preview middleware."""
+    return build_response({
+        'curator_enabled': getattr(settings, 'OASIS_CURATOR_ENABLED', False) and is_loopback_request(request),
+        'synthetic_fixtures': getattr(settings, 'OASIS_SYNTHETIC_FIXTURES', False),
+    })
 
 #Checks if user is Admin
 class IsAdminUser(BasePermission):

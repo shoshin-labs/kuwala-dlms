@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'dlms.preview_middleware.PrivatePreviewMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -63,7 +64,7 @@ ROOT_URLCONF = 'dlms.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), os.path.join(BASE_DIR, 'frontend', 'static')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -125,6 +126,15 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = env.str('STATIC_ROOT')
 
+# Webpack output is local: catalogue styles and scripts need no CDN at runtime.
+STATICFILES_DIRS = []  # frontend is an installed app; its static/ directory is discovered.
+
+# Existing authentication is unchanged. Curator UI is enabled only by the
+# explicitly private, loopback-only preview configuration.
+OASIS_CURATOR_ENABLED = False
+OASIS_SYNTHETIC_FIXTURES = False
+OASIS_LOOPBACK_ONLY = False
+
 MEDIA_ROOT = env.str('MEDIA_ROOT')
 MEDIA_URL = '/media/'
 
@@ -178,4 +188,3 @@ LOGGING = {
         },
     }
 }
-

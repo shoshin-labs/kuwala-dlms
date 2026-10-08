@@ -1,6 +1,7 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
     mode: 'development',
@@ -12,10 +13,16 @@ module.exports = {
     output: {
         filename: 'js/[name].[hash].bundle.js',
         path: path.resolve(__dirname, 'static'),
-        publicPath: "/static/"
+        publicPath: "/static/",
+        hashFunction: 'sha256'
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js']
+    },
+    optimization: {
+        // This Webpack 4 plugin's disk cache uses MD4, unavailable in modern
+        // OpenSSL. Disable only that cache; SHA-256 handles emitted asset hashes.
+        minimizer: [new TerserPlugin({ cache: false, parallel: true, sourceMap: true })]
     },
     module: {
         rules: [{
@@ -29,7 +36,10 @@ module.exports = {
             use: [ 'style-loader', 'css-loader' ]
         },{
             test: /\.(png|svg|jpg|gif)$/,
-            use: ['file-loader']
+            use: [{
+                loader: 'file-loader',
+                options: { name: '[sha256:hash:hex:20].[ext]' }
+            }]
         },{
             test: /\.html$/,
             use: ['html-loader']
@@ -40,9 +50,7 @@ module.exports = {
             inject: 'body',
             template: path.join(__dirname, "src/html/index.html")
         }),
-        new CopyWebpackPlugin([{
-                from: '**/*', context: 'html'
-            },
+        new CopyWebpackPlugin([
             {
                 from: 'css/**/*',
             },

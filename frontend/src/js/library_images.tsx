@@ -11,6 +11,7 @@ import {get_field_info_default, get_string_from_error, update_state} from './uti
 import {cloneDeep} from "lodash";
 import ActionDialog from "./reusable/action_dialog";
 import VALIDATORS from "./validators";
+import strings from './locales/curator.en.json';
 
 
 interface LibraryImagesState {
@@ -68,12 +69,13 @@ export default class LibraryImages extends React.Component<LibraryImagesProps, L
     render() {
         return (
             <>
-                <Typography>Library Images</Typography>
+                <Typography variant="h2">{strings.images}</Typography>
                 <Grid
                     columns={[
                         {name: "library_name", title: "Name"},
                         {name: "actions", title: "actions", getCellValue: (row: LibraryVersion) => {
                             return <ActionPanel
+                                downloadHint={strings.create_export}
                                 downloadFn={() => {
                                     this.update_state(draft => {
                                         draft.modals.build_version.is_open = true

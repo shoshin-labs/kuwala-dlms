@@ -1,10 +1,10 @@
 import ActionDialog from './action_dialog'
 import React from 'react'
-import { Button, Container, Typography, Paper, Chip, Grid } from '@material-ui/core'
+import { Button, Typography, Paper, Grid } from '@material-ui/core'
 import { APP_URLS } from '../urls'
-import { isNull } from 'lodash'
 import prettyBytes from 'pretty-bytes'
 import { SerializedMetadataType, SerializedContent, MetadataAPI } from '../types'
+import strings from '../locales/curator.en.json'
 
 type ViewContentProps = {
     metadata_api: MetadataAPI
@@ -18,9 +18,11 @@ export const ViewContentModal = ({
     on_close,
     is_open,
     row
-}: ViewContentProps) => (
+}: ViewContentProps) => {
+    const original = row.file_name ? new URL(encodeURIComponent(row.file_name), APP_URLS.CONTENT_FOLDER).href : '';
+    return (
     <ActionDialog
-        title={"View Content Item"}
+        title={strings.view_document}
         open={is_open}
         get_actions={focus_ref => [(
             <Button
@@ -29,65 +31,72 @@ export const ViewContentModal = ({
                 color="secondary"
                 ref={focus_ref}
             >
-                Close
+                {strings.close}
             </Button>
         )]}
     >
-        <Grid container>
-            <Grid item xs={4}>
+        <p>{strings.review_notice}</p>
+        <Grid container spacing={3} style={{maxWidth: 1100}}>
+            <Grid item xs={12} md={5} style={{minWidth: 0, overflowWrap: 'anywhere'}}>
                 {[
-                    ["Title", row.title],
-                    ["Display Title", row.display_title],
-                    ["Description", row.description],
-                    ["Filename", <a href={new URL(row.file_name, APP_URLS.CONTENT_FOLDER).href}>{row.file_name}</a>],
-                    ["Year of Publication", row.published_year],
-                    ["Reviewed On", row.reviewed_on],
-                    ["Copyright Notes", row.copyright_notes],
-                    ["Rights Statement", row.rights_statement],
-                    ["File Size", isNull(row.filesize) ? 0 : prettyBytes(row.filesize)],
-                    ["Additional Notes", row.additional_notes],
-                    ["Duplicatable", row.duplicatable ? "Yes" : "No"]
+                    [strings.title, row.title],
+                    [strings.display_title, row.display_title],
+                    [strings.description, row.description],
+                    [strings.filename, original ? <a href={original} target="_blank" rel="noopener">{row.file_name}</a> : null],
+                    [strings.year, row.published_year],
+                    [strings.review_date, row.reviewed_on],
+                    [strings.copyright, row.copyright_notes],
+                    [strings.rights, row.rights_statement],
+                    [strings.file_size, Number.isFinite(row.filesize) ? prettyBytes(row.filesize) : null],
+                    [strings.notes, row.additional_notes],
+                    [strings.duplicatable, row.duplicatable ? strings.yes : strings.no]
                 ].map(([title, value], idx) => {
                     return (
-                        <Container style={{marginBottom: "1em"}} key={idx}>
+                        <div style={{marginBottom: "1em"}} key={idx}>
                             <Typography variant={"h6"}>{title}</Typography>
-                            <Typography>{(value === null || value === undefined) ? <i>Not Available</i> : value}</Typography>
-                        </Container>
+                            <Typography>{(value === null || value === undefined || value === '') ? <i>{strings.not_recorded}</i> : value}</Typography>
+                        </div>
                     )
                 })}
                 {metadata_api.state.metadata_types.map((metadata_type: SerializedMetadataType) => {
                     return (
-                        <Container key={metadata_type.id} style={{marginBottom: "1em"}}>
+                        <div key={metadata_type.id} style={{marginBottom: "1em"}}>
                             <Typography variant={"h6"}>{metadata_type.name}</Typography>
                             <Paper>
                                 {
                                     ((metadata) => metadata.length > 0 ?
                                             metadata :
-                                            <Typography>No Metadata Entries</Typography>
-                                        )(row.metadata_info?.filter(value => value.type_name == metadata_type.name).map((metadata, idx) => (
-                                        <li key={idx} style={{listStyle: "none"}}>
-                                            <Chip
-                                                label={metadata.name}
-                                            />
-                                        </li>
+                                            <Typography>{strings.no_metadata}</Typography>
+                                        )((row.metadata_info || []).filter(value => value.type_name == metadata_type.name).map((metadata, idx) => (
+                                        <div key={idx}>
+                                            <Typography style={{overflowWrap: 'anywhere'}}>
+                                                {/^https?:\/\/\S+$/i.test(metadata.name) ? <a href={metadata.name} target="_blank" rel="noopener">{metadata.name} ↗</a> : metadata.name}
+                                            </Typography>
+                                        </div>
                                     )))
                                 }
                             </Paper>
-                        </Container>
+                        </div>
                     )
                 })}
             </Grid>
-            <Grid item xs={8}>
-                {is_open ? (
+            <Grid item xs={12} md={7} style={{minWidth: 0}}>
+                {original ? <p><a className="primary-button" href={original} target="_blank" rel="noopener">{strings.original} ↗</a></p> : <p>{strings.original_unavailable}</p>}
+                {is_open && original ? (
                     <object
                         style={{
-                            minHeight: "600px",
+                            display: 'block',
+                            minHeight: 440,
+                            height: '70vh',
+                            maxHeight: 800,
                         }}
-                        width="600"
-                        data={new URL(row.file_name, APP_URLS.CONTENT_FOLDER).href}
-                    />
+                        width="100%"
+                        data={original}
+                        aria-label={strings.reader_label}
+                    ><a href={original} target="_blank" rel="noopener">{strings.original}</a></object>
                 ) : null}
             </Grid>
         </Grid>
     </ActionDialog>
-)
+    )
+}

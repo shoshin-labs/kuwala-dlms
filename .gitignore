@@ -6,6 +6,9 @@ __pycache__
 .vscode/
 /frontend/static
 node_modules/
+.playwright-cli/
 dlms.log
 dlms.log.*
 *.sqlite3
+/.venv/
+/.preview/

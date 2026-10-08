@@ -2,12 +2,12 @@ from django.urls import include, path
 from rest_framework import routers
 from django.conf.urls.static import static
 
-from dlms import settings
+from django.conf import settings
 from .views import (
     ContentViewSet, MetadataViewSet, MetadataTypeViewSet, UserViewSet,
     LibraryFolderViewSet, LibraryVersionViewSet, LibLayoutImageViewSet,
     LibraryBuildView, metadata_sheet, BulkAddView, get_csrf, bulk_edit,
-    LibraryModuleViewSet, disk_info
+    LibraryModuleViewSet, disk_info, oasis_config
 )
 
 router = routers.DefaultRouter()
@@ -22,6 +22,7 @@ router.register(r'library_modules', LibraryModuleViewSet)
 
 
 urlpatterns = [
+    path('api/oasis/config/', oasis_config, name='oasis-config'),
     path('api/', include(router.urls)),
     path('api/contents_upload/', BulkAddView.as_view(), name="contents-upload"),
     path('api/content_bulk_add/', BulkAddView.as_view(), name="content_bulk_add"),

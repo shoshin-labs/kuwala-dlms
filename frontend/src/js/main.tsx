@@ -4,22 +4,10 @@ import HomeScreen from "./home_screen"
 import Metadata from "./metadata"
 import Content from "./content"
 
-import Grid from '@material-ui/core/Grid';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-
-import solarSpellLogo from '../images/logo2.png'; 
 import '../css/style.css';
+import strings from './locales/curator.en.json';
 
-import contents from "../images/home_icons/contents.png"
-import system_info from "../images/home_icons/system_info.png"
-import library_versions from "../images/home_icons/library_versions.png"
-import metadata from "../images/home_icons/metadata.png"
-import solarspell_images from "../images/home_icons/solarspell_images.png"
-import library_assets from "../images/home_icons/library_assets.png"
-import library_modules from "../images/home_icons/library_modules.png"
-
-import {Snackbar, CircularProgress, Box} from '@material-ui/core';
+import {Snackbar, CircularProgress, Box, IconButton} from '@material-ui/core';
 import {Close} from "@material-ui/icons"
 import { Alert } from '@material-ui/lab';
 import { update_state } from './utils';
@@ -59,22 +47,22 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
 
         this.tabs = {
             "home": {
-                display_label: <img src={solarSpellLogo} className="spellLogo" />,
+                display_label: strings.home,
                 component: (tabs, _apis) => <HomeScreen change_tab={this.change_tab} tabs={tabs}/>,
                 icon: null
             },
             "metadata": {
-                display_label: "Metadata",
+                display_label: strings.metadata,
                 component: (_tabs, apis) => (
                     <Metadata
                         metadata_api={apis.metadata_api}
                         show_toast_message={this.show_toast_message}
                     />
                 ),
-                icon: metadata
+                icon: null
             },
             "contents": {
-                display_label: "Contents",
+                display_label: strings.contents,
                 component: (_tabs, apis) => (
                     <Content
                         metadata_api={apis.metadata_api}
@@ -85,29 +73,29 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
                         remove_loader={this.remove_loader}
                     />
                 ),
-                icon: contents
+                icon: null
             },
             "library_assets": {
-            display_label: "Library Assets",
+            display_label: strings.library_assets,
                 component: (_tabs, apis) => (
                     <LibraryAssets
                         library_assets_api={apis.lib_assets_api}
                     />
                 ),
-                icon: library_assets
+                icon: null
             },
             "modules": {
-            display_label: "Modules",
+            display_label: strings.modules,
                 component: (_tabs, apis) => (
                     <LibraryModules
                         library_modules_api={apis.lib_modules_api}
                         library_assets_api={apis.lib_assets_api}
                     />
                 ),
-                icon: library_modules
+                icon: null
             },
             "libraries": {
-                display_label: "Libraries",
+                display_label: strings.libraries,
                 component: (_tabs, apis) => (
                     <Libraries 
                         library_versions_api={apis.lib_versions_api}
@@ -119,22 +107,22 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
                         show_toast_message={this.show_toast_message}
                     />
                 ),
-                icon: library_versions
+                icon: null
             },
             "images": {
-                display_label: "SolarSPELL Images",
+                display_label: strings.images,
                 component: (_tabs, apis) => (
                     <LibraryImages
                         library_versions_api={apis.lib_versions_api}
                         show_toast_message={this.show_toast_message}
                     />
                 ),
-                icon: solarspell_images
+                icon: null
             },
             "system_info": {
-                display_label: "System Info",
+                display_label: strings.system_info,
                 component: (_tabs, apis) => <SystemInfo utils_api={apis.utils_api} />,
-                icon: system_info
+                icon: null
             }
         }
 
@@ -171,14 +159,10 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
 
     //Closes the toast message window
     close_toast() {
-        const now = Date.now()
-        console.log(now, this.state.toast_state.last_open)
-        if (this.state.toast_state.last_open + 5000 <= now) {
-            this.update_state(draft => {
-                draft.toast_state.is_open = false
-                draft.toast_state.message = ""
-            })
-        }
+        this.update_state(draft => {
+            draft.toast_state.is_open = false
+            draft.toast_state.message = ""
+        })
     }
 
     //Opens the toast message and shows the window
@@ -197,7 +181,7 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
             draft.url = new_url
             draft.current_tab = new_tab
         }).then(() => {
-            history.replaceState({}, "DLMS", this.state.url.toString())
+            history.replaceState({}, strings.product_name, this.state.url.toString())
         })
             .then(this.props.apis.contents_api.reset_search)
             .then(this.props.apis.lib_versions_api.reset_to_defaults)
@@ -216,29 +200,28 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
 
     render() {
         const tabs_jsx = Object.entries(this.tabs).map(([tab_name, tab_data]) => {
-            return <Tab key={tab_name} value={tab_name} label={(tab_data as any).display_label} />
+            return <button
+                key={tab_name}
+                type="button"
+                className="oasis-curator-nav-button"
+                aria-current={this.state.current_tab === tab_name ? "page" : undefined}
+                onClick={() => this.change_tab(tab_name)}
+            >{tab_data.display_label}</button>
         })
         
         if (this.state.has_error) {
-            return <h1>An Error has Occurred 😭</h1>
+            return <p role="alert">{strings.workspace_error}</p>
         }
 
         return (
-            <React.Fragment>
-                <Grid container justify="center" alignItems="center" style={{height: '100%'}}>
-                    <Tabs
-                        value={this.state.current_tab}
-                        TabIndicatorProps={{style: {backgroundColor: '#75B2DD', height: '5px', borderRadius: '5px'}}}
-                        onChange={(_, value) => {this.change_tab(value)}}
-                        indicatorColor="secondary"
-                        variant="scrollable"
-                    >
-                        {tabs_jsx}
-                    </Tabs>
-                </Grid>
-                <Grid style={{marginTop: '20px'}}>
+            <section className="oasis-curator">
+                <p className="oasis-curator-notice" role="note">{strings.private_notice}</p>
+                <nav className="oasis-curator-nav" aria-label={strings.navigation_label}>
+                    {tabs_jsx}
+                </nav>
+                <div className="oasis-curator-content">
                     {this.tabs[this.state.current_tab].component(this.tabs, this.props.apis)}  
-                </Grid>
+                </div>
                 <Snackbar
                     anchorOrigin={{
                         vertical: 'bottom',
@@ -250,9 +233,9 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
                 >
                     <Alert severity={this.state.toast_state.is_success ? "success" : "error"}>
                         {this.state.toast_state.message}
-                        <Close
-                            onClick={this.close_toast}
-                          />
+                        <IconButton aria-label={strings.close_notification} onClick={this.close_toast} color="inherit">
+                            <Close />
+                        </IconButton>
                     </Alert>
                 </Snackbar>
                 <Box
@@ -265,9 +248,9 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
                     zIndex = "10001"
                 >
                     {(this.state.loader_state.loading || this.props.apis.utils_api.state.outstanding_requests.size > 0)
-                        && <CircularProgress color="primary"/>}
+                        && <CircularProgress color="primary" aria-label={strings.loading}/>}
                 </Box>
-            </React.Fragment>
+            </section>
         )
     }
 }

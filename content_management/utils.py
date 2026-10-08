@@ -19,7 +19,7 @@ from content_management.validators import validate_unique_filename, validate_uni
 
 import hashlib
 
-from dlms import settings
+from django.conf import settings
 
 
 class ContentSheetUtil:
@@ -236,7 +236,7 @@ class LibraryBuildUtil:
         metadata = Metadata.objects.filter(content__libraryfolder__version_id=self.version.id) \
             .filter(type__pk__in=metadata_types.values_list('metadatatype_id')).values_list('id', 'name',
                                                                                             'type__name',
-                                                                                            'type_id').distinct('id')
+                                                                                            'type_id').distinct()
         folders = LibraryFolder.objects.filter(version_id=self.version.id).values_list('id', 'folder_name',
                                                                                        'logo_img__image_file',
                                                                                        'parent_id')
