@@ -132,9 +132,9 @@ database and leaves the main preview untouched:
 
 It creates 5,000 labelled catalogue records sharing one synthetic PDF original,
 checks bounded page/section/search queries and prints a separate loopback preview
-command. It does not create or claim a 5,000-document index. The existing station
-importer limits each reviewed snapshot to 50 PDFs; larger index packages remain
-part of the separate maintenance pipeline work.
+command. It does not create or claim a 5,000-document index. The adapter follows
+the configured station importer's shared limit (currently 128 PDFs per reviewed
+snapshot); larger index packages remain part of separate maintenance work.
 
 English resources are bundled in `frontend/src/js/locales`. See
 [translation instructions](frontend/src/js/locales/README.md) for reviewed
@@ -143,5 +143,10 @@ resource pack; advanced upstream forms retain legacy English copy.
 
 Original PostgreSQL configuration keys remain in `dlms/env.example`; legacy
 dependencies are not a maintained public deployment recipe.
+For the private Jetson curator, use the [device deployment runbook](docs/OASIS_DEVICE_DEPLOYMENT.md)
+and `requirements-device.lock.txt`: production Gunicorn, persistent private
+state, verified release bundles and SSH-only management. The Pi remains the
+existing visitor gateway; published station libraries are separate from the
+curator's initially blank authoring catalogue.
 Framework/dependency upgrades, full curator translation and enforced
 publication/authentication are [separate follow-ups](docs/OASIS_LIBRARY_FOLLOW_UPS.md).

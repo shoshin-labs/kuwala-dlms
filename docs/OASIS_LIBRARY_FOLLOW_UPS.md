@@ -60,15 +60,25 @@ server pagination and subtree search. Metadata choices load only when opening an
 editor. For larger metadata vocabularies, add paginated autocomplete rather than
 fetching every metadata value for that editor.
 
+## Protected central library and downloads
+
+Record this as a future milestone: a protected central archive of authorised
+PDF versions, with authenticated per-device downloads when a Kuwala box
+reconnects. Hosting under `kuwala.space`, authentication and the sync design
+remain open decisions. Preserve offline operation and activate only verified,
+complete releases. See [the deferred requirements](OASIS_CENTRAL_LIBRARY_FUTURE.md).
+The current local Pi/Jetson setup remains the immediate priority.
+
 ## Existing parallel work
 
 Chat streaming, Jetson inference, extraction/vector maintenance, remote trial
 exposure and release activation remain in their existing workstreams. The private
 index queue delegates to the existing station maintenance commands in new draft
 directories. It does not add a second ingestion pipeline or activate a reader release.
-Remote worker operation, cancellation, queue retention and production deployment
-need their own operational design; this worker is for the private local preview.
-The current station importer permits at most 50 PDFs in a reviewed snapshot.
+The [private device deployment process](OASIS_DEVICE_DEPLOYMENT.md) now supplies
+supervised operation, durable queued jobs, maintenance, backups and paired recovery.
+Remote management exposure, cancellation and resource scheduling remain follow-ups.
+The adapter follows the station importer's shared limit, currently 128 PDFs in a reviewed snapshot.
 Larger index packages, scoped/incremental indexing and resource scheduling belong
 in that existing pipeline workstream; the paginated catalogue can browse more
 records without claiming those records have matching published indexes.

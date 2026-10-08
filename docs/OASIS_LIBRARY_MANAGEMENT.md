@@ -66,15 +66,20 @@ states, not the status of a release currently served by Oasis chat.
 catalogue's enabled PDFs, including when requested for one document or library;
 the confirmation states the scope and document count. Library actions include
 PDFs in descendant folders. Each job exports to a fresh UUID directory under
-`.preview/indexing/jobs/`, invokes the station's existing `import_pdf_library`
+the configured private indexing state directory (`.preview/indexing/jobs/` for
+the preview, `/opt/oasis-library/data/indexing/jobs/` on the device), invokes the station's existing `import_pdf_library`
 command and, for the optional hybrid profile, `index_pdf_vectors`. Existing
 published/evaluation roots are never selected as destinations. Logs, timestamps,
 queued/running/succeeded/failed states and worker heartbeat are real persisted data.
 
-The existing station importer limits a reviewed snapshot to 50 PDFs. The catalogue
+The adapter follows the station importer's shared limit, currently 128 PDFs per
+reviewed snapshot. The catalogue
 can browse thousands of records through server pagination; this worker does not
 claim to index thousands in one build. Larger packages and incremental jobs remain
 in the existing ingestion workstream.
+
+For the supervised private device runtime, durable state, backups and recovery,
+see [device deployment](OASIS_DEVICE_DEPLOYMENT.md).
 
 The adapter requires an explicit reviewed manifest that covers exactly the
 catalogue's enabled PDFs, with matching filenames and hashes. Uploading, an active
