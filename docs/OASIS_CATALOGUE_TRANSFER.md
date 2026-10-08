@@ -70,7 +70,7 @@ printing or sourcing its private env file:
 
 ```sh
 cd /opt/oasis-library/current/app
-sudo -n python3 - <<'PY'
+sudo -n python3 -B - <<'PY'
 from pathlib import Path
 from deploy.target_release import Target
 
@@ -88,6 +88,8 @@ PY
 
 This defaults to a dry run. The output goes to the private deployment log named
 by the runner. Inspect its proposed document/library counts and identities.
+Keep `-B` on root inspection/maintenance helpers: code releases are immutable,
+and writing an import cache there correctly blocks their next verification.
 Repeat with `--apply` only after the backup and dry run succeed. Add
 `--replace-empty` only to remove an empty initial version/folder scaffold.
 Neither flag authorizes replacing a nonempty catalogue. The command preserves
