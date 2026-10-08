@@ -225,6 +225,19 @@ class StateChecks(unittest.TestCase):
             time.sleep(1)
             self.assertFalse(marker.exists(), 'A migration child must not continue writing during recovery.')
 
+    def test_management_account_switch_works_with_restricted_device_path(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            instance = target.Target(root)
+            (instance.data / 'logs').mkdir(parents=True)
+            environment = {'PATH': '/usr/local/bin:/usr/bin:/bin'}
+            with patch.object(instance, 'operator_environment', return_value=environment), \
+                    patch.object(target, 'run_management', return_value=0) as command:
+                instance.manage(root / SHA, root / 'runtime', ['check'])
+            executable = command.call_args.args[0][0]
+            self.assertEqual(executable, '/usr/sbin/runuser')
+            self.assertNotIn('/usr/sbin', command.call_args.kwargs['env']['PATH'].split(':'))
+
     def test_runtime_preparation_uses_readable_directories_and_child_umask(self):
         with tempfile.TemporaryDirectory() as root:
             instance = target.Target(Path(root).resolve())
