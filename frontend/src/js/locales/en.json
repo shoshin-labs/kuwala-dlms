@@ -31,6 +31,7 @@
     "browse_library": "Browse {name}",
     "loading": "Loading the catalogue…",
     "loading_workspace": "Loading the curator workspace…",
+    "config_error": "The library settings could not be loaded. Check the local connection and reload.",
     "loading_documents": "Loading documents…",
     "load_error": "The catalogue could not be loaded. Check the local library connection and try again.",
     "documents_error": "These documents could not be loaded. Try again.",

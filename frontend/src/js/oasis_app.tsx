@@ -78,10 +78,14 @@ function Shell({
     curator_enabled: false,
     synthetic_fixtures: false,
   });
+  const [configState, setConfigState] = useState("loading");
   useEffect(() => {
     get_data("/api/oasis/config/")
-      .then(setConfig)
-      .catch(() => {});
+      .then((result) => {
+        setConfig(result);
+        setConfigState("ready");
+      })
+      .catch(() => setConfigState("error"));
   }, []);
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -198,7 +202,11 @@ function Shell({
         ) : view === "curator" ? (
           <>
             <h1 className="curator-heading">{s("curator")}</h1>
-            {config.curator_enabled ? (
+            {configState === "loading" ? (
+              <p role="status">{s("loading_workspace")}</p>
+            ) : configState === "error" ? (
+              <p role="alert">{s("config_error")}</p>
+            ) : config.curator_enabled ? (
               <Suspense
                 fallback={<p role="status">{s("loading_workspace")}</p>}
               >
