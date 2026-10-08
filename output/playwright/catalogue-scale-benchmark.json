@@ -1,0 +1,38 @@
+[
+  {
+    "name": "tree",
+    "status": 200,
+    "queries": 5,
+    "milliseconds": 56.2,
+    "bytes": 1992,
+    "count": 5000,
+    "returned": 15
+  },
+  {
+    "name": "first-page",
+    "status": 200,
+    "queries": 5,
+    "milliseconds": 14.6,
+    "bytes": 15383,
+    "count": 5000,
+    "returned": 24
+  },
+  {
+    "name": "section",
+    "status": 200,
+    "queries": 6,
+    "milliseconds": 4.6,
+    "bytes": 15405,
+    "count": 417,
+    "returned": 24
+  },
+  {
+    "name": "search",
+    "status": 200,
+    "queries": 5,
+    "milliseconds": 8.3,
+    "bytes": 748,
+    "count": 1,
+    "returned": 1
+  }
+]

@@ -309,7 +309,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                 style={{
                                     marginLeft: "1em",
                                     marginBottom: "1em",
-                                    backgroundColor: "#75b2dd",
+                                    backgroundColor: "#003c6c",
                                     color: "#FFFFFF"
                                 }}
                             >
@@ -425,7 +425,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                         }}>
                                             <Typography style={{
                                                 fontWeight: "bold",
-                                                color: "#75b2dd",
+                                                color: "#003c6c",
                                                 fontSize: "16px"
                                             }}>Library Content</Typography>
                                         </Box>
@@ -654,7 +654,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                             <Typography style={{fontStyle: "italic"}}>No Files or Folders</Typography>
                                         ) : <></>
                                     }
-                                    <Typography style={{fontWeight: "bold", color: "#75b2dd"}}>Library Modules</Typography>
+                                    <Typography style={{fontWeight: "bold", color: "#003c6c"}}>Library Modules</Typography>
                                     {this.props.library_versions_api.state.modules_in_version.map((module: LibraryModule, idx) => (
                                         <Box
                                             key={this.props.library_versions_api.state.modules_in_version.length + idx}
@@ -691,7 +691,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                             style={{
                                 marginLeft: "1em",
                                 marginBottom: "1em",
-                                backgroundColor: "#75b2dd",
+                                backgroundColor: "#003c6c",
                                 color: "#FFFFFF"
                             }}
                         >Add Selected to CD</Button>
@@ -706,7 +706,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                 marginBottom: "1em",
                                 float: "right",
                                 marginRight: "1em",
-                                //backgroundColor: "#75b2dd",
+                                //backgroundColor: "#003c6c",
                                 //color: "#FFFFFF"
                             }}
                             variant="outlined"
@@ -952,7 +952,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                     key={idx}
                                     item
                                     style={this.state.modals.set_banner.to_set.library_banner === asset.id
-                                    ? {backgroundColor: "#75b2dd"} : undefined}
+                                    ? {backgroundColor: "#e6f0f6"} : undefined}
                                     onClick={_ => {
                                         this.props.library_versions_api.set_version_image(this.state.modals.set_banner.to_set, asset)
                                         .then(this.close_modals)
@@ -989,7 +989,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                     key={idx}
                                     item
                                     style={this.state.modals.set_folder_logo.to_change.logo_img === asset.id
-                                    ? {backgroundColor: "#75b2dd"} : undefined}
+                                    ? {backgroundColor: "#e6f0f6"} : undefined}
                                     onClick={_ => {
                                         this.props.library_versions_api.set_folder_logo(this.state.modals.set_folder_logo.to_change, asset)
                                         .then(this.close_modals)
@@ -1406,7 +1406,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                 >
                     <Autocomplete
                         style={{
-                            minWidth: "600px"
+                            width: "100%", minWidth: 0
                         }}
                         freeSolo
                         value={this.state.modals.move_folder.destination_library}

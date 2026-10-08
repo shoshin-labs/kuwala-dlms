@@ -1,48 +1,29 @@
-import React, { Component } from "react";
-import { Grid } from "@material-ui/core";
-import { TabDict, TabData } from './types';
+import React from "react";
+import { TabDict } from './types';
+import strings from './locales/curator.en.json';
 
 interface HomeScreenProps {
     tabs: TabDict,
     change_tab: (tab_name: string) => void
 }
 
-export default class HomeScreen extends Component<HomeScreenProps, {}> {
-    constructor(props: HomeScreenProps) {
-        super(props)
-    }
+const workspaceSections = ["contents", "libraries", "metadata", "library_assets", "modules", "images", "system_info"];
 
-    render() {
-        const icon_entries = Object.entries<TabData>(this.props.tabs).map(([tab_name, tab_data]) => {
-            const {icon} = tab_data
-            if (icon === null) {
-                return null
-            }
-            return (
-                <Grid item key={tab_name} xs={3} lg={2} justify="center">
-                    <img
-                        src={icon}
-                        style={{
-                            borderRadius: 15,
-                            maxHeight: 200,
-                            cursor: "pointer"
-                        }}
-                        onClick={() => this.props.change_tab(tab_name)}
-                    />
-                </Grid>
-            )
-        }).filter(value => value !== null)
-
-        return (
-            <Grid container justify="center" style={{
-                textAlign: "center",
-                borderLeft: 32,
-                borderRight: 32
-            }}>
-                {
-                    icon_entries
-                }
-            </Grid>
-        )
-    }
+export default function HomeScreen({tabs, change_tab}: HomeScreenProps) {
+    return <div className="oasis-curator-home">
+        <h2>{strings.home_heading}</h2>
+        <p>{strings.home_intro}</p>
+        <p className="oasis-curator-review-note">{strings.home_review_note}</p>
+        <div className="oasis-curator-home-grid">
+            {workspaceSections.map(tabName => <button
+                key={tabName}
+                type="button"
+                className="oasis-curator-home-card"
+                onClick={() => change_tab(tabName)}
+            >
+                <strong>{tabs[tabName].display_label}</strong>
+                <span>{strings[`${tabName}_description`]}</span>
+            </button>)}
+        </div>
+    </div>
 }

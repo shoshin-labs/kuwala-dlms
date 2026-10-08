@@ -1,4 +1,5 @@
 import os
+import uuid
 from _datetime import datetime
 
 from django.db import models
@@ -6,6 +7,7 @@ from django.dispatch import receiver
 from django.utils.text import get_valid_filename
 
 from content_management.validators import validate_unique_filename, validate_unique_file
+from content_management.file_lifecycle import delete_file_after_commit
 
 import logging
 
@@ -84,9 +86,7 @@ class Content(models.Model):
 def on_content_delete(sender, instance, **kwargs):
     logger.info("Delete request received for " + instance.title)
     if instance.content_file:
-        if os.path.isfile(instance.content_file.path):
-            logger.info("Deleting file")
-            os.remove(instance.content_file.path)
+        delete_file_after_commit(instance.content_file.storage, instance.content_file.name)
 
 class LibLayoutImage(models.Model):
 
@@ -192,6 +192,27 @@ class LibraryFolder(models.Model):
 
     def __str__(self):
         return f'{self.folder_name}'
+
+
+class OasisIndexJob(models.Model):
+    """Durable private-draft maintenance requests; never a publication record."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    catalogue_version = models.PositiveIntegerField()
+    requested_document_id = models.PositiveIntegerField(null=True)
+    requested_folder_id = models.PositiveIntegerField(null=True)
+    profile = models.CharField(max_length=16, default='lexical')
+    state = models.CharField(max_length=16, default='queued')
+    created_on = models.DateTimeField(auto_now_add=True)
+    started_on = models.DateTimeField(null=True)
+    finished_on = models.DateTimeField(null=True)
+    diagnostics = models.TextField(default='')
+    documents = models.JSONField(default=list)
+    manifest = models.JSONField(default=dict)
+    manifest_sha256 = models.CharField(max_length=64)
+    receipt = models.JSONField(null=True)
+
+    class Meta:
+        ordering = ['-created_on']
 
 @receiver(models.signals.post_save, sender=LibraryVersion)
 def on_folder_save(sender, instance, *args, **kwargs):

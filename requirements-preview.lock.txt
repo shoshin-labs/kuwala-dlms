@@ -1,0 +1,10 @@
+# Tested local-preview runtime. The legacy deployment dependency migration is
+# deliberately a separate follow-up; install this into an isolated .venv.
+asgiref==3.12.1
+Django==5.2.18
+django-environ==0.12.1
+django-extensions==4.1
+django-filter==25.2
+djangorestframework==3.16.1
+sqlparse==0.6.0
+xlsxwriter==3.2.9
