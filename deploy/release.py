@@ -164,7 +164,10 @@ def check_remote(host):
     # Supply the read-only checker through stdin, without uploading a file or
     # creating a remote staging directory. It does not load Django settings.
     source = (ROOT / 'deploy/target_release.py').read_text()
-    ssh(host, ['python3', '-', 'check'], input_text=source)
+    # The installed database and transaction record are private to their
+    # service/root owners. Existing operator sudo access permits read-only
+    # inventory without weakening those permissions or writing target files.
+    ssh(host, ['sudo', '-n', 'python3', '-', 'check'], input_text=source)
 
 
 def deploy(args):

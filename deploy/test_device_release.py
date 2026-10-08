@@ -115,7 +115,7 @@ class BundleChecks(unittest.TestCase):
         self.assertEqual(command.call_count, 1)
         argv = command.call_args.args[0]
         self.assertEqual(argv[0], 'ssh')
-        self.assertEqual(argv[-1], 'python3 - check')
+        self.assertEqual(argv[-1], 'sudo -n python3 - check')
         self.assertIn('input', command.call_args.kwargs)
         self.assertNotIn('scp', argv)
 

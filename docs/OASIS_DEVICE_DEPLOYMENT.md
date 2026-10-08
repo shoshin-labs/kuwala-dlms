@@ -136,8 +136,10 @@ python3 deploy/release.py build --commit "$OASIS_RELEASE_SHA" --output dist --wh
 python3 deploy/release.py check --jetson "$OASIS_DEVICE"
 ```
 
-The read-only check runs through SSH stdin; it does not upload files, migrate,
-restart services or load Django. It inspects both existing Jetson status paths
+The read-only check runs through SSH stdin with the existing operator's
+noninteractive sudo access, which is needed to inspect the private installed
+database and transaction record. It does not upload files, migrate, restart
+services or load Django. It inspects both existing Jetson status paths
 on `3000` and `4176`, so those commissioned station profiles must be available.
 The bundle includes exact source/asset hashes, a CI receipt and ARM64 wheels;
 its `.tar.gz.sha256` sidecar protects transferred bytes. Keep both files.
