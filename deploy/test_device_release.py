@@ -1,6 +1,8 @@
 """Release safety tests use disposable state; no SSH, systemd or station jobs."""
 from contextlib import closing
+import hashlib
 import io
+import shutil
 import subprocess
 import sys
 import json
@@ -149,6 +151,106 @@ class StateChecks(unittest.TestCase):
                 self.assertEqual(database.execute('SELECT state FROM content_management_oasisindexjob').fetchone()[0], 'queued')
             self.assertEqual(record['station'], {'station': 'unchanged'})
 
+    def make_index_draft(self, data):
+        draft = data / 'indexing/jobs/11111111-2222-4333-8444-555555555555/draft'
+        snapshot = draft / 'v-0123456789abcdef-12345678'
+        (snapshot / 'content').mkdir(parents=True)
+        (snapshot / 'content/original.pdf').write_bytes(b'labelled indexed test original')
+        (snapshot / 'manifest.json').write_text(json.dumps({'library_version': 'labelled-test-snapshot'}))
+        with closing(sqlite3.connect(snapshot / 'index.sqlite3')) as connection, connection:
+            connection.execute('CREATE TABLE passages (document_id TEXT, page INTEGER, text TEXT)')
+            connection.execute("INSERT INTO passages VALUES ('fixture',1,'Labelled test passage')")
+        (draft / 'current').symlink_to(snapshot.name, target_is_directory=True)
+        return draft, snapshot
+
+    def test_index_draft_pointer_is_verified_backed_up_and_restored_as_a_link(self):
+        with tempfile.TemporaryDirectory() as root:
+            data = self.make_state(root)
+            draft, snapshot = self.make_index_draft(data)
+            identifier = target.backup_state(data, SHA, None, None, {})
+            backup, record = target.verify_backup(data, identifier, SHA)
+            relative = (draft / 'current').relative_to(data).as_posix()
+            binding = record['files'][relative]
+            self.assertEqual(binding['type'], 'symlink')
+            self.assertEqual(binding['target'], snapshot.name)
+            self.assertEqual(binding['sha256'], hashlib.sha256(b'relative-symlink\0' + snapshot.name.encode()).hexdigest())
+            saved = backup / 'snapshot' / relative
+            self.assertTrue(saved.is_symlink())
+            self.assertEqual(os.readlink(saved), snapshot.name)
+            self.assertFalse(any(name.startswith(relative + '/') for name in record['files']))
+            # Change the live pointer and snapshot after backup; restore the
+            # exact original directory bytes and the relative pointer itself.
+            (snapshot / 'content/original.pdf').write_bytes(b'replaced after backup')
+            (draft / 'current').unlink()
+            target.restore_state(data, backup)
+            self.assertTrue((draft / 'current').is_symlink())
+            self.assertEqual(os.readlink(draft / 'current'), snapshot.name)
+            self.assertEqual((draft / 'current/content/original.pdf').read_bytes(), b'labelled indexed test original')
+            self.assertEqual(target.digest(snapshot / 'index.sqlite3'), record['files'][(snapshot / 'index.sqlite3').relative_to(data).as_posix()])
+            target.verify_backup(data, identifier, SHA)
+
+    def test_pointer_binding_detects_a_different_valid_snapshot_before_restore(self):
+        with tempfile.TemporaryDirectory() as root:
+            data = self.make_state(root)
+            draft, snapshot = self.make_index_draft(data)
+            other = draft / 'v-fedcba9876543210-87654321'
+            shutil.copytree(snapshot, other)
+            identifier = target.backup_state(data, SHA, None, None, {})
+            backup, _ = target.verify_backup(data, identifier, SHA)
+            saved = backup / 'snapshot' / (draft / 'current').relative_to(data)
+            saved.unlink()
+            saved.symlink_to(other.name, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, 'corrupt'):
+                target.verify_backup(data, identifier, SHA)
+            (data / 'media/contents/original.pdf').write_bytes(b'newer live bytes')
+            with self.assertRaisesRegex(ValueError, 'changed before restore'):
+                target.restore_state(data, backup)
+            self.assertEqual((data / 'media/contents/original.pdf').read_bytes(), b'newer live bytes')
+            self.assertEqual(os.readlink(draft / 'current'), snapshot.name)
+
+    def test_absolute_escaping_nested_missing_and_aliased_snapshot_pointers_reject(self):
+        for kind in ('absolute', 'escape', 'nested', 'missing', 'aliased'):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as root:
+                data = self.make_state(root)
+                draft, snapshot = self.make_index_draft(data)
+                pointer = draft / 'current'
+                pointer.unlink()
+                targets = {'absolute': str(snapshot.resolve()), 'escape': '../' + snapshot.name,
+                           'nested': snapshot.name + '/content', 'missing': 'v-does-not-exist', 'aliased': 'v-alias'}
+                if kind == 'aliased':
+                    (draft / 'v-alias').symlink_to(snapshot, target_is_directory=True)
+                pointer.symlink_to(targets[kind], target_is_directory=True)
+                with self.assertRaisesRegex(ValueError, 'pointer'):
+                    target.backup_state(data, SHA, None, None, {})
+                self.assertEqual(list((data / 'backups').iterdir()), [])
+
+    def test_state_links_under_originals_builds_or_nonjob_paths_reject(self):
+        for area in ('media/contents', 'builds', 'indexed-original', 'nonuuid-job', 'other-pointer'):
+            with self.subTest(area=area), tempfile.TemporaryDirectory() as root:
+                data = self.make_state(root)
+                draft, snapshot = self.make_index_draft(data)
+                if area == 'indexed-original':
+                    path = snapshot / 'content/alias.pdf'
+                    target_path = data / 'media/contents/original.pdf'
+                elif area == 'nonuuid-job':
+                    path = data / 'indexing/jobs/not-a-uuid/draft/current'
+                    path.parent.mkdir(parents=True)
+                    target_path = snapshot
+                elif area == 'other-pointer':
+                    path, target_path = draft / 'previous', snapshot.name
+                else:
+                    path, target_path = data / area / 'alias', snapshot
+                path.symlink_to(target_path)
+                with self.assertRaisesRegex(ValueError, 'only the importer'):
+                    target.backup_state(data, SHA, None, None, {})
+
+    def test_release_tree_remains_strict_even_for_an_allowed_state_pointer_shape(self):
+        with tempfile.TemporaryDirectory() as root:
+            data = self.make_state(root)
+            self.make_index_draft(data)
+            with self.assertRaisesRegex(ValueError, 'link or special'):
+                target.tree_hashes(data / 'indexing')
+
     def test_modified_backup_or_other_transaction_cannot_restore(self):
         with tempfile.TemporaryDirectory() as root:
             data = self.make_state(root)
@@ -158,6 +260,46 @@ class StateChecks(unittest.TestCase):
             (data / 'backups' / identifier / 'snapshot/media/contents/original.pdf').write_bytes(b'corrupt')
             with self.assertRaisesRegex(ValueError, 'corrupt'):
                 target.verify_backup(data, identifier, SHA)
+
+    def test_catalogue_import_provenance_and_journal_restore_with_authoring_state(self):
+        for prior_import in (False, True):
+            with self.subTest(prior_import=prior_import), tempfile.TemporaryDirectory() as root:
+                data = self.make_state(root)
+                control = data / 'catalogue-import'
+                prior = {'reviewed-manifest.json': b'{"catalogue":"labelled prior review"}',
+                         'receipt.json': b'{"catalogue":"labelled prior receipt"}',
+                         'journal.json': b'{"state":"committed","catalogue":"labelled prior import"}',
+                         'import.lock': b''}
+                if prior_import:
+                    control.mkdir()
+                    for name, contents in prior.items():
+                        (control / name).write_bytes(contents)
+                # Staging is outside paired state, including its unrelated
+                # published/current pointer. Do not scan/copy/restore it.
+                staging = data / 'imports/labelled-staging/published'
+                (staging / 'v-staged').mkdir(parents=True)
+                (staging / 'current').symlink_to('v-staged', target_is_directory=True)
+                identifier = target.backup_state(data, SHA, None, None, {})
+                backup, record = target.verify_backup(data, identifier, SHA)
+                self.assertFalse(any(name.startswith('imports/') for name in record['files']))
+                control.mkdir(exist_ok=True)
+                for name in prior:
+                    (control / name).write_bytes(b'labelled newer committed import')
+                (control / 'newer-record.json').write_bytes(b'labelled newer receipt')
+                with closing(sqlite3.connect(data / 'catalogue.sqlite3')) as connection, connection:
+                    connection.execute("UPDATE content SET title='newer imported catalogue'")
+                (data / 'media/contents/original.pdf').write_bytes(b'newer imported original')
+                target.restore_state(data, backup)
+                with closing(sqlite3.connect(data / 'catalogue.sqlite3')) as connection:
+                    self.assertEqual(connection.execute('SELECT title FROM content').fetchone()[0], 'real operator source')
+                self.assertEqual((data / 'media/contents/original.pdf').read_bytes(), b'exact-original')
+                if prior_import:
+                    self.assertEqual({path.name: path.read_bytes() for path in control.iterdir()}, prior)
+                    self.assertTrue(all('catalogue-import/' + name in record['files'] for name in prior))
+                else:
+                    self.assertFalse(control.exists(), 'First-import rollback must remove its committed journal so a real retry remains possible.')
+                self.assertTrue((staging / 'current').is_symlink())
+                self.assertEqual(os.readlink(staging / 'current'), 'v-staged')
 
     def test_backup_parent_and_snapshot_root_symlinks_are_rejected(self):
         with tempfile.TemporaryDirectory() as root:

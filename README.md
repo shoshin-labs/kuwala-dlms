@@ -146,7 +146,9 @@ dependencies are not a maintained public deployment recipe.
 For the private Jetson curator, use the [device deployment runbook](docs/OASIS_DEVICE_DEPLOYMENT.md)
 and `requirements-device.lock.txt`: production Gunicorn, persistent private
 state, verified release bundles and SSH-only management. The Pi remains the
-existing visitor gateway; published station libraries are separate from the
-curator's initially blank authoring catalogue.
+existing visitor gateway. [Transfer the existing main catalogue](docs/OASIS_CATALOGUE_TRANSFER.md)
+into the curator with its original IDs and metadata, rather than starting a
+second empty collection. Visitors read an immutable snapshot of that same
+catalogue; curator changes become visible after the existing publication process.
 Framework/dependency upgrades, full curator translation and enforced
 publication/authentication are [separate follow-ups](docs/OASIS_LIBRARY_FOLLOW_UPS.md).

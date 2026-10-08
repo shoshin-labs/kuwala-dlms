@@ -67,6 +67,31 @@ class PrivateIndexingTests(TestCase):
     def post_job(self, **extra):
         return self.client.post('/api/oasis/index-jobs/', {'catalogue_version': self.version.id, **extra}, format='json')
 
+    def test_original_limit_matches_station_eighty_mib_and_accepts_larger_existing_pdf(self):
+        path = Path(self.first.content_file.path)
+        with path.open('r+b') as stream:
+            stream.truncate(40 * 1024 * 1024)
+        record = original_record(self.first)
+        self.assertEqual(record['sha256'], hashlib.sha256(path.read_bytes()).hexdigest())
+        with path.open('r+b') as stream:
+            stream.truncate(80 * 1024 * 1024 + 1)
+        with self.assertRaisesRegex(ValueError, '80 MiB'):
+            original_record(self.first)
+
+    def test_reviewed_library_names_and_memberships_are_required_without_export(self):
+        self.probe['manifest']['libraries'] = [{
+            'id': 'farming', 'label': self.farming.folder_name,
+            'dlms_folder_id': self.farming.id, 'document_ids': ['synthetic-%s' % self.first.id],
+        }]
+        self.assertTrue(self.snapshot()['configuration']['configured'])
+        self.farming.library_content.add(self.second)
+        self.assertIn('memberships changed', self.snapshot()['configuration']['blocked_reason'])
+        self.farming.library_content.remove(self.second)
+        self.farming.folder_name = 'Renamed synthetic library'
+        self.farming.save(update_fields=['folder_name'])
+        self.assertIn('names or memberships changed', self.snapshot()['configuration']['blocked_reason'])
+        self.assertEqual(self.post_job().status_code, 409)
+
     def snapshot(self):
         response = self.client.get('/api/oasis/indexing/?catalogue_version=%s' % self.version.id)
         self.assertEqual(response.status_code, 200, response.content)

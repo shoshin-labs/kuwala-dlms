@@ -48,6 +48,8 @@ jobs:
           content_management.test_curator_request_security
           content_management.test_oasis_indexing
           content_management.test_oasis_search
+          content_management.test_oasis_catalogue_transfer
+          content_management.test_oasis_index_adoption
           --settings=dlms.preview_settings
       - name: Check offline release staging and rollback
         run: python -m unittest discover -s deploy -p 'test_*.py'

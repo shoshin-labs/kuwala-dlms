@@ -55,11 +55,18 @@ folder membership, rights and metadata FTS contract. Logos and banners are optio
 Export alone does not update Oasis chat's passage/vector indexes.
 
 Manage Library shows **PDF text** and **Semantic vectors** separately. An indexed
-status requires a successful job, validation by the existing station reader and an
+status requires a successful build or explicit adoption of an existing index,
+validation by the existing station reader and an
 exact match with the current document ID, filename and original SHA-256. Replacing
 an original makes the previous draft stale. Changed/corrupt artifacts are unavailable;
 a failed rebuild retains the previous successful draft. These are private draft
-states, not the status of a release currently served by Oasis chat.
+states. An adopted baseline can be the same exact snapshot currently served by
+Oasis chat. Subsequent curator edits remain drafts until publication.
+
+For an existing Oasis collection, [transfer its authoritative authoring records](OASIS_CATALOGUE_TRANSFER.md)
+and adopt the matching verified snapshot. This retains one main catalogue with
+the same documents, named libraries, original IDs and rights notes in Manage
+Library and the reader. Historical synthetic catalogue versions are excluded.
 
 **Reindex document** and **Reindex library** queue durable jobs through
 `/api/oasis/index-jobs/`. This initial worker rebuilds the complete selected
