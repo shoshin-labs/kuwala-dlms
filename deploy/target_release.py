@@ -560,7 +560,8 @@ class Target:
         env = self.operator_environment()
         log = self.data / 'logs' / ('deploy-' + release.name + '.log')
         with log.open('ab') as output:
-            result = run_management(['runuser', '-u', SERVICE_USER, '--', str(runtime / 'bin/python'), '-B',
+            # Ubuntu keeps this privileged tool outside the restricted app PATH.
+            result = run_management(['/usr/sbin/runuser', '-u', SERVICE_USER, '--', str(runtime / 'bin/python'), '-B',
                                      str(release / 'app/manage.py'), *arguments], cwd=release / 'app', env=env,
                                     output=output)
         if result:
