@@ -4,8 +4,10 @@ import sqlite3
 import tempfile
 from types import ModuleType
 from pathlib import Path
+from unittest.mock import patch
 
 from django.core.files.base import ContentFile
+from django.db import IntegrityError, transaction
 from django.test import TestCase, override_settings
 from django.urls import include, path
 from django.views.static import serve
@@ -13,6 +15,7 @@ from rest_framework.test import APIClient
 
 from content_management.management.commands.seed_oasis_preview import sample_pdf
 from content_management.models import Content, LibLayoutImage, LibraryFolder, LibraryVersion, Metadata, MetadataType
+from content_management.oasis_documents import OasisDocumentSerializer
 
 
 class CatalogueContractTests(TestCase):
@@ -145,3 +148,213 @@ class PreviewAccessTests(TestCase):
             ('get', '/api/library_versions/+1/clone.json'), ('head', '/api/library_versions/+1/clone/'),
         ):
             self.assertEqual(getattr(self.client, method)(path, REMOTE_ADDR='192.0.2.1').status_code, 403)
+
+    @override_settings(OASIS_LOOPBACK_ONLY=False, OASIS_CURATOR_ENABLED=False)
+    def test_modern_document_management_is_private_in_visitor_mode(self):
+        for method, path in (
+            ('get', '/api/oasis/documents/'), ('get', '/api/oasis/documents/1/'),
+            ('post', '/api/oasis/documents/'), ('patch', '/api/oasis/documents/1/'),
+            ('delete', '/api/oasis/documents/1/'),
+        ):
+            with self.subTest(method=method):
+                self.assertEqual(getattr(self.client, method)(path).status_code, 403)
+
+    @override_settings(OASIS_LOOPBACK_ONLY=False, OASIS_CURATOR_ENABLED=True)
+    def test_modern_management_reads_and_writes_deny_remote_peers(self):
+        for method in ('get', 'post', 'patch', 'delete'):
+            response = getattr(self.client, method)('/api/oasis/documents/', REMOTE_ADDR='192.0.2.1', HTTP_X_FORWARDED_FOR='127.0.0.1')
+            self.assertEqual(response.status_code, 403)
+
+
+class OasisDocumentLifecycleTests(TestCase):
+    def setUp(self):
+        CatalogueContractTests.setUp(self)
+        self.source_bytes = sample_pdf('Original synthetic management fixture')
+        self.replacement_bytes = sample_pdf('Replacement synthetic management fixture')
+        self.other_version = LibraryVersion.objects.create(library_name='Other synthetic catalogue', version_number='other-synthetic-v1')
+        self.other_folder = LibraryFolder.objects.create(folder_name='Learning', version=self.other_version)
+        # Created after the version, exercising its existing export whitelist.
+        self.creator_type = MetadataType.objects.create(name='Creator')
+        self.source_type = MetadataType.objects.create(name='Source')
+        self.creator = Metadata.objects.create(type=self.creator_type, name='Synthetic fixture author')
+        self.source = Metadata.objects.create(type=self.source_type, name='https://example.invalid/synthetic-original')
+
+    def upload_document(self):
+        response = self.client.post('/api/oasis/documents/', {
+            'title': 'Synthetic managed document', 'display_title': 'Synthetic managed document',
+            'description': 'Synthetic lifecycle fixture; no technical advice.',
+            'copyright_notes': 'Original synthetic test document attribution',
+            'rights_statement': 'CC0-1.0 (synthetic test fixture only)',
+            'content_file': ContentFile(self.source_bytes, name='synthetic-managed.pdf'),
+            'catalogue_version': str(self.version.id),
+            'folder_ids': '[%s,%s]' % (self.farming.id, self.water.id),
+            'metadata': '[%s,%s]' % (self.creator.id, self.source.id),
+        }, format='multipart')
+        self.assertEqual(response.status_code, 201, response.content)
+        payload = response.json()
+        self.assertTrue(payload['success'])
+        self.assertEqual(sorted(payload['data']['metadata']), [self.creator.id, self.source.id])
+        self.assertNotIn('folder_ids', payload['data'])
+        self.assertNotIn('catalogue_version', payload['data'])
+        return Content.objects.get(pk=payload['data']['id'])
+
+    def test_create_list_detail_replacement_and_delete_preserve_contracts(self):
+        document = self.upload_document()
+        self.other_folder.library_content.add(document)
+        previous_name = document.content_file.name
+        previous_path = Path(document.content_file.path)
+        previous_modified = document.modified_on
+        for path in ('/api/oasis/documents/', '/api/oasis/documents/?catalogue_version=%s' % self.version.id):
+            listing = self.client.get(path).json()['data']
+            self.assertEqual(listing['count'], 1)
+            self.assertEqual(listing['results'][0]['id'], document.id)
+            self.assertEqual(sorted(listing['results'][0]['metadata']), [self.creator.id, self.source.id])
+        detail = self.client.get('/api/oasis/documents/%s/' % document.id).json()['data']
+        self.assertEqual(detail['id'], document.id)
+        self.assertEqual(sorted(detail['metadata']), [self.creator.id, self.source.id])
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.patch('/api/oasis/documents/%s/' % document.id, {
+                'title': 'Updated synthetic document',
+                'content_file': ContentFile(self.replacement_bytes, name='synthetic-managed.pdf'),
+                'catalogue_version': str(self.version.id), 'folder_ids': '[%s]' % self.water.id,
+                'metadata': '[]',
+            }, format='multipart')
+            self.assertEqual(response.status_code, 200, response.content)
+            # Replacement must never destroy the previous original before commit.
+            self.assertTrue(previous_path.exists())
+        document.refresh_from_db()
+        self.assertEqual(response.json()['data']['id'], document.id)
+        self.assertNotEqual(document.content_file.name, previous_name)
+        self.assertEqual(document.file_name, Path(document.content_file.name).name)
+        self.assertGreater(document.modified_on, previous_modified)
+        self.assertEqual(document.filesize, len(self.replacement_bytes))
+        self.assertEqual(Path(document.content_file.path).read_bytes(), self.replacement_bytes)
+        self.assertFalse(previous_path.exists())
+        self.assertEqual(set(document.libraryfolder_set.values_list('id', flat=True)), {self.water.id, self.other_folder.id})
+        self.assertEqual(document.metadata.count(), 0)
+        self.assertEqual(document.rights_statement, 'CC0-1.0 (synthetic test fixture only)')
+        current_path = Path(document.content_file.path)
+        with self.captureOnCommitCallbacks(execute=True):
+            deleted = self.client.delete('/api/oasis/documents/%s/' % document.id)
+            self.assertEqual(deleted.status_code, 200)
+            self.assertTrue(deleted.json()['success'])
+            self.assertTrue(current_path.exists())
+        self.assertFalse(current_path.exists())
+        self.assertFalse(Content.objects.filter(pk=document.id).exists())
+        self.assertEqual(self.water.library_content.count(), 0)
+        self.assertEqual(self.other_folder.library_content.count(), 0)
+
+    def test_empty_library_memberships_clear_only_selected_version(self):
+        document = self.upload_document()
+        self.other_folder.library_content.add(document)
+        original_name = document.content_file.name
+        response = self.client.patch('/api/oasis/documents/%s/' % document.id, {
+            'catalogue_version': self.version.id, 'folder_ids': [], 'metadata': [],
+        }, format='json')
+        self.assertEqual(response.status_code, 200, response.content)
+        document.refresh_from_db()
+        self.assertEqual(list(document.libraryfolder_set.values_list('id', flat=True)), [self.other_folder.id])
+        self.assertEqual(document.content_file.name, original_name)
+        self.assertEqual(document.metadata.count(), 0)
+        self.assertEqual(self.client.get('/api/oasis/documents/?catalogue_version=%s' % self.version.id).json()['data']['count'], 0)
+
+    def test_invalid_folder_scope_and_metadata_reject_without_side_effects(self):
+        document = self.upload_document()
+        original_name = document.content_file.name
+        before_files = set(Path(self.temp.name, 'media', 'contents').iterdir())
+        for extra in (
+            {'catalogue_version': str(self.version.id), 'folder_ids': '[%s]' % self.other_folder.id},
+            {'folder_ids': '[%s]' % self.water.id},
+            {'metadata': '[999999]'},
+            {'folder_ids': '{"invalid":1}', 'catalogue_version': str(self.version.id)},
+        ):
+            with self.subTest(extra=extra):
+                payload = {'content_file': ContentFile(self.replacement_bytes, name='synthetic-managed.pdf'), 'title': 'Must not save'}
+                payload.update(extra)
+                response = self.client.patch('/api/oasis/documents/%s/' % document.id, payload, format='multipart')
+                self.assertEqual(response.status_code, 400, response.content)
+        document.refresh_from_db()
+        self.assertEqual(document.title, 'Synthetic managed document')
+        self.assertEqual(document.content_file.name, original_name)
+        self.assertEqual(Path(document.content_file.path).read_bytes(), self.source_bytes)
+        self.assertEqual(set(document.libraryfolder_set.values_list('id', flat=True)), {self.farming.id, self.water.id})
+        self.assertEqual(set(Path(self.temp.name, 'media', 'contents').iterdir()), before_files)
+
+    def test_membership_database_failure_rolls_back_new_file_and_record(self):
+        document = self.upload_document()
+        original_name = document.content_file.name
+        original_modified = document.modified_on
+        before_files = set(Path(self.temp.name, 'media', 'contents').iterdir())
+        serializer = OasisDocumentSerializer(document, data={
+            'title': 'Must roll back', 'content_file': ContentFile(self.replacement_bytes, name='synthetic-managed.pdf'),
+            'catalogue_version': self.version.id, 'folder_ids': [self.water.id], 'metadata': [],
+        }, partial=True)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        with patch.object(type(self.water.library_content), 'add', side_effect=IntegrityError('Synthetic membership failure')):
+            with self.assertRaises(IntegrityError):
+                serializer.save()
+        document.refresh_from_db()
+        self.assertEqual(document.title, 'Synthetic managed document')
+        self.assertEqual(document.content_file.name, original_name)
+        self.assertEqual(document.modified_on, original_modified)
+        self.assertEqual(set(document.libraryfolder_set.values_list('id', flat=True)), {self.farming.id, self.water.id})
+        self.assertEqual(set(document.metadata.values_list('id', flat=True)), {self.creator.id, self.source.id})
+        self.assertEqual(set(Path(self.temp.name, 'media', 'contents').iterdir()), before_files)
+        self.assertEqual(Path(document.content_file.path).read_bytes(), self.source_bytes)
+
+    def test_delete_rollback_keeps_original_and_memberships(self):
+        document = self.upload_document()
+        original_path = Path(document.content_file.path)
+        with self.assertRaises(RuntimeError):
+            with transaction.atomic():
+                response = self.client.delete('/api/oasis/documents/%s/' % document.id)
+                self.assertEqual(response.status_code, 200)
+                raise RuntimeError('Synthetic transaction rollback')
+        self.assertTrue(Content.objects.filter(pk=document.id).exists())
+        self.assertTrue(original_path.exists())
+        self.assertEqual(self.farming.library_content.count(), 1)
+        self.assertEqual(self.water.library_content.count(), 1)
+
+    def test_cleanup_failure_never_deletes_committed_replacement(self):
+        document = self.upload_document()
+        previous_path = Path(document.content_file.path)
+        storage = document.content_file.storage
+        with self.assertLogs('content_management.file_lifecycle', level='ERROR'):
+            with patch.object(storage, 'delete', side_effect=OSError('Synthetic cleanup failure')):
+                with self.captureOnCommitCallbacks(execute=True):
+                    response = self.client.patch('/api/oasis/documents/%s/' % document.id, {
+                        'content_file': ContentFile(self.replacement_bytes, name='synthetic-managed.pdf'),
+                    }, format='multipart')
+                    self.assertEqual(response.status_code, 200, response.content)
+        document.refresh_from_db()
+        self.assertTrue(previous_path.exists())
+        self.assertNotEqual(Path(document.content_file.path), previous_path)
+        self.assertEqual(Path(document.content_file.path).read_bytes(), self.replacement_bytes)
+
+    def test_no_asset_export_preserves_new_metadata_and_replacement_original(self):
+        self.assertIsNone(self.version.library_banner)
+        self.assertIsNone(self.farming.logo_img)
+        document = self.upload_document()
+        self.assertEqual(set(self.version.metadata_types.values_list('id', flat=True)), {self.creator_type.id, self.source_type.id})
+        exported = self.client.get('/api/create_build/%s/' % self.version.id)
+        self.assertEqual(exported.status_code, 200, exported.content)
+        builds_root = Path(self.temp.name, 'builds')
+        original_build = builds_root / self.version.version_number
+        self.assertEqual((original_build / 'content' / document.file_name).read_bytes(), self.source_bytes)
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.patch('/api/oasis/documents/%s/' % document.id, {
+                'content_file': ContentFile(self.replacement_bytes, name='synthetic-managed.pdf'),
+            }, format='multipart')
+            self.assertEqual(response.status_code, 200, response.content)
+        document.refresh_from_db()
+        # A source edit does not silently rewrite an existing exported snapshot.
+        self.assertEqual((original_build / 'content' / 'synthetic-managed.pdf').read_bytes(), self.source_bytes)
+        rebuilt = self.client.get('/api/create_build/%s/' % self.version.id)
+        self.assertEqual(rebuilt.status_code, 200, rebuilt.content)
+        new_build = next(path for path in builds_root.iterdir() if path != original_build)
+        self.assertEqual((new_build / 'content' / document.file_name).read_bytes(), self.replacement_bytes)
+        with sqlite3.connect(new_build / 'solarspell.db') as database:
+            self.assertEqual(database.execute('SELECT id, file_name FROM content').fetchall(), [(document.id, document.file_name)])
+            self.assertEqual(database.execute('SELECT id, folder_id FROM content_folder ORDER BY folder_id').fetchall(), [(document.id, self.farming.id), (document.id, self.water.id)])
+            self.assertEqual(set(database.execute('SELECT meta_name FROM metadata').fetchall()), {('Synthetic fixture author',), ('https://example.invalid/synthetic-original',)})
+            self.assertEqual(database.execute('SELECT copyright_notes, rights_statement FROM content').fetchone(), ('Original synthetic test document attribution', 'CC0-1.0 (synthetic test fixture only)'))

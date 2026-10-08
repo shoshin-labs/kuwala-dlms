@@ -9,6 +9,7 @@ from .views import (
     LibraryBuildView, metadata_sheet, BulkAddView, get_csrf, bulk_edit,
     LibraryModuleViewSet, disk_info, oasis_config
 )
+from content_management.oasis_documents import OasisDocumentViewSet
 
 router = routers.DefaultRouter()
 router.register(r'contents', ContentViewSet)
@@ -19,6 +20,7 @@ router.register(r'library_versions', LibraryVersionViewSet)
 router.register(r'library_folders', LibraryFolderViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'library_modules', LibraryModuleViewSet)
+router.register(r'oasis/documents', OasisDocumentViewSet, basename='oasis-document')
 
 
 urlpatterns = [

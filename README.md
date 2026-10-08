@@ -47,20 +47,23 @@ The water record also belongs to Learning. The banner and document data identify
 these fixtures as examples, without technical-advice approval. Repeating `seed`
 reuses the existing records. Do not mix disposable fixture state into a real library.
 
-For the existing upload, metadata, organisation and export development workflow,
+For library creation, upload, document editing/replacement and deletion,
 stop that preview and explicitly start private curator mode:
 
 ```bash
 .venv/bin/python scripts/preview.py run --curator
 ```
 
-Choose **Curator workspace** or open
+Choose **Manage Library** or open
 **http://127.0.0.1:8790/?workspace=curator&tab=contents**. This is a development
 restriction, not a new authentication scheme. Visitor mode denies writes,
 including upstream GET export/clone actions and their format-suffixed variants.
 Curator writes require explicit enablement and a loopback peer. Do not publish
 or proxy the curator origin onto LAN, tailnet or internet: a proxy’s loopback peer
 is not end-user authentication. No remote management exposure is provided here.
+The workspace saves real database records and original files. **Advanced tools**
+retains the existing metadata, catalogue-version and export workflows. See
+[private management and indexing handoff](docs/OASIS_LIBRARY_MANAGEMENT.md).
 
 Windows: activate `.venv\Scripts\activate` and use `python` in place of
 `.venv/bin/python`. Frontend clean/build commands use portable Node/npm scripts;
@@ -107,8 +110,8 @@ the existing curator upload/export flow.
 
 English resources are bundled in `frontend/src/js/locales`. See
 [translation instructions](frontend/src/js/locales/README.md) for reviewed
-Chichewa, Swahili, Zulu and French packs. Existing curator forms retain legacy
-English copy; new visitor and curator shell strings use resources.
+Chichewa, Swahili, Zulu and French packs. The modern manager uses a scoped language
+resource pack; advanced upstream forms retain legacy English copy.
 
 Original PostgreSQL configuration keys remain in `dlms/env.example`; legacy
 dependencies are not a maintained public deployment recipe.

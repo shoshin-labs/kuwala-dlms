@@ -13,7 +13,7 @@ const resources = require.context("./locales", false, /\.json$/);
 export const locales: LocalePack[] = resources
   .keys()
   .map(resources)
-  .filter((pack: LocalePack) => pack.code && pack.reviewed && pack.strings)
+  .filter((pack: LocalePack & { scope?: string }) => pack.code && pack.reviewed && pack.strings && !pack.scope)
   .sort((a: LocalePack, b: LocalePack) =>
     a.code === "en" ? -1 : b.code === "en" ? 1 : a.name.localeCompare(b.name),
   );

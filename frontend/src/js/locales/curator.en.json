@@ -55,5 +55,11 @@
   "action_clone": "Clone",
   "action_metadata": "Set metadata",
   "action_download": "Download",
-  "create_export": "Create export build"
+  "create_export": "Create export build",
+  "export_title": "Export {name}",
+  "export_prompt": "This creates a local export for the existing Oasis indexing workflow. It does not publish or reindex documents. Enter {name} to confirm.",
+  "export_confirm_name": "Confirm catalogue name",
+  "export_success": "Local export created",
+  "export_failed": "The export could not be created",
+  "cancel": "Cancel"
 }

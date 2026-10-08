@@ -95,7 +95,7 @@ export default class LibraryImages extends React.Component<LibraryImagesProps, L
                     <TableHeaderRow />
                 </Grid>
                 <ActionDialog
-                    title={`Build Library Version ${this.state.modals.build_version.to_build.library_name}?`}
+                    title={strings.export_title.replace("{name}", this.state.modals.build_version.to_build.library_name)}
                     open={this.state.modals.build_version.is_open}
                     get_actions={focus_ref => [(
                         <Button
@@ -110,8 +110,8 @@ export default class LibraryImages extends React.Component<LibraryImagesProps, L
                                         this.props.library_versions_api.build_version(
                                             this.state.modals.build_version.to_build
                                         ).then(
-                                            () => this.props.show_toast_message("Library Built Successfully", true),
-                                                err => this.props.show_toast_message(get_string_from_error(err.response.data.error, "Failed to build library"), false),
+                                            () => this.props.show_toast_message(strings.export_success, true),
+                                                err => this.props.show_toast_message(get_string_from_error(err.response?.data?.error, strings.export_failed), false),
                                             )
                                             .then(this.close_modals)
                                     }
@@ -119,7 +119,7 @@ export default class LibraryImages extends React.Component<LibraryImagesProps, L
                             }}
                             color="secondary"
                         >
-                            Build
+                            {strings.create_export}
                         </Button>
                     ), (
                         <Button
@@ -128,14 +128,15 @@ export default class LibraryImages extends React.Component<LibraryImagesProps, L
                             color="primary"
                             ref={focus_ref}
                         >
-                            Cancel
+                            {strings.cancel}
                         </Button>
                     )]}
                 >
-                    <Typography>This action will take some time. Please enter {this.state.modals.build_version.to_build.library_name} to confirm build</Typography>
+                    <Typography>{strings.export_prompt.replace("{name}", this.state.modals.build_version.to_build.library_name)}</Typography>
                     <TextField
                         fullWidth
-                        error={this.state.modals.build_version.name.reason === ""}
+                        label={strings.export_confirm_name}
+                        error={this.state.modals.build_version.name.reason !== ""}
                         helperText={this.state.modals.build_version.name.reason}
                         value={this.state.modals.build_version.name.value}
                         onChange={(evt) => {

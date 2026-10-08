@@ -18,7 +18,13 @@ Only English is included now. No untranslated pack is presented as a supported
 language. The software licence retains its original legal text. Titles, folders
 and metadata are authoring data, not interface strings.
 
-`curator.en.json` holds new private curator navigation/home/detail copy; it is not
-a visitor locale pack. Remaining curator forms/validation text is legacy English.
-Moving it into resources and integrating curator locale selection is a follow-up.
-Put all new interface copy in resources.
+`manager.en.json` contains the modern **Manage Library** workspace. Copy it to
+`manager.<code>.json` for a reviewed translation, preserving `scope: "manager"`
+and all keys/placeholders. `manager_strings.tsx` follows the shell's selected
+locale and falls back to English. Scoped packs are not duplicate entries in the
+language selector; the matching reviewed visitor pack supplies that entry.
+
+`curator.en.json` holds the retained advanced curator navigation/home/detail copy;
+it is not a visitor locale pack. Remaining advanced forms/validation text is
+legacy English. Moving those forms into resources is a follow-up. Put all new
+interface copy in resources.

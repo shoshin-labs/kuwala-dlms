@@ -1,4 +1,4 @@
-# Oasis Library rebrand verification
+# Oasis Library rebrand and management verification
 
 Verified locally on 8 October 2026 using Node 26, npm 11, Python 3.13 and Chromium.
 This PR retains React 16 / Material UI 4 / Webpack 4 and the existing Django data
@@ -11,12 +11,15 @@ model. The independently runnable preview uses the pinned runtime described in
 - Oasis wordmark, white/blue palette matching the active Oasis app, system fonts,
   responsive layouts, 48 px actions, keyboard focus, and restrained motion with a
   reduced-motion alternative. Old logo/icon navigation and blue table typography
-  are removed. The visitor bundle is about 453 KiB; curator modules load separately.
+  are removed. The visitor bundle is about 460 KiB; curator modules load separately.
 - Visitors choose a root-folder library, browse deduplicated descendant documents,
   search their metadata, inspect source/author/rights and open local originals or
   numbered PDF pages. Multiple library membership and stable IDs are preserved.
-- Separate private curator navigation reuses upload, metadata, folder/version and
-  export screens. Default visitor requests cannot mutate data, including legacy
+- **Manage Library** provides real library creation/renaming/deletion, document
+  upload/edit/replacement/deletion, multiple folder membership, original links and
+  author/source/licence metadata creation. Uploads and memberships commit together;
+  replacements preserve the document ID. Retained version/export screens live in
+  lazy **Advanced tools**. Default visitor requests cannot mutate data, including legacy
   GET clone/export URL variants. Explicit curator mode is loopback development only.
 - About includes Oasis’s name expansion, SolarSPELL acknowledgement and the full
   upstream MIT text offline. LICENSE is unchanged. New strings live in resources;
@@ -28,7 +31,7 @@ model. The independently runnable preview uses the pinned runtime described in
 |---|---|
 | Production frontend build | Pass on Node 26, without legacy OpenSSL flags |
 | Django system check | Pass, zero issues |
-| Backend contract/access tests | 5 tests pass; upload, detail, M2M folders, originals, export and access cases |
+| Backend contract/access tests | 14 tests pass; legacy contracts, private CRUD, replacement/deletion, transaction rollback, cleanup failure, metadata and optional-asset export |
 | Migration drift | No changes detected |
 | Diff whitespace / upstream licence | Clean; LICENSE unchanged, bundled MIT text matches |
 | Library navigation | Farming / Water / Learning from API; Water record also appears in Learning |
@@ -43,6 +46,8 @@ model. The independently runnable preview uses the pinned runtime described in
 | Keyboard / motion | Skip-to-content receives a visible focus outline; reduced-motion view animation is none |
 | About | Expansion and offline upstream MIT text verified |
 | Curator browser upload/export | Upload saved, assigned to Farming, then exported successfully; local/exported original SHA-256 and rights/ID matched |
+| Modern manager lifecycle | Create/rename a library; upload into two libraries; add author/source metadata; replace same-basename PDF while retaining ID 5; add third membership; export; delete library while retaining document; delete document globally |
+| Save failure recovery | A simulated HTTP 503 retained the filled upload form; removing the mock and retrying saved the real file and memberships |
 
 The upload/export API test checks the exported `solarspell.db` schema, shared
 `content_folder` IDs, original-byte SHA-256, attribution/rights and local metadata
@@ -50,6 +55,15 @@ FTS. The browser check uploaded a labelled synthetic PDF, assigned it to Farming
 created a build, and verified the exported file’s bytes, document ID and rights.
 The temporary browser-upload record was then deleted through the UI; the three
 original seed documents remain. Curator row actions are labelled native buttons.
+
+The modern manager browser test used a second clearly labelled synthetic fixture.
+The replacement's SHA-256 was
+`4edcb8adde903860a6031505c48ce6c280bf6dc40720201c85b08106dc7f2b09`;
+served and exported bytes matched. The export retained document ID 5, rights,
+Creator metadata and a newly created source metadata type. Removing its library
+preserved the document in Water and Learning; global deletion removed the record
+and original. Its temporary library, source field and document were then cleaned
+up. The seed records 1, 2 and 3 remain.
 
 ## Screenshots
 
@@ -77,8 +91,11 @@ naive timestamp warnings. The retained Material UI dialog also emits an inherite
 focus-transfer warning, despite passing keyboard open/close and responsive checks.
 Curator metadata tables scroll horizontally within their view on phones; the
 page and document dialog do not overflow. These checks do not establish production readiness.
-Existing curator form text remains English. The catalogue searches metadata, not
+The modern manager uses scoped English language resources and the selected shell
+locale; advanced legacy form text remains English. The catalogue searches metadata, not
 document bodies; no indexing-state data, expert approval, publication activation
 or remote management authentication has been added. PDF page count is not recorded.
 See [separate follow-ups](OASIS_LIBRARY_FOLLOW_UPS.md) and
-[the architecture](OASIS_LIBRARY_ARCHITECTURE.md).
+[the architecture](OASIS_LIBRARY_ARCHITECTURE.md). The
+[management guide](OASIS_LIBRARY_MANAGEMENT.md) explains real authoring persistence,
+global document edits, version-scoped memberships and the existing indexing handoff.

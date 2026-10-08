@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.utils.text import get_valid_filename
 
 from content_management.validators import validate_unique_filename, validate_unique_file
+from content_management.file_lifecycle import delete_file_after_commit
 
 import logging
 
@@ -84,9 +85,7 @@ class Content(models.Model):
 def on_content_delete(sender, instance, **kwargs):
     logger.info("Delete request received for " + instance.title)
     if instance.content_file:
-        if os.path.isfile(instance.content_file.path):
-            logger.info("Deleting file")
-            os.remove(instance.content_file.path)
+        delete_file_after_commit(instance.content_file.storage, instance.content_file.name)
 
 class LibLayoutImage(models.Model):
 

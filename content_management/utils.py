@@ -359,18 +359,22 @@ class LibraryBuildUtil:
             # copy categories icons
             for cat in categories:
                 # logo_img__image_file is located at index 2
-                src_dir = os.path.join(os.path.abspath(settings.MEDIA_ROOT), cat[2])
-                shutil.copy(src_dir, logos_path)
+                if cat[2]:
+                    src_dir = os.path.join(os.path.abspath(settings.MEDIA_ROOT), cat[2])
+                    shutil.copy(src_dir, logos_path)
             # copy modules icons
             for mod in modules:
                 # logo_img__image_file is located at index 2
-                src_dir = os.path.join(os.path.abspath(settings.MEDIA_ROOT), mod[2])
-                shutil.copy(src_dir, logos_path)
-            src_dir = os.path.join(os.path.abspath(settings.MEDIA_ROOT), self.version.library_banner.image_file.path)
-            shutil.copy(src_dir, banners_path)
-            # rename banner image to banner.png since since this is what the frontend looks for
-            os.rename(os.path.join(banners_path, os.path.basename(self.version.library_banner.image_file.path)),
-                      os.path.join(banners_path, "banner.png"))
+                if mod[2]:
+                    src_dir = os.path.join(os.path.abspath(settings.MEDIA_ROOT), mod[2])
+                    shutil.copy(src_dir, logos_path)
+            # Branding assets are optional in the data model. A plain library
+            # must still export its documents and catalogue successfully.
+            if self.version.library_banner and self.version.library_banner.image_file:
+                src_dir = self.version.library_banner.image_file.path
+                shutil.copy(src_dir, banners_path)
+                os.rename(os.path.join(banners_path, os.path.basename(src_dir)),
+                          os.path.join(banners_path, "banner.png"))
             # create config.json
             config = {"version": self.version.version_number}
             with open(config_path, 'w') as f:
