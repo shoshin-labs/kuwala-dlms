@@ -13,7 +13,7 @@ from rest_framework.throttling import SimpleRateThrottle
 
 from content_management.models import Content, LibraryFolder, OasisIndexJob
 from content_management.oasis_documents import PrivateCuratorAccess
-from content_management.oasis_indexing import job_root, operator_config, original_record, selected_version, station_environment, subtree_ids, verified_receipt
+from content_management.oasis_indexing import MAX_PDF_BYTES, job_root, operator_config, original_record, selected_version, station_environment, subtree_ids, verified_receipt
 from content_management.standardize_format import build_response
 from dlms.preview_middleware import PrivatePreviewMiddleware
 
@@ -148,7 +148,7 @@ def draft_original(request, job_id, document_id):
         snapshot = (draft / 'current').resolve(strict=True)
         content = snapshot / 'content'
         path = content / original['filename']
-        if snapshot.parent != draft.resolve() or content.is_symlink() or content.resolve(strict=True).parent != snapshot or path.is_symlink() or path.resolve(strict=True).parent != content.resolve() or not 1 <= path.stat().st_size <= 32 * 1024 * 1024:
+        if snapshot.parent != draft.resolve() or content.is_symlink() or content.resolve(strict=True).parent != snapshot or path.is_symlink() or path.resolve(strict=True).parent != content.resolve() or not 1 <= path.stat().st_size <= MAX_PDF_BYTES:
             raise ValueError('Private draft original path is unavailable or unsafe.')
         stream = path.open('rb')
         try:

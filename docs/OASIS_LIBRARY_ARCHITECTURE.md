@@ -1,9 +1,14 @@
 # Oasis library architecture
 
-Proposed direction, 8 October 2026. Kuwala's DLMS fork becomes the authoring
-system for Oasis's library. Visitors get one Oasis interface for conversation,
-search, source reading and original documents. Curators get a private workspace
-in the same design. These are proposed integration steps, not deployed features.
+Architecture and implementation direction, 8 October 2026. Kuwala's DLMS fork
+is the private authoring system for Oasis Library. The first implementation
+retains Django and the existing React/Material UI framework, with Oasis styling.
+Visitors use the station reader and chat; curators use the SSH-only workspace on
+the Jetson. Both operate on the same logical collection: authoring records and
+verified immutable reader snapshots. The [catalogue transfer](OASIS_CATALOGUE_TRANSFER.md)
+preserves the existing main collection's IDs, original files, metadata and
+review scope and can adopt its matching verified index. Publication enforcement,
+remote curator authentication and the larger integrations below remain follow-ups.
 
 ## What the alpha has demonstrated
 
@@ -36,12 +41,11 @@ been established. Keep those limits visible in the development plan.
 | Maintenance worker | Validate manifests/hashes, extract pages, build indexes and package releases | Existing Kuwala commands; Jetson for local Nomic embeddings |
 | Published library | Immutable originals, manifest, passages and matching vector artifacts | Jetson local storage |
 
-Reuse the existing Oasis React interface for the curator shell and the DLMS
-backend API. Its older React administration interface can remain a development
-reference while screens migrate. One brand and one navigation structure do not
-require two frontend apps or a Django runtime on the Jetson. A private operator
-origin can serve the shell and its `/manage/api/` routes together; deployment
-routing must enforce access rather than relying on hidden navigation links.
+The current curator adapts the existing DLMS React interface and Django API;
+the station reader shares Oasis's header and visual language. A later shared
+Oasis React shell is a separate migration option. The deployed private Django
+runtime listens only on Jetson loopback. Remote operator routing requires real
+access enforcement rather than hidden navigation or a proxy's loopback address.
 
 The Pi tailnet proxy stays a visitor gateway: approved readers and chat only.
 It must not forward curator, upload or publishing endpoints. A curator host

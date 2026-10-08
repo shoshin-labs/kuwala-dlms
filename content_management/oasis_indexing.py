@@ -22,6 +22,9 @@ from content_management.standardize_format import build_response
 from dlms.private_paths import checked_directory, checked_path, require_disjoint
 
 CONFIG_FIELDS = ('root', 'python', 'manifest', 'model', 'base_url', 'dependency_path')
+# Match the installed station importer. Its own manifest/original validators
+# still enforce the bound before any extraction or indexing command runs.
+MAX_PDF_BYTES = 80 * 1024 * 1024
 
 
 def staging_base():
@@ -149,7 +152,7 @@ def run_probe(config, *, manifest=None, root=None, artifacts_only=False):
     if artifacts_only:
         command += ['--artifacts-only']
     try:
-        result = subprocess.run(command, cwd=config['root'], env=station_environment(config), capture_output=True, text=True, timeout=15, check=False)
+        result = subprocess.run(command, cwd=config['root'], env=station_environment(config), capture_output=True, text=True, timeout=60 if root is not None else 15, check=False)
         payload = json.loads(result.stdout)
     except (OSError, subprocess.TimeoutExpired, ValueError) as exc:
         raise ValueError('Configured station validator is unavailable: ' + str(exc))
@@ -236,8 +239,8 @@ def original_record(document):
     path = Path(document.content_file.path)
     if path.is_symlink() or not path.is_file():
         raise ValueError('Original PDF is missing or is not a regular file.')
-    if not 1 <= path.stat().st_size <= 32 * 1024 * 1024:
-        raise ValueError('The existing importer supports PDF originals up to 32 MiB.')
+    if not 1 <= path.stat().st_size <= MAX_PDF_BYTES:
+        raise ValueError('The existing importer supports PDF originals up to 80 MiB.')
     return {'document_id': document.id, 'filename': document.file_name, 'sha256': _file_hash(str(path), file_signature(path))}
 
 
@@ -292,6 +295,17 @@ def preflight(version, profile='lexical'):
     reviewed = {item['dlms_id']: item for item in manifest['documents']}
     if set(reviewed) != {document.id for document in documents}:
         raise ValueError('The reviewed manifest must cover exactly every enabled PDF in this catalogue. Review newly added or removed documents first.')
+    # Adoption reuses an existing index without running the exporter. Fence the
+    # same exact folder bindings checked by the station importer so a rename or
+    # membership edit cannot quietly adopt a different organisation.
+    folders = {folder.id: folder for folder in version.folders.prefetch_related('library_content')}
+    by_slug = {item['id']: item['dlms_id'] for item in manifest['documents']}
+    for library in manifest.get('libraries', []):
+        folder = folders.get(library['dlms_folder_id'])
+        members = {by_slug[identifier] for identifier in library['document_ids']}
+        if (folder is None or folder.folder_name != library['label']
+                or {document.id for document in folder.library_content.all()} != members):
+            raise ValueError('Library names or memberships changed since manifest review. Update the explicit reviewed library definitions before indexing.')
     # Reject incomplete review coverage before reading thousands of unrelated
     # originals. The configured station validator enforces its shared limits.
     validate_export_sources(version)

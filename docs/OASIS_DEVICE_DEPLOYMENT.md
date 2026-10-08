@@ -223,9 +223,11 @@ sudo install -o root -g oasis-library -m 0640 reviewed-manifest.json /opt/oasis-
 sudoedit /opt/oasis-library/env
 ```
 
-Use that catalogue's actual stable IDs, version, filenames and hashes; a manifest
-for the separately published visitor collection is not an automatic authoring
-approval. The worker must not be able to rewrite the review file.
+Use that catalogue's actual stable IDs, version, filenames and hashes. When
+transferring the existing main Oasis catalogue, preserve its authoring records
+and explicit reviewed manifest together; the transfer verifies their exact
+identity and membership. A published collection with different records does not
+approve new authoring files. The worker must not be able to rewrite the review file.
 
 Worker enablement runs the existing adapter's read-only configuration/manifest
 probe under the curator account before service changes. It pins the configured
@@ -241,11 +243,11 @@ Jobs still validate exact IDs, filenames, original hashes and complete manifest
 coverage before invoking the existing station commands. They use new UUID roots
 under `/opt/oasis-library/data/indexing`; failed jobs preserve previously ready
 drafts and every published root. The current station bound is **128 PDFs per
-reviewed snapshot**; curator original/draft access retains its **32 MiB per-file
-limit**. Metadata pagination can contain thousands of records without claiming
-an index of that size. Larger originals already in the published station library
-need a separate authoring-import change; this procedure does not migrate them
-back into the blank curator. Schedule embedding work around visitor chat load.
+reviewed snapshot** and **80 MiB per original**, including curator draft access.
+Metadata pagination can contain thousands of records without claiming an index
+of that size. Use the [main catalogue transfer](OASIS_CATALOGUE_TRANSFER.md) to
+bring existing documents and a verified index into management. Schedule embedding
+work around visitor chat load.
 
 Publication remains an explicit separate station operation using reviewed
 immutable exports and the existing station importer/vector/profile procedure;

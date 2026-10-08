@@ -31,7 +31,7 @@ DEFAULT_BASE = Path('/opt/oasis-library')
 SERVICE_USER = 'oasis-library'
 WEB = 'oasis-library.service'
 WORKER = 'oasis-library-index-worker.service'
-STATE_FILES = ('catalogue.sqlite3', 'media', 'builds', 'indexing')
+STATE_FILES = ('catalogue.sqlite3', 'media', 'builds', 'indexing', 'catalogue-import')
 REQUIRED_CHECKS = {'preview', 'device-runtime (3.10)', 'device-runtime (3.12)'}
 
 
@@ -195,6 +195,44 @@ def tree_hashes(root):
             raise ValueError('Private state/release contains a link or special file.')
         if path.is_file():
             hashes[path.relative_to(root).as_posix()] = digest(path)
+    return hashes
+
+
+def state_tree_hashes(root, prefix=''):
+    """Hash private state without following the importer's one allowed pointer.
+
+    Release assets continue to use strict tree_hashes. Only a job's direct
+    draft/current relative link may select a regular v-* snapshot sibling.
+    The receipt binds the link type, literal target and its digest, while the
+    snapshot's original/index files are independently hashed in the same tree.
+    """
+    root = Path(root)
+    if root.is_symlink() or root.exists() and not root.is_dir():
+        raise ValueError('Private state root must be a regular directory.')
+    hashes = {}
+    if not root.exists():
+        return hashes
+    for path in sorted(root.rglob('*')):
+        relative = path.relative_to(root).as_posix()
+        scoped = PurePosixPath(prefix) / relative if prefix else PurePosixPath(relative)
+        if path.is_symlink():
+            parts = scoped.parts
+            if (len(parts) != 5 or parts[:2] != ('indexing', 'jobs')
+                    or parts[3:] != ('draft', 'current')
+                    or not re.fullmatch(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', parts[2])):
+                raise ValueError('Private state permits only the importer draft/current pointer.')
+            target = os.readlink(path)
+            if not re.fullmatch(r'v-[A-Za-z0-9][A-Za-z0-9._-]{0,159}', target):
+                raise ValueError('Private draft pointer must name a direct relative v-* snapshot sibling.')
+            snapshot = path.parent / target
+            if snapshot.is_symlink() or not snapshot.is_dir():
+                raise ValueError('Private draft pointer must select a regular snapshot directory.')
+            hashes[relative] = {'type': 'symlink', 'target': target,
+                               'sha256': hashlib.sha256(b'relative-symlink\0' + target.encode('ascii')).hexdigest()}
+        elif path.is_file():
+            hashes[relative] = digest(path)
+        elif not path.is_dir():
+            raise ValueError('Private state contains a special file.')
     return hashes
 
 
@@ -381,8 +419,8 @@ def backup_state(data, sha, previous, runtime, fingerprint):
             if not source.exists():
                 continue
             if source.is_dir():
-                tree_hashes(source)
-                shutil.copytree(source, snapshot / name)
+                state_tree_hashes(source, prefix=name)
+                shutil.copytree(source, snapshot / name, symlinks=True)
             elif name == 'catalogue.sqlite3':
                 with closing(sqlite3.connect(source.resolve().as_uri() + '?mode=ro', uri=True)) as original:
                     with closing(sqlite3.connect(snapshot / name)) as copied:
@@ -392,7 +430,7 @@ def backup_state(data, sha, previous, runtime, fingerprint):
             else:
                 raise ValueError('Unexpected persistent state file.')
         record = {'format': 1, 'sha': sha, 'previous': previous, 'previous_runtime': runtime,
-                  'station': fingerprint, 'files': tree_hashes(snapshot), 'created_on': time.time()}
+                  'station': fingerprint, 'files': state_tree_hashes(snapshot), 'created_on': time.time()}
         atomic_json(destination / 'backup.json', record)
         return identifier
     except BaseException:
@@ -412,13 +450,17 @@ def verify_backup(data, identifier, sha):
     record = read_json(backup / 'backup.json', {})
     if (backup / 'snapshot').is_symlink() or not (backup / 'snapshot').is_dir():
         raise ValueError('Private backup snapshot must be a regular directory.')
-    if record.get('format') != 1 or record.get('sha') != sha or tree_hashes(backup / 'snapshot') != record.get('files'):
+    if record.get('format') != 1 or record.get('sha') != sha or state_tree_hashes(backup / 'snapshot') != record.get('files'):
         raise ValueError('Backup does not match this release, or its state files are corrupt.')
     return backup, record
 
 
 def restore_state(data, backup):
     data, snapshot = Path(data), Path(backup) / 'snapshot'
+    if data.is_symlink() or Path(backup).is_symlink():
+        raise ValueError('Private restore roots must not be symlinks.')
+    if not snapshot.is_dir() or state_tree_hashes(snapshot) != read_json(Path(backup) / 'backup.json', {}).get('files'):
+        raise ValueError('Private backup state changed before restore.')
     # Services are stopped throughout. Each replacement is atomic; a power
     # failure leaves the transaction marked restoring and can be retried from
     # the same verified, unchanged backup.
@@ -426,7 +468,7 @@ def restore_state(data, backup):
         destination, source = data / name, snapshot / name
         temporary = data / ('.restore-' + name + '-' + uuid.uuid4().hex)
         if source.is_dir():
-            shutil.copytree(source, temporary)
+            shutil.copytree(source, temporary, symlinks=True)
         elif source.is_file():
             shutil.copy2(source, temporary)
         if destination.is_symlink():
