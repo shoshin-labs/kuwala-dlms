@@ -1,7 +1,7 @@
 .catalogue-layout {
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
-  gap: 36px;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 48px;
   align-items: start;
 }
 .catalogue-navigation {
@@ -17,15 +17,15 @@
 }
 .catalogue-library-nav button {
   width: 100%;
-  min-height: 76px;
-  padding: 14px 16px;
+  min-height: 68px;
+  padding: 11px 13px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
   background: var(--paper);
-  border: 2px solid transparent;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   text-align: left;
   color: var(--blue);
   font: inherit;
@@ -38,11 +38,12 @@
   font-size: 0.9rem;
 }
 .catalogue-library-nav button:hover {
-  background: var(--surface);
+  background: var(--highlight);
 }
 .catalogue-library-nav button.is-selected {
-  border-color: var(--blue);
-  background: var(--light-blue);
+  color: var(--ink);
+  background: var(--highlight);
+  font-weight: 650;
 }
 .catalogue-section-nav {
   display: grid;
@@ -57,7 +58,7 @@
   min-height: 48px;
   padding: 12px;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 9px;
   background: var(--paper);
   color: var(--blue);
   font: inherit;
@@ -69,12 +70,12 @@
   gap: 12px;
 }
 .catalogue-section-nav button.is-selected {
-  border-color: var(--blue);
-  background: var(--light-blue);
-  font-weight: 700;
+  color: var(--ink);
+  background: var(--highlight);
+  font-weight: 650;
 }
 .catalogue-section-nav button:hover {
-  background: var(--surface);
+  background: var(--highlight);
 }
 .catalogue-section-nav button > span:last-child {
   color: var(--muted);

@@ -14,7 +14,7 @@ const theme = createMuiTheme({
   palette: {
     primary: { main: "#45462a", contrastText: "#ffffff" },
     secondary: { main: "#ffa737", contrastText: "#343330" },
-    text: { primary: "#343330", secondary: "#5e5e55" },
+    text: { primary: "#343330", secondary: "#45462a" },
     background: { default: "#ffffff", paper: "#ffffff" },
   },
   typography: {
@@ -22,24 +22,24 @@ const theme = createMuiTheme({
       '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
     fontSize: 16,
   },
-  shape: { borderRadius: 8 },
+  shape: { borderRadius: 9 },
   overrides: {
     MuiButton: {
       root: {
         minHeight: 48,
         textTransform: "none",
-        fontWeight: 700,
+        fontWeight: 600,
         padding: "8px 16px",
       },
     },
     MuiIconButton: { root: { minWidth: 48, minHeight: 48 } },
-    MuiTab: { root: { minHeight: 48, textTransform: "none", fontWeight: 700 } },
+    MuiTab: { root: { minHeight: 48, textTransform: "none", fontWeight: 600 } },
     MuiInputBase: { input: { minHeight: 24 } },
     MuiDialog: {
       paper: {
         maxWidth: "calc(100% - 32px)",
         margin: 16,
-        border: "1px solid #dcdace",
+        border: "1px solid rgba(52, 51, 48, .2)",
         borderRadius: 16,
         boxShadow: "0 16px 70px #34333026",
       },
@@ -147,32 +147,43 @@ function Shell({
               width="40"
               height="40"
             />
-            <span className="brand-name">{s("product")}</span>
-            <span className="brand-station">{s("station")}</span>
+            <span className="brand-copy">
+              <span className="brand-name">{s("product")}</span>
+              <span className="brand-station">{s("station")}</span>
+            </span>
           </a>
           <div className="topbar-actions">
             <nav aria-label={s("product")}>
               <button
                 className="nav-button"
+                aria-label={s("catalogue")}
+                title={s("catalogue")}
                 aria-current={view === "catalogue" ? "page" : undefined}
                 onClick={() => switchView("catalogue")}
               >
-                {s("catalogue")}
+                <NavIcon kind="catalogue" />
+                <span className="nav-label">{s("catalogue")}</span>
               </button>
               <button
                 className="nav-button"
+                aria-label={s("about")}
+                title={s("about")}
                 aria-current={view === "about" ? "page" : undefined}
                 onClick={() => switchView("about")}
               >
-                {s("about")}
+                <NavIcon kind="about" />
+                <span className="nav-label">{s("about")}</span>
               </button>
               {config.curator_enabled && (
                 <button
                   className="nav-button"
+                  aria-label={s("curator")}
+                  title={s("curator")}
                   aria-current={view === "curator" ? "page" : undefined}
                   onClick={() => switchView("curator")}
                 >
-                  {s("curator")}
+                  <NavIcon kind="curator" />
+                  <span className="nav-label">{s("curator")}</span>
                 </button>
               )}
             </nav>
@@ -230,6 +241,20 @@ function Shell({
       </main>
       <footer className="footer">{s("footer")}</footer>
     </div>
+  );
+}
+function NavIcon({ kind }: { kind: string }) {
+  return (
+    <svg className="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {kind === "catalogue" ? (
+        <><path d="M12 5v15M3 4.5c3-1 6-.5 9 1 3-1.5 6-2 9-1V19c-3-1-6-.5-9 1-3-1.5-6-2-9-1z" /></>
+      ) : kind === "about" ? (
+        <><circle cx="12" cy="12" r="9" /><path d="M12 11v6m0-10v.01" /></>
+      ) : (
+        <><path d="M4 7h16M4 12h16M4 17h16" /><circle cx="9" cy="7" r="2" fill="var(--paper)" /><circle cx="15" cy="12" r="2" fill="var(--paper)" /><circle cx="9" cy="17" r="2" fill="var(--paper)" /></>
+      )}
+    </svg>
   );
 }
 function About() {

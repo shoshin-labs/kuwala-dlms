@@ -43,29 +43,38 @@ access rules.
 
 | Colour | Hex | Role |
 |---|---|---|
-| Graphite | `#343330` | Main text, amber button text |
-| Dark Khaki | `#45462A` | Wordmark, dark controls and navigation |
-| Olive Bark | `#7E5920` | Links, focus outlines and control borders |
-| Amber Earth | `#DC851F` | Primary action hover |
-| Amber Glow | `#FFA737` | Primary action background |
+| Graphite | `#343330` | Main text, wordmark, logo tile, text on amber highlights |
+| Dark Khaki | `#45462A` | Primary actions, navigation and supporting text |
+| Olive Bark | `#7E5920` | Links, action hover and focus outlines |
+| Amber Earth | `#DC851F` | Decorative accents and borders |
+| Amber Glow | `#FFA737` | Selected navigation and restrained highlights |
 
 Keep the working surface white with light warm neutral separators. Use graphite
-text on either amber. White text is reserved for sufficiently dark graphite,
-khaki, olive or existing semantic error controls; never white on amber. Body text,
+text on Amber Glow; Amber Earth is decorative because its contrast with Graphite
+falls below the normal-text threshold. White text is reserved for sufficiently
+dark graphite, khaki, olive or existing semantic error controls. Body text,
 links, labels and actions retain high contrast. Colour supplements labels rather
 than being the only signal for selected libraries, failed jobs or stale indexes.
 
-The reusable palette tokens are in `frontend/src/css/style.css`. Material UI's
-matching theme is in `frontend/src/js/oasis_app.tsx`. The existing semantic error
+The authoritative reference is the station's
+[BRAND.md](https://github.com/shoshin-labs/kuwala-station/blob/970dfe6e50b19ebac1de5f2b3bf09e2f5e269bc1/docs/BRAND.md).
+`frontend/src/css/oasis_tokens.css` and `templates/curator/oasis_tokens.css` are
+byte-identical local copies of its shared tokens. The React header, curator forms,
+server-rendered login, password pages and session controls use these tokens,
+system typography, the same sun mark and visible Olive focus states. They remain
+usable without internet fonts or assets. Material UI's matching theme is in
+`frontend/src/js/oasis_app.tsx`. The existing semantic error
 red is retained for failure/destructive actions. Original document artwork and
 SolarSPELL's attribution/licence are unchanged.
 
 ## Interface direction
 
 - Visual thesis: a calm, light knowledge workspace with readable graphite text,
-  warm amber actions and a restrained dark wordmark.
+  dark khaki actions and restrained amber highlights.
 - Content: library navigation, nested sections, documents; curator forms add exact
   library/section placement beside original-file and source metadata controls.
 - Interaction: dependent section choices and inline creation keep placement clear;
-  standard Material UI dialogs and focus feedback keep the workflow predictable.
-  Avoid decorative motion in a document management form.
+  standard Material UI dialogs, 48px form controls and focus feedback keep the
+  workflow predictable. Document lists use quiet dividing lines, while operational
+  statuses retain explicit text. Account pages use the same header proportions.
+  Motion respects the user's reduced-motion preference.

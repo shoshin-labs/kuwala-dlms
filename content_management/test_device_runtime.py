@@ -104,6 +104,49 @@ class DeviceConfigurationTests(SimpleTestCase):
         ))
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    @skipUnless(importlib.util.find_spec('whitenoise'), 'Requires the isolated device runtime lock.')
+    def test_compressed_device_assets_preserve_bytes_and_scope_immutable_caching(self):
+        source = self.root / 'asset-source'
+        source.mkdir()
+        script_bytes = b'window.syntheticCompressionFixture="local offline asset";\n' * 100
+        files = {
+            'js/main.0123456789abcdef0123.bundle.js': script_bytes,
+            'js/vendors~curator.0123456789abcdef0123.bundle.js': script_bytes,
+            'js/main.01234567.bundle.js': script_bytes,
+            'js/current.js': script_bytes,
+            'other/main.0123456789abcdef0123.bundle.js': script_bytes,
+            'images/kuwala-oasis.svg': b'<svg xmlns="http://www.w3.org/2000/svg"><title>synthetic test asset</title></svg>',
+        }
+        for name, contents in files.items():
+            path = source / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(contents)
+        action = (
+            'import gzip,io; from django.conf import settings; '
+            'config={k:v for k,v in s.items() if k.isupper()}; '
+            'config.update(STATIC_ROOT=%r,STATICFILES_DIRS=[%r],'
+            'STATICFILES_FINDERS=["django.contrib.staticfiles.finders.FileSystemFinder"]); '
+            % (str(self.root / 'collected-static'), str(source))
+            + 'settings.configure(**config); import django; django.setup(); '
+            'from django.core.management import call_command; '
+            'call_command("collectstatic",interactive=False,verbosity=0,stdout=io.StringIO()); '
+            'from django.test import Client; client=Client(); '
+            'expected=%r; ' % files
+            + '\nfor name,contents in expected.items():\n'
+              ' response=client.get("/static/"+name); assert response.status_code==200; '
+              'assert b"".join(response.streaming_content)==contents; response.close();\n'
+              ' cache=response["Cache-Control"]; '
+              'immutable=name in ("js/main.0123456789abcdef0123.bundle.js","js/vendors~curator.0123456789abcdef0123.bundle.js"); '
+              'assert ("immutable" in cache)==immutable,(name,cache);\n'
+              ' if name.startswith("js/"):\n'
+              '  response=client.get("/static/"+name,HTTP_ACCEPT_ENCODING="gzip"); '
+              'assert response.status_code==200; assert response["Content-Encoding"]=="gzip"; '
+              'assert "Accept-Encoding" in response["Vary"]; '
+              'assert gzip.decompress(b"".join(response.streaming_content))==contents; response.close();\n'
+        )
+        result = self.load(action=action)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_catalogue_ids_originals_jobs_survive_code_release_switch(self):
         sources = []
         for name in ('release-a', 'release-b'):

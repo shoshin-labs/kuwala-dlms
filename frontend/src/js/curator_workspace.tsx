@@ -18,7 +18,6 @@ import {
 } from "./catalogue_tree";
 import DocumentEditor, { DocumentDraft } from "./manager_document_editor";
 import ManagerSearch from "./manager_search";
-import BulkContentModal from "./reusable/bulk_content_modal";
 import DocumentUpdated from "./document_updated";
 import {
   ManagerData,
@@ -46,6 +45,9 @@ import "../css/catalogue.css";
 const AdvancedTools = React.lazy(
   () => import(/* webpackChunkName: "advanced-curator" */ "./manager_advanced"),
 );
+const BulkContentModal = React.lazy(
+  () => import(/* webpackChunkName: "bulk-import" */ "./reusable/bulk_content_modal"),
+);
 type Modal = {
   kind:
     | "library-create"
@@ -58,7 +60,7 @@ type Modal = {
   document?: ManagedDocument;
 };
 class AdvancedBoundary extends React.Component<
-  { message: string; reload: string },
+  { message: string; reload: string; title?: string; cancel?: string; onClose?: () => void },
   { failed: boolean }
 > {
   state = { failed: false };
@@ -66,6 +68,19 @@ class AdvancedBoundary extends React.Component<
     return { failed: true };
   }
   render() {
+    if (this.state.failed && this.props.onClose) {
+      return (
+        <Dialog open fullWidth maxWidth="sm" className="manager-dialog"
+          aria-labelledby="manager-import-error-title" onClose={this.props.onClose}>
+          <DialogTitle id="manager-import-error-title">{this.props.title}</DialogTitle>
+          <DialogContent><p role="alert">{this.props.message}</p></DialogContent>
+          <DialogActions>
+            <button autoFocus className="manager-button" onClick={this.props.onClose}>{this.props.cancel}</button>
+            <button className="manager-button manager-button-primary" onClick={() => window.location.reload()}>{this.props.reload}</button>
+          </DialogActions>
+        </Dialog>
+      );
+    }
     return this.state.failed ? (
       <div role="alert">
         <p>{this.props.message}</p>
@@ -102,6 +117,7 @@ export default function CuratorWorkspace() {
   const [page, setPage] = useState(1);
   const [documents, setDocuments] =
     useState<DocumentPage<ManagedDocument> | null>(null);
+  const [loadedDocumentScope, setLoadedDocumentScope] = useState("");
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [documentsError, setDocumentsError] = useState("");
   const [documentAttempt, setDocumentAttempt] = useState(0);
@@ -152,6 +168,9 @@ export default function CuratorWorkspace() {
   const ready = Boolean(
     version && !loading && !foldersLoading && !loadError && !folderError,
   );
+  const documentScope = JSON.stringify([
+    version?.id, libraryId, page, query, revision, documentAttempt,
+  ]);
   useEffect(() => {
     let current = true;
     setLoading(true);
@@ -230,6 +249,7 @@ export default function CuratorWorkspace() {
       .then((result) => {
         if (current) {
           setDocuments(result);
+          setLoadedDocumentScope(documentScope);
           setDocumentsLoading(false);
         }
       })
@@ -251,6 +271,7 @@ export default function CuratorWorkspace() {
     folderError,
     revision,
     documentAttempt,
+    documentScope,
   ]);
   useEffect(() => {
     if (ready && !documentsLoading && moveFocus.current) {
@@ -572,6 +593,7 @@ export default function CuratorWorkspace() {
             key={version.id}
             versionId={version.id}
             revision={revision}
+            enabled={ready && documents !== null && !documentsLoading && loadedDocumentScope === documentScope}
             documentIds={visible.map((item) => item.id)}
             folderId={selectedFolder?.id}
           >
@@ -1013,12 +1035,26 @@ export default function CuratorWorkspace() {
           </div>
         )}
       </section>
-      {bulkImport && <BulkContentModal
-        is_open initialVersion={version?.id} initialFolder={selectedFolder?.id}
-        on_close={() => {setBulkImport(false); refresh();}}
-        show_toast_message={(message, success) => {if (success) setNotice(message);}}
-        show_loader={() => {}} remove_loader={() => {}}
-      />}
+      {bulkImport && (
+        <AdvancedBoundary message={s("bulk_load_error")} reload={s("reload")}
+          title={s("bulk_upload_title")} cancel={s("cancel")} onClose={() => setBulkImport(false)}>
+          <Suspense fallback={
+            <Dialog open fullWidth maxWidth="sm" className="manager-dialog"
+              aria-labelledby="manager-import-loading-title" onClose={() => setBulkImport(false)}>
+              <DialogTitle id="manager-import-loading-title">{s("bulk_upload_title")}</DialogTitle>
+              <DialogContent><p role="status">{s("bulk_loading")}</p></DialogContent>
+              <DialogActions><button autoFocus className="manager-button" onClick={() => setBulkImport(false)}>{s("cancel")}</button></DialogActions>
+            </Dialog>
+          }>
+            <BulkContentModal
+              is_open initialVersion={version?.id} initialFolder={selectedFolder?.id}
+              on_close={() => {setBulkImport(false); refresh();}}
+              show_toast_message={(message, success) => {if (success) setNotice(message);}}
+              show_loader={() => {}} remove_loader={() => {}}
+            />
+          </Suspense>
+        </AdvancedBoundary>
+      )}
       {editor !== undefined && data && version && referencesReady && (
         <DocumentEditor
           key={editor?.id || "new"}

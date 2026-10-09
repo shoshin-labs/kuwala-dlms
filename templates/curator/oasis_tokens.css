@@ -1,0 +1,36 @@
+/* Shared Kuwala palette for the compiled chat and inline offline reader. */
+:root {
+  --brand-graphite: #343330;
+  --brand-dark-khaki: #45462A;
+  --brand-olive-bark: #7E5920;
+  --brand-amber-earth: #DC851F;
+  --brand-amber-glow: #FFA737;
+  --brand-graphite-rgb: 52 51 48;
+  --brand-olive-bark-rgb: 126 89 32;
+  --brand-amber-glow-rgb: 255 167 55;
+
+  --ink: var(--brand-graphite);
+  --muted: var(--brand-dark-khaki);
+  --link: var(--brand-olive-bark);
+  --link-hover: var(--brand-dark-khaki);
+  --action: var(--brand-dark-khaki);
+  --action-hover: var(--brand-olive-bark);
+  --accent: var(--brand-amber-glow);
+  --accent-strong: var(--brand-amber-earth);
+  --focus: var(--brand-olive-bark);
+  --paper: #fff;
+  --surface: var(--paper);
+  --surface-warm: rgb(var(--brand-amber-glow-rgb) / .06);
+  --highlight: rgb(var(--brand-amber-glow-rgb) / .14);
+  --line: rgb(var(--brand-graphite-rgb) / .2);
+  --control-border: rgb(var(--brand-graphite-rgb) / .62);
+  --disabled-surface: rgb(var(--brand-graphite-rgb) / .06);
+  --focus-shadow: rgb(var(--brand-olive-bark-rgb) / .16);
+  --shadow-soft: rgb(var(--brand-graphite-rgb) / .06);
+  --shadow-menu: rgb(var(--brand-graphite-rgb) / .11);
+  --shadow-dialog: rgb(var(--brand-graphite-rgb) / .15);
+  --backdrop: rgb(var(--brand-graphite-rgb) / .28);
+  /* Explicit error states retain their existing semantic colour. */
+  --error: #962d2d;
+  --error-surface: rgb(150 45 45 / .06);
+}

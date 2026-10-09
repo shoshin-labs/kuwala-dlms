@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { catalogueQuery } from "./catalogue_tree";
 import { request } from "./manager_api";
-import { useIndexSearchRevision } from "./manager_indexing";
+import { useIndexSearchState } from "./manager_indexing";
 import { useManagerStrings } from "./manager_strings";
 
 type Profile = "metadata" | "lexical" | "semantic";
@@ -68,7 +68,7 @@ export default function ManagerSearch({
   children,
 }: Props) {
   const s = useManagerStrings();
-  const indexRevision = useIndexSearchRevision();
+  const { revision: indexRevision, error: indexError, refresh: refreshIndexing } = useIndexSearchState();
   const [profile, setProfile] = useState<Profile>("metadata");
   const [query, setQuery] = useState("");
   const [capabilities, setCapabilities] = useState<SearchData | null>(null);
@@ -109,6 +109,17 @@ export default function ManagerSearch({
     setResult(null);
     setError("");
     setBusy(false);
+    // Metadata browsing never waits for draft verification. Passage search
+    // waits for the status check so the two initial requests cannot perform
+    // the same cold artifact validation in separate server workers.
+    if (!indexRevision || indexError) {
+      setChecking(!indexError);
+      setCapabilityError(indexError);
+      return () => {
+        current = false;
+        currentRequest.current++;
+      };
+    }
     request(endpoint())
       .then((data) => {
         if (current) {
@@ -126,7 +137,7 @@ export default function ManagerSearch({
       current = false;
       currentRequest.current++;
     };
-  }, [versionId, folderId, revision, attempt, indexRevision]);
+  }, [versionId, folderId, revision, attempt, indexRevision, indexError]);
   const available =
     profile === "metadata" ||
     Boolean(
@@ -285,7 +296,10 @@ export default function ManagerSearch({
               type="button"
               className="manager-text-button"
               disabled={checking || busy}
-              onClick={() => setAttempt((value) => value + 1)}
+              onClick={() => {
+                if (indexError) refreshIndexing();
+                else setAttempt((value) => value + 1);
+              }}
             >
               {s("indexed_search_refresh")}
             </button>
