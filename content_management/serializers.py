@@ -3,6 +3,7 @@ from content_management.models import (
     Content, Metadata, MetadataType, User,
     LibraryVersion, LibraryFolder, LibLayoutImage, LibraryModule)
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.exceptions import ValidationError
 
 
 class ContentSerializer(ModelSerializer):
@@ -47,6 +48,20 @@ class LibraryVersionSerializer(ModelSerializer):
 
 
 class LibraryFolderSerializer(ModelSerializer):
+    def validate(self, attrs):
+        version = attrs.get('version', self.instance.version if self.instance else None)
+        parent = attrs.get('parent', self.instance.parent if self.instance else None)
+        seen = {self.instance.pk} if self.instance else set()
+        current = parent
+        while current is not None:
+            if current.pk in seen or current.version_id != version.pk:
+                raise ValidationError({'parent': 'Choose a library or section in the same catalogue version, without a parent cycle.'})
+            seen.add(current.pk)
+            current = current.parent
+        if self.instance and version.pk != self.instance.version_id and self.instance.subfolders.exclude(version=version).exists():
+            raise ValidationError({'version': 'Move the complete folder tree through the existing move workflow.'})
+        return attrs
+
     class Meta:
         model = LibraryFolder
         fields = (

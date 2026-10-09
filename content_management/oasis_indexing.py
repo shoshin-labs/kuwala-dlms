@@ -300,12 +300,15 @@ def preflight(version, profile='lexical'):
     # membership edit cannot quietly adopt a different organisation.
     folders = {folder.id: folder for folder in version.folders.prefetch_related('library_content')}
     by_slug = {item['id']: item['dlms_id'] for item in manifest['documents']}
-    for library in manifest.get('libraries', []):
-        folder = folders.get(library['dlms_folder_id'])
-        members = {by_slug[identifier] for identifier in library['document_ids']}
-        if (folder is None or folder.folder_name != library['label']
-                or {document.id for document in folder.library_content.all()} != members):
-            raise ValueError('Library names or memberships changed since manifest review. Update the explicit reviewed library definitions before indexing.')
+    from scripts.prepare_oasis_catalogue import validate_manifest_placement
+    try:
+        validate_manifest_placement(manifest, {
+            identifier: {'folder_name': folder.folder_name, 'parent': folder.parent_id,
+                         'library_content': [document.id for document in folder.library_content.all()]}
+            for identifier, folder in folders.items()
+        }, by_slug)
+    except ValueError as exc:
+        raise ValueError('Library names or memberships changed since manifest review. Update the explicit reviewed library/section definitions before indexing. ' + str(exc)) from exc
     # Reject incomplete review coverage before reading thousands of unrelated
     # originals. The configured station validator enforces its shared limits.
     validate_export_sources(version)

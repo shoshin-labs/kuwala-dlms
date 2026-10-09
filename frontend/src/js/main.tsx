@@ -2,7 +2,6 @@ import React from 'react';
 
 import HomeScreen from "./home_screen"
 import Metadata from "./metadata"
-import Content from "./content"
 
 import '../css/style.css';
 import strings from './locales/curator.en.json';
@@ -57,20 +56,6 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
                     <Metadata
                         metadata_api={apis.metadata_api}
                         show_toast_message={this.show_toast_message}
-                    />
-                ),
-                icon: null
-            },
-            "contents": {
-                display_label: strings.contents,
-                component: (_tabs, apis) => (
-                    <Content
-                        metadata_api={apis.metadata_api}
-                        show_toast_message={this.show_toast_message}
-                        close_toast={this.close_toast}
-                        contents_api={apis.contents_api}
-                        show_loader={this.show_loader}
-                        remove_loader={this.remove_loader}
                     />
                 ),
                 icon: null

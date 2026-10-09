@@ -7,7 +7,7 @@ interface HomeScreenProps {
     change_tab: (tab_name: string) => void
 }
 
-const workspaceSections = ["contents", "libraries", "metadata", "library_assets", "modules", "images", "system_info"];
+const workspaceSections = ["libraries", "metadata", "library_assets", "modules", "images", "system_info"];
 
 export default function HomeScreen({tabs, change_tab}: HomeScreenProps) {
     return <div className="oasis-curator-home">

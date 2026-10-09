@@ -18,6 +18,7 @@ import {
 } from "./catalogue_tree";
 import DocumentEditor, { DocumentDraft } from "./manager_document_editor";
 import ManagerSearch from "./manager_search";
+import BulkContentModal from "./reusable/bulk_content_modal";
 import {
   ManagerData,
   ManagedDocument,
@@ -112,11 +113,14 @@ export default function CuratorWorkspace() {
   );
   const [modal, setModal] = useState<Modal | null>(null);
   const [advanced, setAdvanced] = useState(false);
+  const [bulkImport, setBulkImport] = useState(false);
   const [saving, setSaving] = useState(false);
   const [mutationError, setMutationError] = useState("");
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
   const [confirmation, setConfirmation] = useState("");
+  const [sectionLibraryId, setSectionLibraryId] = useState(0);
+  const [sectionParentId, setSectionParentId] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null);
   const moveFocus = useRef(false);
   const version =
@@ -269,6 +273,10 @@ export default function CuratorWorkspace() {
     setNumber("");
     setConfirmation("");
     setMutationError("");
+    if (next.kind === "section-create" && next.library) {
+      setSectionLibraryId(folderAncestors(next.library, folders)[0].id);
+      setSectionParentId(next.library.id);
+    }
   }
   function refresh(message = "") {
     setNotice(message);
@@ -337,6 +345,16 @@ export default function CuratorWorkspace() {
         current && { ...current, metadata: [...current.metadata, result] },
     );
     return result;
+  }
+  async function createSection(parent: number, name: string): Promise<CatalogueFolder> {
+    if (!version || !folders.some((folder) => folder.id === parent && folder.version === version.id))
+      throw new Error(s("choose_library"));
+    const created = await request("/api/library_folders/", "POST", {
+      folder_name: name.trim(), parent, version: version.id, logo_img: null, library_content: [],
+    });
+    const section = { ...created, document_count: 0, direct_document_count: 0 };
+    setFolders((current) => [...current, section]);
+    return section;
   }
   async function saveDocument(draft: DocumentDraft) {
     if (!version) return;
@@ -407,7 +425,7 @@ export default function CuratorWorkspace() {
       ) {
         const created = await request("/api/library_folders/", "POST", {
           folder_name: name.trim(),
-          parent: modal.kind === "section-create" ? modal.library!.id : null,
+          parent: modal.kind === "section-create" ? sectionParentId : null,
           version: version.id,
           logo_img: null,
           library_content: [],
@@ -783,6 +801,7 @@ export default function CuratorWorkspace() {
                   >
                     + {s("upload")}
                   </button>
+                  <button className="manager-button" disabled={!ready} onClick={() => setBulkImport(true)}>{s("bulk_add_files")}</button>
                 </ManagerSearch>
                 {foldersLoading || documentsLoading ? (
                   <p className="manager-empty" role="status">
@@ -987,6 +1006,12 @@ export default function CuratorWorkspace() {
           </div>
         )}
       </section>
+      {bulkImport && <BulkContentModal
+        is_open initialVersion={version?.id} initialFolder={selectedFolder?.id}
+        on_close={() => {setBulkImport(false); refresh();}}
+        show_toast_message={(message, success) => {if (success) setNotice(message);}}
+        show_loader={() => {}} remove_loader={() => {}}
+      />}
       {editor !== undefined && data && version && referencesReady && (
         <DocumentEditor
           key={editor?.id || "new"}
@@ -999,6 +1024,7 @@ export default function CuratorWorkspace() {
           onSave={saveDocument}
           onCreateType={createType}
           onCreateMetadata={createMetadata}
+          onCreateSection={createSection}
         />
       )}
       {editor !== undefined && !referencesReady && (
@@ -1062,11 +1088,24 @@ export default function CuratorWorkspace() {
                 </p>
               )}
               {modal.kind === "section-create" && (
-                <p className="manager-help">
-                  {s("section_parent_help", {
-                    name: modal.library!.folder_name,
-                  })}
-                </p>
+                <div className="manager-form-grid">
+                  <label className="manager-field">{s("placement_library")}
+                    <select value={sectionLibraryId} disabled={saving} required
+                      onChange={(event) => {const id = Number(event.target.value); setSectionLibraryId(id); setSectionParentId(id);}}>
+                      {libraries.map((root) => <option key={root.id} value={root.id}>{root.folder_name}</option>)}
+                    </select>
+                  </label>
+                  <label className="manager-field">{s("section_parent")}
+                    <select value={sectionParentId} disabled={saving} required onChange={(event) => setSectionParentId(Number(event.target.value))}>
+                      {folders.filter((folder) => {
+                        const root = folders.find((item) => item.id === sectionLibraryId);
+                        return root && withinFolder(folder, root, folders);
+                      }).map((folder) => <option key={folder.id} value={folder.id}>
+                        {folderAncestors(folder, folders).map((item) => item.folder_name).join(" / ")}
+                      </option>)}
+                    </select>
+                  </label>
+                </div>
               )}
               {modal.kind === "document-delete" ? (
                 <p>
@@ -1116,7 +1155,7 @@ export default function CuratorWorkspace() {
                     <input
                       autoFocus
                       required
-                      maxLength={300}
+                      maxLength={modal.kind === "version-create" ? 300 : 200}
                       value={name}
                       disabled={saving}
                       onChange={(event) => setName(event.target.value)}

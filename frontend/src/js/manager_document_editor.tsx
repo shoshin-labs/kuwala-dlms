@@ -9,7 +9,8 @@ import {
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { SerializedMetadata, SerializedMetadataType } from "./types";
 import { CatalogueFolder } from "./catalogue_tree";
-import { ManagedDocument, folderPath, originalUrl } from "./manager_api";
+import { ManagedDocument, originalUrl } from "./manager_api";
+import PlacementPicker from "./manager_placement_picker";
 import { useManagerStrings } from "./manager_strings";
 
 export interface DocumentDraft {
@@ -37,6 +38,7 @@ interface Props {
   onSave: (draft: DocumentDraft) => Promise<void>;
   onCreateType: (name: string) => Promise<SerializedMetadataType>;
   onCreateMetadata: (type: number, name: string) => Promise<SerializedMetadata>;
+  onCreateSection: (parent: number, name: string) => Promise<CatalogueFolder>;
 }
 export default function DocumentEditor(props: Props) {
   const s = useManagerStrings();
@@ -70,7 +72,8 @@ export default function DocumentEditor(props: Props) {
   const [newValue, setNewValue] = useState("");
   const [metadataBusy, setMetadataBusy] = useState(false);
   const [metadataError, setMetadataError] = useState("");
-  const locked = busy || metadataBusy;
+  const [placementBusy, setPlacementBusy] = useState(false);
+  const locked = busy || metadataBusy || placementBusy;
   function field<K extends keyof DocumentDraft>(
     key: K,
     value: DocumentDraft[K],
@@ -83,6 +86,10 @@ export default function DocumentEditor(props: Props) {
     if (!item && !draft.file) {
       setError(s("file_required"));
       chooseFile.current?.focus();
+      return;
+    }
+    if (!item && !draft.folder_ids.length) {
+      setError(s("placement_required"));
       return;
     }
     setBusy(true);
@@ -267,38 +274,15 @@ export default function DocumentEditor(props: Props) {
           >
             <legend>{s("membership")}</legend>
             <p className="manager-help">{s("membership_help")}</p>
-            {props.folders.length ? (
-              <div className="manager-membership-list">
-                {props.folders
-                  .slice()
-                  .sort((a, b) =>
-                    folderPath(a, props.folders).localeCompare(
-                      folderPath(b, props.folders),
-                    ),
-                  )
-                  .map((folder) => (
-                    <label key={folder.id} className="manager-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={draft.folder_ids.includes(folder.id)}
-                        onChange={(event) =>
-                          field(
-                            "folder_ids",
-                            event.target.checked
-                              ? [...draft.folder_ids, folder.id]
-                              : draft.folder_ids.filter(
-                                  (id) => id !== folder.id,
-                                ),
-                          )
-                        }
-                      />
-                      <span>{folderPath(folder, props.folders)}</span>
-                    </label>
-                  ))}
-              </div>
-            ) : (
-              <p>{s("no_membership_help")}</p>
-            )}
+            <PlacementPicker
+              folders={props.folders}
+              value={draft.folder_ids}
+              disabled={locked}
+              onChange={(value) => field("folder_ids", value)}
+              onCreateSection={props.onCreateSection}
+              onBusy={setPlacementBusy}
+            />
+            {item && !draft.folder_ids.length && <p className="manager-help">{s("empty_edit_placement_help")}</p>}
           </fieldset>
           <section
             className="manager-form-section"

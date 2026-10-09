@@ -1,3 +1,4 @@
+import managerEnglish from "./locales/manager.en.json";
 import { get, isString } from 'lodash'
 import { produce } from 'immer'
 import XLSX from 'xlsx'
@@ -79,9 +80,13 @@ export function get_field_info_default<T>(value: T): field_info<T> {
 }
 //converts excel sheet data to JSON Format
 export function read_excel_file(fileUploaded: File | null | undefined) {
-    return new Promise( getData => {
+    return new Promise( (getData, reject) => {
+      if (!fileUploaded) {reject(new Error(managerEnglish.strings.bulk_sheet_required)); return;}
       const readFile = new FileReader();
+      readFile.onerror = () => reject(new Error(managerEnglish.strings.bulk_read_error));
+      readFile.onabort = () => reject(new Error(managerEnglish.strings.bulk_read_cancelled));
       readFile.onload = () => {
+        try {
         const storeData: any = readFile.result;
         const data = new Uint8Array(storeData);
         const arr = new Array();
@@ -91,6 +96,7 @@ export function read_excel_file(fileUploaded: File | null | undefined) {
         const firstSheetName = workbook.SheetNames[0];
         const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], { raw: true, defval: ''});
         getData(JSON.stringify(jsonData));
+        } catch (error) {reject(error);}
       };
       readFile.readAsArrayBuffer(fileUploaded!);
     });

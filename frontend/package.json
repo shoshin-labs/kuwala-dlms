@@ -1,7 +1,7 @@
 {
   "name": "oasis-library-frontend",
   "version": "1.0.0",
-  "description": "Oasis Library catalogue and curator workspace, based on SolarSPELL DLMS",
+  "description": "Oasis Knowledge catalogue and curator workspace, based on SolarSPELL DLMS",
   "main": "index.tsx",
   "scripts": {
     "build": "npm run clean && webpack --mode=development",

@@ -629,7 +629,15 @@ class BulkAddView(views.APIView):
     def post(self, request):
         sheet_util = ContentSheetUtil()
         content_data = request.data
-        result = sheet_util.upload_sheet_contents(content_data)
+        placement = None
+        if getattr(settings, 'OASIS_CURATOR_ENABLED', False) and str(content_data.get('content_path') or '').strip():
+            from content_management.oasis_documents import FolderPlacementSerializer
+            selected = FolderPlacementSerializer(data=content_data)
+            selected.is_valid(raise_exception=True)
+            placement = selected.validated_data
+        result = sheet_util.upload_sheet_contents(content_data, placement=placement)
+        if result.get('success') is False:
+            return build_response(status=status.HTTP_400_BAD_REQUEST, success=False, error=result.get('error'))
         response = build_response(result)
         return response
 

@@ -1,12 +1,12 @@
 # Private library management
 
-Oasis Library is a working Django catalogue with a React interface. The optional
+Oasis Knowledge is a working Django catalogue with a React interface. The optional
 preview seed adds clearly labelled synthetic documents; it does not replace the
 database with a mock API. Curator changes persist in the preview's own SQLite
 database and media directory.
 
 Start the independently runnable development preview with writes explicitly
-enabled, then choose **Manage Library**:
+enabled, then choose **Manage libraries**:
 
 ```bash
 npm --prefix frontend run build-prod
@@ -50,11 +50,41 @@ deletion. **Advanced tools** retains upstream metadata, version and export scree
 
 ## Export and private draft indexing
 
+## Choosing placement when importing
+
+**Upload document** and **Import files** use the same Library → Section picker.
+Choose the library first, then a child section. Section choices are limited to
+that library and retain their nested path. **Library documents (no section)** is
+valid when a document belongs directly to the library. **Add another library or
+section** retains multiple memberships. Removing one placement does not remove
+other placements or memberships in other catalogue versions.
+
+**New section** in the document form creates a real child folder under the chosen
+library or section and selects it for the document. The section remains in the
+catalogue if the document form is cancelled. The standalone section dialog also
+lets a curator select a library and parent section. Existing numeric folder IDs
+and `LibraryFolder.parent` relationships are the source of truth.
+
+New modern uploads require nonempty `folder_ids` and a matching
+`catalogue_version`; omitted, empty, cross-version or invalid parent paths fail
+before saving an original. Document edits retain their exact selected-version
+folder IDs. A deliberate edit with an empty list clears that version's membership
+while preserving originals and other versions, as in the existing API contract.
+
+The batch spreadsheet importer applies its selected placements to every new
+file. Use separate batches when documents need different placements. Its curator
+API validates selection before any file is imported and rechecks/locks folders
+before reporting each record successful. A blank original-file folder updates
+existing metadata only and preserves existing membership. Legacy single-file
+forms are retained in source/API for compatibility, while the modern workspace
+provides the single and batch import UI. Advanced tools keeps metadata, versions,
+assets, modules and export tools.
+
 An export creates local originals and `solarspell.db` with the existing IDs,
 folder membership, rights and metadata FTS contract. Logos and banners are optional.
 Export alone does not update Oasis chat's passage/vector indexes.
 
-Manage Library shows **PDF text** and **Semantic vectors** separately. An indexed
+Manage libraries shows **PDF text** and **Semantic vectors** separately. An indexed
 status requires a successful build or explicit adoption of an existing index,
 validation by the existing station reader and an
 exact match with the current document ID, filename and original SHA-256. Replacing
@@ -95,6 +125,14 @@ replaced or removed PDF requires an updated manifest before another build.
 Unassigned documents and non-PDF originals are not eligible for this importer.
 The station manifest also binds library membership to exact exported folder IDs;
 when including its optional library definitions, review nested membership explicitly.
+For a hierarchical release, the additive manifest `sections` array declares each
+section's stable slug, label, `library_id`, `dlms_folder_id`, `parent_id` (null for
+a direct library child) and deduplicated descendant `document_ids`. Root library
+`document_ids` also describes its full subtree. Empty sections are supported;
+root library scopes must include at least one reviewed PDF. Folder labels, parents
+and complete subtree memberships must exactly match authoring/export before
+indexing or transfer. A legacy manifest without `sections` retains its prior
+flat direct-folder validation.
 
 ## Configure the local worker
 
@@ -156,7 +194,7 @@ Do not use it to approve uploaded community documents.
 
 ## Search a private indexed draft
 
-Manage Library offers **Metadata**, **PDF text** and **AI semantic** search modes.
+Manage libraries offers **Metadata**, **PDF text** and **AI semantic** search modes.
 Metadata searches the current catalogue's document records. PDF text searches
 passages in the latest successfully verified private draft through the existing
 station `PdfLibrary` reader. AI semantic uses the existing `SemanticSearch` provider
