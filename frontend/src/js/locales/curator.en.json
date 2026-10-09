@@ -62,5 +62,12 @@
   "export_confirm_name": "Confirm catalogue name",
   "export_success": "Local export created",
   "export_failed": "The export could not be created",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "tool_selector": "Advanced tool",
+  "show_catalogue_internals": "Show catalogue internals",
+  "hide_catalogue_internals": "Hide catalogue internals",
+  "catalogue_internals_help": "Library versions and whole-catalogue export builds support the original DLMS data and export format. Keep using the main manager to organise libraries and transfer them with Import or Export.",
+  "workspace_load_error": "Workspace data could not be loaded. Refresh to try again.",
+  "retry_workspace": "Refresh workspace",
+  "file_size_unknown": "File size not recorded"
 }

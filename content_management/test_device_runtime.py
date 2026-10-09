@@ -241,17 +241,23 @@ class DeviceConfigurationTests(SimpleTestCase):
                             self.fail('Device WSGI did not become ready: ' + log_path.read_text())
                         time.sleep(0.05)
                 self.assertEqual(config, {'ready': True, 'authentication_required': True})
-                for endpoint in ('/api/oasis/config/', '/api/contents/', '/media/contents/missing.pdf'):
-                    with self.assertRaises(HTTPError) as denied:
-                        urlopen(base + endpoint, timeout=2)
-                    self.assertEqual(denied.exception.code, 401)
+                for endpoint in ('/api/oasis/config/', '/api/contents/', '/media/contents/missing.pdf',
+                                 '/api/oasis/libraries/1/bundle/', '/api/oasis/libraries/import/'):
+                    for method in ('GET', 'HEAD'):
+                        with self.subTest(endpoint=endpoint, method=method), self.assertRaises(HTTPError) as denied:
+                            urlopen(Request(base + endpoint, method=method), timeout=2)
+                        self.assertEqual(denied.exception.code, 401)
+                        if method == 'GET':
+                            self.assertIsNone(json.load(denied.exception)['data'])
+                        denied.exception.close()
+                for endpoint in ('/api/oasis/index-jobs/', '/api/oasis/libraries/import/?dry_run=1',
+                                 '/api/oasis/libraries/import/'):
+                    request = Request(base + endpoint, data=b'{}', method='POST',
+                                      headers={'Content-Type': 'application/json', 'Origin': base})
+                    with self.subTest(endpoint=endpoint), self.assertRaises(HTTPError) as denied:
+                        urlopen(request, timeout=2)
+                    self.assertEqual(denied.exception.code, 403)
                     denied.exception.close()
-                request = Request(base + '/api/oasis/index-jobs/', data=b'{}', method='POST',
-                                  headers={'Content-Type': 'application/json', 'Origin': base})
-                with self.assertRaises(HTTPError) as denied:
-                    urlopen(request, timeout=2)
-                self.assertEqual(denied.exception.code, 403)
-                denied.exception.close()
             finally:
                 process.terminate()
                 try:

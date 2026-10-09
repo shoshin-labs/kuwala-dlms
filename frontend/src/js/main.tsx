@@ -24,6 +24,7 @@ interface MainScreenProps {
 interface MainScreenState {
     url: URL,
     current_tab: string
+    internals_enabled: boolean
     toast_state: {
         message: string
         is_open: boolean
@@ -123,6 +124,7 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
             current_tab: tab_value === null ?
                 default_tab :
                 (tab_value in this.tabs ? tab_value : default_tab),
+            internals_enabled: tab_value === "libraries" || tab_value === "images",
             toast_state: {
                 message: "",
                 is_open: false,
@@ -160,17 +162,20 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
     }
 
     change_tab(new_tab: string) {
+        if (!(new_tab in this.tabs)) return;
         this.update_state(draft => {
             const new_url = new URL(draft.url.toString())
             new_url.searchParams.set("tab", new_tab)
             draft.url = new_url
             draft.current_tab = new_tab
+            if (new_tab === "libraries" || new_tab === "images") draft.internals_enabled = true
         }).then(() => {
             history.replaceState({}, strings.product_name, this.state.url.toString())
         })
             .then(this.props.apis.contents_api.reset_search)
             .then(this.props.apis.lib_versions_api.reset_to_defaults)
             .then(this.props.apis.contents_api.load_content_rows)
+            .catch(() => this.show_toast_message(strings.workspace_error, false))
     }
     show_loader(){
         this.update_state(draft => {
@@ -184,7 +189,9 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
     }
 
     render() {
-        const tabs_jsx = Object.entries(this.tabs).map(([tab_name, tab_data]) => {
+        const visibleTabs: TabDict = Object.fromEntries(Object.entries(this.tabs).filter(([name]) =>
+            this.state.internals_enabled || (name !== "libraries" && name !== "images")))
+        const tabs_jsx = Object.entries(visibleTabs).map(([tab_name, tab_data]) => {
             return <button
                 key={tab_name}
                 type="button"
@@ -200,12 +207,27 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
 
         return (
             <section className="oasis-curator">
-                <p className="oasis-curator-notice" role="note">{strings.private_notice}</p>
+                <label className="advanced-mobile-navigation">
+                    {strings.tool_selector}
+                    <select value={this.state.current_tab} onChange={event => this.change_tab(event.target.value)}>
+                        {Object.entries(visibleTabs).map(([name, tab]) => <option key={name} value={name}>{tab.display_label}</option>)}
+                    </select>
+                </label>
                 <nav className="oasis-curator-nav" aria-label={strings.navigation_label}>
                     {tabs_jsx}
                 </nav>
                 <div className="oasis-curator-content">
-                    {this.tabs[this.state.current_tab].component(this.tabs, this.props.apis)}  
+                    {this.tabs[this.state.current_tab].component(visibleTabs, this.props.apis)}
+                </div>
+                <div className="advanced-internals-disclosure">
+                    <button type="button" className="manager-button" aria-expanded={this.state.internals_enabled}
+                        aria-controls="advanced-internals-help" onClick={() => {
+                            const enabled = !this.state.internals_enabled
+                            this.update_state(draft => { draft.internals_enabled = enabled }).then(() => {
+                                if (!enabled && (this.state.current_tab === "libraries" || this.state.current_tab === "images")) this.change_tab("home")
+                            })
+                        }}>{this.state.internals_enabled ? strings.hide_catalogue_internals : strings.show_catalogue_internals}</button>
+                    <p id="advanced-internals-help" className="advanced-help" hidden={!this.state.internals_enabled}>{strings.catalogue_internals_help}</p>
                 </div>
                 <Snackbar
                     anchorOrigin={{
