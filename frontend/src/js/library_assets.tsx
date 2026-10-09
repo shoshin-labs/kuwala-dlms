@@ -106,7 +106,7 @@ export default class LibraryAssets extends Component<LibraryAssetsProps, Library
                                             style={{
                                                 marginLeft: "1em",
                                                 marginBottom: "1em",
-                                                backgroundColor: "#003c6c",
+                                                backgroundColor: "var(--action)",
                                                 color: "#FFFFFF"
                                             }}
                                         >NEW {library_assets_api.state.group_name[asset_group]} ASSET</Button>

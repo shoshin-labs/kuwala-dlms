@@ -105,7 +105,7 @@ export default class LibraryModules extends React.Component<LibraryModulesProps,
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#003c6c",
+                        backgroundColor: "var(--action)",
                         color: "#FFFFFF"
                     }}
                 >Add Module</Button>

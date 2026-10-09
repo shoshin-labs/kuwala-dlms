@@ -160,6 +160,11 @@ button {
   height: 18px;
   flex: none;
 }
+@media (max-width: 360px) {
+  .nav-button .ui-icon {
+    display: none;
+  }
+}
 .language-picker {
   display: flex;
   gap: 8px;
@@ -646,11 +651,14 @@ summary {
     font-size: 1.5rem;
   }
   .nav-button {
-    width: 44px;
-    padding: 10px;
+    width: auto;
+    flex: 1;
+    gap: 6px;
+    padding: 10px 8px;
   }
   .nav-label {
-    display: none;
+    display: inline;
+    font-size: .9rem;
   }
   .nav-button .ui-icon {
     width: 20px;

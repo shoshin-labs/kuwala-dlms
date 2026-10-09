@@ -48,9 +48,28 @@ Deleting a document removes that authoring record and its original from every
 library. Removing a library removes its folders and memberships while retaining
 the document records and originals. Previously exported bundles are unaffected
 by either action. The interface confirms these different consequences before
-deletion. **Advanced tools** retains upstream metadata, version and export screens.
+deletion. The manager's **Tools → Advanced tools** menu opens the catalogue-wide
+metadata, version and export screens in a separate dialog. They are loaded only
+when requested and are no longer repeated below each library or section. Closing
+the dialog refreshes the document workspace while retaining its selected location.
+Library/section rename, delete and rebuild actions are grouped under the labelled
+**Library actions** or **Section actions** menu. **New section**, **Upload document**,
+document editing and original-file access remain visible. On phones, labelled
+Library and Section selectors replace the long sidebar; nested section paths and
+document counts remain available. The workspace opens at **All documents** by
+default, and its catalogue version, library/section, metadata query and page are
+retained in the URL for reloads and browser Back/Forward. Advanced tools restore
+that manager URL when closed.
 
 ## Export and private draft indexing
+
+The collapsed **Search maintenance** control below the document list contains
+background rebuild status and job diagnostics. It stays closed until opened,
+including while jobs run or fail; a short status remains visible when attention
+is needed. A completed rebuild is shown inside the control and does not certify
+that every current document is indexed. Each document keeps its own text/vector
+freshness status and reindex action. Rebuilding prepares private manager search;
+it does not publish changes to the visitor library.
 
 ## Choosing placement when importing
 

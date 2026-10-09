@@ -6,14 +6,12 @@
   font-size: 1rem;
   line-height: 1.55;
   max-width: 760px;
-  margin: 12px 0 18px;
+  margin: 8px 0;
 }
 .manager-private {
-  padding: 12px 16px;
-  border-left: 3px solid var(--accent-strong);
-  background: var(--surface-warm);
-  color: var(--ink);
+  color: var(--muted);
   font-size: 0.88rem;
+  line-height: 1.55;
   margin: 0 0 24px;
 }
 .manager-topline {
@@ -46,6 +44,9 @@
 .manager-libraries,
 .manager-documents {
   min-width: 0;
+}
+.manager-mobile-navigation {
+  display: none;
 }
 .manager-section-heading {
   display: flex;
@@ -474,31 +475,33 @@
 .manager-empty p {
   margin-bottom: 20px;
 }
-.manager-advanced {
+.manager-advanced-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 20px 32px;
-  margin-top: 40px;
-  border-top: 1px solid var(--line);
-  padding-top: 28px;
+  gap: 12px 24px;
 }
-.manager-advanced > div:first-child {
-  flex: 1;
-}
-.manager-advanced h2 {
-  margin: 0 0 8px;
-}
-.manager-advanced p {
-  color: var(--muted);
+.manager-advanced-heading h2 {
   margin: 0;
-  max-width: 700px;
 }
-.manager-advanced-content {
-  width: 100%;
-  min-width: 0;
-  margin-top: 12px;
+.manager-tools-menu .MuiMenuItem-root {
+  min-height: 48px;
+  padding: 12px 20px;
+  font-size: 1rem;
+}
+.manager-advanced-dialog .MuiDialogContent-root {
+  min-height: 180px;
+}
+.manager-advanced-dialog .MuiTableContainer-root {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.manager-advanced-dialog .MuiButton-root.Mui-disabled {
+  opacity: .55;
+}
+.manager-tools-menu .manager-danger-text {
+  color: var(--error);
 }
 .manager-dialog .MuiDialogTitle-root {
   padding: 24px 28px 18px;
@@ -881,16 +884,17 @@
     max-width: 100%;
   }
   .manager-library-items {
-    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+    display: none;
+  }
+  .manager-mobile-navigation {
+    display: grid;
+    gap: 12px;
+  }
+  .manager-mobile-navigation .manager-field {
+    margin: 0;
   }
   .manager-section-items {
-    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-  }
-  .manager-section-items h3 {
-    grid-column: 1 / -1;
-  }
-  .manager-section-items button {
-    padding-left: 12px !important;
+    display: none;
   }
   .manager-document-card {
     padding: 20px 0;
@@ -901,15 +905,9 @@
   .manager-intro {
     font-size: 1rem;
   }
-  .manager-private {
-    padding: 12px 16px;
-  }
-  .manager-advanced {
+  .manager-advanced-heading {
     align-items: flex-start;
     flex-direction: column;
-  }
-  .manager-advanced-content {
-    max-width: 100%;
   }
   .manager-form-grid,
   .manager-metadata-grid,
@@ -986,13 +984,13 @@
 .manager-bulk-errors th, .manager-bulk-errors td {padding: 12px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere;}
 @media (max-width: 700px) {.manager-placement-controls {grid-template-columns: 1fr;} }
 
-.manager-index-overview.manager-index-compact {padding: 0; margin-bottom: 24px;}
-.manager-index-disclosure > summary {min-height: 56px; padding: 14px 16px; border-radius: 9px; cursor: pointer; color: var(--ink);}
+.manager-index-overview.manager-index-compact {padding: 0; margin: 32px 0 0; border-top: 1px solid var(--line); border-bottom: 0;}
+.manager-index-disclosure > summary {min-height: 48px; padding: 12px 8px; border-radius: 6px; cursor: pointer; color: var(--link);}
 .manager-index-disclosure > summary:hover {background: var(--highlight);}
-.manager-index-disclosure > summary h2 {display: inline; margin: 0; font-size: 1rem; line-height: 1.4;}
+.manager-index-disclosure > summary h2 {display: inline; margin: 0; font-size: .9rem; font-weight: 600; line-height: 1.5;}
 .manager-index-disclosure-state {margin-left: 14px; color: var(--muted); font-size: .85rem; line-height: 1.5; overflow-wrap: anywhere;}
 .manager-index-disclosure[open] > summary {border-bottom: 1px solid var(--line); border-bottom-left-radius: 0; border-bottom-right-radius: 0;}
-.manager-index-disclosure-content {padding: 12px 20px 20px;}
+.manager-index-disclosure-content {padding: 12px 8px 20px;}
 .manager-index-disclosure-content .manager-index-overview-heading {justify-content: flex-end; margin-bottom: 8px;}
 .manager-index-disclosure-content > p {margin: 0 0 16px; color: var(--muted); font-size: .9rem; line-height: 1.55;}
-.manager-index-compact > .manager-notice {margin: 12px 16px;}
+.manager-index-compact > .manager-notice {margin: 12px 8px;}

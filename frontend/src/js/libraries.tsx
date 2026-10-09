@@ -1,4 +1,5 @@
 import React from 'react';
+import strings from './locales/curator.en.json';
 import { Grid, Box, Typography, Link, Button, TextField, Checkbox } from '@material-ui/core';
 import { Folder, InsertDriveFile, DoubleArrow } from '@material-ui/icons';
 import {
@@ -309,7 +310,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                 style={{
                                     marginLeft: "1em",
                                     marginBottom: "1em",
-                                    backgroundColor: "#003c6c",
+                                    backgroundColor: "var(--action)",
                                     color: "#FFFFFF"
                                 }}
                             >
@@ -425,7 +426,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                         }}>
                                             <Typography style={{
                                                 fontWeight: "bold",
-                                                color: "#003c6c",
+                                                color: "var(--link)",
                                                 fontSize: "16px"
                                             }}>Library Content</Typography>
                                         </Box>
@@ -654,7 +655,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                             <Typography style={{fontStyle: "italic"}}>No Files or Folders</Typography>
                                         ) : <></>
                                     }
-                                    <Typography style={{fontWeight: "bold", color: "#003c6c"}}>Library Modules</Typography>
+                                    <Typography style={{fontWeight: "bold", color: "var(--link)"}}>Library Modules</Typography>
                                     {this.props.library_versions_api.state.modules_in_version.map((module: LibraryModule, idx) => (
                                         <Box
                                             key={this.props.library_versions_api.state.modules_in_version.length + idx}
@@ -679,6 +680,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                     </Grid>
                     <Grid item sm={6}>
                         <Button
+                            disabled={!this.props.library_versions_api.state.path.length || !this.props.contents_api.state.selection.length}
                             onClick={() => {
                                 const path = this.props.library_versions_api.state.path
                                 const cd = path.length > 0 ?
@@ -691,10 +693,10 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                             style={{
                                 marginLeft: "1em",
                                 marginBottom: "1em",
-                                backgroundColor: "#003c6c",
+                                backgroundColor: "var(--action)",
                                 color: "#FFFFFF"
                             }}
-                        >Add Selected to CD</Button>
+                        >{strings.add_selected_to_folder}</Button>
                         <Button
                             onClick={_ => {
                                 this.update_state(draft => {

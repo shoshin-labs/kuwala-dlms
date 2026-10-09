@@ -251,7 +251,7 @@ export default function ManagerSearch({
           </div>
           <p
             id="manager-search-help"
-            className="manager-help manager-search-help"
+            className={profile === "metadata" ? "sr-only" : "manager-help manager-search-help"}
           >
             {s(
               profile === "metadata"
