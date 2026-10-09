@@ -21,6 +21,7 @@ import {
 import DocumentEditor, { DocumentDraft } from "./manager_document_editor";
 import ManagerSearch from "./manager_search";
 import DocumentUpdated from "./document_updated";
+import LibraryTransferControls from "./manager_library_transfer";
 import {
   ManagerData,
   ManagedDocument,
@@ -147,7 +148,6 @@ export default function CuratorWorkspace() {
   const [saving, setSaving] = useState(false);
   const [mutationError, setMutationError] = useState("");
   const [name, setName] = useState("");
-  const [number, setNumber] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [sectionLibraryId, setSectionLibraryId] = useState(0);
   const [sectionParentId, setSectionParentId] = useState(0);
@@ -375,7 +375,6 @@ export default function CuratorWorkspace() {
     setName(
       next.kind === "library-rename" ? next.library?.folder_name || "" : "",
     );
-    setNumber("");
     setConfirmation("");
     setMutationError("");
     if (next.kind === "section-create" && next.library) {
@@ -514,8 +513,8 @@ export default function CuratorWorkspace() {
           "/api/library_versions/",
           "POST",
           {
-            library_name: name.trim(),
-            version_number: number.trim(),
+            library_name: "Oasis Knowledge",
+            version_number: `oasis-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`,
             library_banner: null,
             created_by: null,
           },
@@ -595,7 +594,7 @@ export default function CuratorWorkspace() {
               )
             : modal?.kind === "document-delete"
               ? s("delete_document_title")
-              : s("create_version");
+              : s("setup_catalogue");
   return (
     <section className="manager">
       <p className="manager-intro">{s("intro")}</p>
@@ -603,35 +602,13 @@ export default function CuratorWorkspace() {
         {s("private")}
       </p>
       <div className="manager-topline">
-        {data && data.versions.length > 0 && (
-          <label className="manager-version">
-            {s("version")}
-            <select
-              value={version?.id || ""}
-              disabled={loading || saving}
-              onChange={(event) => {
-                history.pushState({}, "", locationUrl(Number(event.target.value), 0, "", 1));
-                setVersionId(Number(event.target.value));
-                setLibraryId(-1);
-                setFolders([]);
-                setFoldersLoading(true);
-                setSearch("");
-                setQuery("");
-                setPage(1);
-                setNotice("");
-              }}
-            >
-              {data.versions.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {s("version_label", {
-                    name: item.library_name,
-                    version: item.version_number,
-                  })}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
+        <LibraryTransferControls versionId={version?.id} libraries={libraries} selectedLibraryId={library?.id}
+          onImported={(id) => {
+            setLibraryId(id);
+            setSearch("");
+            setQuery("");
+            refresh();
+          }} />
         <button
           id="manager-tools-button"
           className="manager-button"
@@ -686,7 +663,7 @@ export default function CuratorWorkspace() {
             className="manager-button manager-button-primary"
             onClick={() => openModal({ kind: "version-create" })}
           >
-            {s("create_version")}
+            {s("setup_catalogue")}
           </button>
         </div>
       ) : (
@@ -1300,12 +1277,12 @@ export default function CuratorWorkspace() {
                     />
                   </label>
                 </>
+              ) : modal.kind === "version-create" ? (
+                <p>{s("setup_catalogue_help")}</p>
               ) : (
                 <>
                   <label className="manager-field">
-                    {modal.kind === "version-create"
-                      ? s("version_name")
-                      : s(
+                    {s(
                           modal.kind === "section-create" ||
                             (modal.library?.parent !== null &&
                               modal.library !== undefined)
@@ -1315,27 +1292,12 @@ export default function CuratorWorkspace() {
                     <input
                       autoFocus
                       required
-                      maxLength={modal.kind === "version-create" ? 300 : 200}
+                      maxLength={200}
                       value={name}
                       disabled={saving}
                       onChange={(event) => setName(event.target.value)}
                     />
                   </label>
-                  {modal.kind === "version-create" && (
-                    <label className="manager-field">
-                      {s("version_number")}
-                      <input
-                        required
-                        maxLength={300}
-                        pattern={"[A-Za-z0-9][A-Za-z0-9._\\-]*"}
-                        title={s("version_help")}
-                        value={number}
-                        disabled={saving}
-                        onChange={(event) => setNumber(event.target.value)}
-                      />
-                      <span className="manager-help">{s("version_help")}</span>
-                    </label>
-                  )}
                 </>
               )}
             </form>
@@ -1362,9 +1324,7 @@ export default function CuratorWorkspace() {
                 saving ||
                 (modal.kind === "library-delete" &&
                   confirmation !== modal.library!.folder_name) ||
-                (!destructive &&
-                  (!name.trim() ||
-                    (modal.kind === "version-create" && !number.trim())))
+                (!destructive && modal.kind !== "version-create" && !name.trim())
               }
             >
               {saving
@@ -1382,7 +1342,7 @@ export default function CuratorWorkspace() {
                       : modal.kind === "library-create"
                         ? s("create_library")
                         : modal.kind === "version-create"
-                          ? s("create_version")
+                          ? s("setup_catalogue")
                           : s("save")}
             </button>
           </DialogActions>

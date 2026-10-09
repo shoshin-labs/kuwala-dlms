@@ -23,7 +23,7 @@ export interface ManagerData {
 }
 const DOCUMENTS = "/api/oasis/documents/";
 let token: Promise<string> | undefined;
-function message(value: any): string {
+export function message(value: any): string {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return value.map(message).filter(Boolean).join(" ");
   if (value && typeof value === "object")

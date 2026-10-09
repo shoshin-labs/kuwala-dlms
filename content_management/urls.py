@@ -13,6 +13,7 @@ from content_management.oasis_documents import OasisDocumentViewSet
 from content_management.oasis_indexing import OasisIndexJobViewSet, indexing_status
 from content_management.oasis_catalogue import catalogue, catalogue_documents
 from content_management.oasis_search import index_search, draft_original
+from content_management.oasis_library_transfer import LibraryBundleExportView, LibraryBundleImportView
 
 router = routers.DefaultRouter()
 router.register(r'contents', ContentViewSet)
@@ -28,6 +29,8 @@ router.register(r'oasis/index-jobs', OasisIndexJobViewSet, basename='oasis-index
 
 
 urlpatterns = [
+    path('api/oasis/libraries/<int:library_id>/bundle/', LibraryBundleExportView.as_view(), name='oasis-library-bundle'),
+    path('api/oasis/libraries/import/', LibraryBundleImportView.as_view(), name='oasis-library-import'),
     path('api/oasis/config/', oasis_config, name='oasis-config'),
     path('api/oasis/catalogue/', catalogue, name='oasis-catalogue'),
     path('api/oasis/catalogue/documents/', catalogue_documents, name='oasis-catalogue-documents'),

@@ -467,6 +467,29 @@ class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
     queryset = LibraryFolder.objects.all()
     serializer_class = LibraryFolderSerializer
 
+    def _transfer_target(self, request, source):
+        """Validate the existing destination parameters before changing a tree."""
+        folder_id = request.GET.get("dest_folder")
+        version_id = request.GET.get("dest_version")
+        if folder_id is None and version_id is None:
+            raise ValueError("No Destination Library or Folder supplied")
+        try:
+            if folder_id is not None:
+                destination = LibraryFolder.objects.get(id=int(folder_id))
+                seen = set()
+                current = destination
+                while current is not None:
+                    if current.pk == source.pk:
+                        raise ValueError("A folder cannot be moved or copied into itself or a descendant.")
+                    if current.pk in seen:
+                        raise ValueError("The destination folder has an invalid parent path.")
+                    seen.add(current.pk)
+                    current = current.parent
+                return destination, destination.version
+            return None, LibraryVersion.objects.get(id=int(version_id))
+        except (TypeError, LibraryFolder.DoesNotExist, LibraryVersion.DoesNotExist):
+            raise ValueError("Select an existing destination library version or folder.")
+
     @action(methods=['get'], detail=True)
     def contents(self, request, pk=None):
         if pk is None:
@@ -553,30 +576,16 @@ class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
             for child in folder.subfolders.all():
                 update_child_version(child, version)
 
-        folder_id = request.GET.get("dest_folder", None)
-        version_id = request.GET.get("dest_version", None)
-
-        if folder_id is not None:
-            destination = LibraryFolder.objects.get(id=int(folder_id))
-            to_move = LibraryFolder.objects.get(id=pk)
+        to_move = get_object_or_404(LibraryFolder, id=pk)
+        try:
+            destination, version = self._transfer_target(request, to_move)
+        except ValueError as error:
+            return build_response(status=status.HTTP_400_BAD_REQUEST, success=False, error=str(error))
+        with transaction.atomic():
             to_move.parent = destination
             to_move.save()
-            update_child_version(to_move, destination.version)
-            return build_response()
-
-        if version_id is not None:
-            destination = LibraryVersion.objects.get(id=int(version_id))
-            to_move = LibraryFolder.objects.get(id=pk)
-            to_move.parent = None
-            to_move.save()
-            update_child_version(to_move, destination)
-            return build_response()
-
-        return build_response(
-            status=status.HTTP_400_BAD_REQUEST,
-            success=False,
-            error="No Destination Library or Folder supplied"
-        )
+            update_child_version(to_move, version)
+        return build_response()
 
     @action(methods=["post"], detail=True)
     def copy_to(self, request, pk=None):
@@ -598,26 +607,14 @@ class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
             for child in LibraryFolder.objects.get(id=old_id).subfolders.all():
                 copy_children_and_update(child, version, folder)
 
-        folder_id = request.GET.get("dest_folder", None)
-        version_id = request.GET.get("dest_version", None)
-
-        if folder_id is not None:
-            destination = LibraryFolder.objects.get(id=int(folder_id))
-            to_move = LibraryFolder.objects.get(id=pk)
-            copy_children_and_update(to_move, destination.version, destination)
-            return build_response()
-
-        if version_id is not None:
-            destination = LibraryVersion.objects.get(id=int(version_id))
-            to_move = LibraryFolder.objects.get(id=pk)
-            copy_children_and_update(to_move, destination, None)
-            return build_response()
-
-        return build_response(
-            status=status.HTTP_400_BAD_REQUEST,
-            success=False,
-            error="No Destination Library or Folder supplied"
-        )
+        to_copy = get_object_or_404(LibraryFolder, id=pk)
+        try:
+            destination, version = self._transfer_target(request, to_copy)
+        except ValueError as error:
+            return build_response(status=status.HTTP_400_BAD_REQUEST, success=False, error=str(error))
+        with transaction.atomic():
+            copy_children_and_update(to_copy, version, destination)
+        return build_response()
 
 
 class LibraryModuleViewSet(StandardDataView, viewsets.ModelViewSet):

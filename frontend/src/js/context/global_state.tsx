@@ -9,6 +9,7 @@ import { APP_URLS, get_data } from '../urls';
 import { update_state } from '../utils';
 import { cloneDeep, get, range } from 'lodash';
 import React from 'react';
+import strings from '../locales/curator.en.json';
 import { debounce } from "lodash";
 
 interface GlobalStateProps {
@@ -17,6 +18,8 @@ interface GlobalStateProps {
     }>
 }
 interface GlobalStateState {
+    initializing: boolean
+    initialization_error: boolean
     contents_api: ContentsProviderState
     metadata_api: MetadataProviderState
     library_assets_api: LibraryAssetsState
@@ -53,6 +56,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         const contents_page_sizes = [10, 25, 100]
 
         this.state = {
+            initializing: true,
+            initialization_error: false,
             contents_api: {
                 last_request_timestamp: 0,
                 display_rows: [],
@@ -236,18 +241,24 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     }
 
     componentDidMount() {
-        Axios.get(APP_URLS.CSRF_TOKEN).then(res => {
-            Axios.defaults.headers.common["X-CSRFToken"] = res.data.data
-        })
-        this.refresh_metadata().then(this.load_content_rows)
-        this.refresh_assets()
-        this.refresh_library_versions()
-        this.refresh_folders_in_current_version()
-        this.refresh_users()
-        this.refresh_library_modules()
-        this.refresh_modules_in_current_version()
-        this.get_disk_info()
-        this.update_version_autocomplete("")
+        // Don't present failed or incomplete catalogue requests as empty lists.
+        Promise.all([
+            Axios.get(APP_URLS.CSRF_TOKEN).then(res => {
+                Axios.defaults.headers.common["X-CSRFToken"] = res.data.data
+            }),
+            this.refresh_metadata().then(this.load_content_rows),
+            this.refresh_assets(),
+            this.refresh_library_versions(),
+            this.refresh_users(),
+            this.refresh_library_modules(),
+            this.update_version_autocomplete("")
+        ]).then(() => this.update_state(draft => { draft.initializing = false }),
+            () => this.update_state(draft => {
+                draft.initializing = false
+                draft.initialization_error = true
+            }))
+        // Disk information is optional and can be retried in its own tab.
+        this.get_disk_info().catch(() => {})
     }
 
     // CONTENTS ----------------------------------------------------
@@ -367,11 +378,12 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 })
             }
         } catch(err) {
-            if (err.data.error.detail === "Invalid page.") {
+            if ((err?.data?.error?.detail || err?.data?.detail || err?.detail) === "Invalid page." && this.state.contents_api.page > 0) {
                 return this.update_state(draft => {
                     draft.contents_api.page = draft.contents_api.page - 1
                 }).then(this.load_content_rows)
             }
+            throw err
         }
         // Only update the state if the request was sent after the most recent received request
     }
@@ -655,9 +667,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
      *  Updates the assets held in state to reflect the server.
      */
     async refresh_assets() {
-        get_data(APP_URLS.LIBRARY_ASSETS)
+        return get_data(APP_URLS.LIBRARY_ASSETS)
         .then((library_assets: LibraryAsset[]) => {
-            this.update_state(draft => {
+            return this.update_state(draft => {
                 draft.library_assets_api.assets = library_assets,
                 draft.library_assets_api.assets_by_group = range(1, 4).reduce((acc, group) => {
                     acc[group as AssetGroup] = library_assets.filter(asset => asset.image_group === group)
@@ -675,7 +687,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
 
         return Axios.post(APP_URLS.LIBRARY_ASSETS, data, {
             headers: {
-                'Content-Type': 'multitype/form-data'
+                'Content-Type': 'multipart/form-data'
             }
         }).finally(this.refresh_assets)
     }
@@ -722,11 +734,12 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 draft.library_versions_api.library_versions_count = response.count
             })
         } catch (err) {
-            if (err.data.error.detail === "Invalid page.") {
+            if ((err?.data?.error?.detail || err?.data?.detail || err?.detail) === "Invalid page." && this.state.library_versions_api.library_versions_page > 0) {
                 return this.update_state(draft => {
                     draft.library_versions_api.library_versions_page -= 1
                 }).then(this.refresh_library_versions)
             }
+            throw err
         }
     }
 
@@ -836,8 +849,11 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     }
 
     async delete_version(version: LibraryVersion) {
-        return Axios.delete(APP_URLS.LIBRARY_VERSION(version.id))
-            .then(this.refresh_library_versions)
+        await Axios.delete(APP_URLS.LIBRARY_VERSION(version.id))
+        if (this.state.library_versions_api.current_version.id === version.id) {
+            await this.reset_to_library_defaults()
+        }
+        return this.refresh_library_versions()
     }
 
     async build_version(version: LibraryVersion) {
@@ -889,11 +905,13 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     }
 
     async clone_version(version: LibraryVersion) {
-        return Axios.get(APP_URLS.LIBRARY_VERSION_CLONE(version.id))
-            .then(this.refresh_library_versions)
-            .then(this.refresh_current_directory)
-            .then(this.refresh_folders_in_current_version)
-            .then(this.refresh_modules_in_current_version)
+        await Axios.get(APP_URLS.LIBRARY_VERSION_CLONE(version.id))
+        await this.refresh_library_versions()
+        if (this.state.library_versions_api.current_version.id !== 0) {
+            await this.refresh_current_directory()
+            await this.refresh_folders_in_current_version()
+            await this.refresh_modules_in_current_version()
+        }
     }
  
     async delete_folder(folder: LibraryFolder) {
@@ -1050,7 +1068,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     async edit_module(to_edit: LibraryModule, name: string, file?: File | null) {
         const form_data = new FormData()
         form_data.append("module_name", name)
-        if (file != undefined && file.type !== "application/zip") {
+        if (file != undefined) {
             form_data.append("module_file", file)
         }
 
@@ -1087,6 +1105,12 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     }
 
     render() {
+        if (this.state.initializing) return <p role="status">{strings.loading}</p>
+        if (this.state.initialization_error) return <div className="advanced-empty">
+            <p role="alert">{strings.workspace_load_error}</p>
+            <button type="button" className="manager-button manager-secondary" onClick={() => window.location.reload()}>{strings.retry_workspace}</button>
+        </div>
+
         const Render = this.props.render
         return <Render
             apis={{

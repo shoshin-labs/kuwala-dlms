@@ -1,5 +1,6 @@
 import React, {Component} from "react"
 import { ContentsAPI, active_search_option, MetadataAPI, SerializedMetadata, SerializedContent, LibraryVersionsAPI } from '../types'
+import strings from '../locales/curator.en.json'
 import ActionPanel from './action_panel'
 import prettyByte from "pretty-bytes"
 
@@ -101,7 +102,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <Grid container spacing={2}>
-                            <Grid item xs={4}>
+                            <Grid item xs={12} sm={6} md={4}>
                                 <TextField
                                     fullWidth
                                     label={"Title"}
@@ -114,7 +115,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={4}>
+                            <Grid item xs={12} sm={6} md={4}>
                                 <TextField
                                     fullWidth
                                     label={"Display Title"}
@@ -127,7 +128,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={4}>
+                            <Grid item xs={12} sm={6} md={4}>
                                 <TextField
                                     fullWidth
                                     label={"Filename"}
@@ -140,7 +141,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={4}>
+                            <Grid item xs={12} sm={6} md={4}>
                                 <TextField
                                     fullWidth
                                     label={"Copyright Notes"}
@@ -153,7 +154,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={2}>
+                            <Grid item xs={12} sm={6} md={3}>
                                 <TextField
                                     fullWidth
                                     label={"Years From"}
@@ -170,7 +171,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={2}>
+                            <Grid item xs={12} sm={6} md={3}>
                                 <TextField
                                     fullWidth
                                     label={"Years To"}
@@ -187,7 +188,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={2}>
+                            <Grid item xs={12} sm={6} md={3}>
                                 <TextField
                                     fullWidth
                                     label={"Filesize From (MB)"}
@@ -204,7 +205,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={2}>
+                            <Grid item xs={12} sm={6} md={3}>
                                 <TextField
                                     fullWidth
                                     label={"Filesize To (MB)"}
@@ -221,7 +222,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={2}>
+                            <Grid item xs={12} sm={6} md={3}>
                                 <KeyboardDatePicker
                                     variant={"inline"}
                                     format={"MM/dd/yyyy"}
@@ -234,7 +235,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={2}>
+                            <Grid item xs={12} sm={6} md={3}>
                                 <KeyboardDatePicker
                                     variant={"inline"}
                                     format={"MM/dd/yyyy"}
@@ -291,7 +292,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                             </Grid>
                             {metadata_api.state.metadata_types.map((metadata_type, idx) => {
                                 return (
-                                    <Grid item xs={4} key={idx}>
+                                    <Grid item xs={12} sm={6} md={4} key={idx}>
                                         <Autocomplete
                                             multiple
                                             options={this.props.metadata_api.state
@@ -337,7 +338,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                     )}
                     getCellValue={(row, col_name) => {
                         if (col_name == "filesize") {
-                            return prettyByte(row["filesize"])
+                            return Number.isFinite(row["filesize"]) && row["filesize"] >= 0 ? prettyByte(row["filesize"]) : strings.file_size_unknown
                         } else if (col_name == "modified_on" || col_name == "reviewed_on") {
                             return moment(row[col_name]).format("M/D/YY h:mm a")
                         } else {
@@ -384,7 +385,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                     />
                     <IntegratedSelection />
                     <CustomPaging totalCount={this.props.contents_api.state.total_count}/>
-                    <Table columnExtensions={[{columnName: 'actions', width: 100}]}/>
+                    <Table columnExtensions={[{columnName: 'actions', width: 144}]}/>
                     <TableHeaderRow showSortingControls />
                     <TableSelection showSelectAll />
                     <PagingPanel pageSizes={this.props.contents_api.state.page_sizes} />

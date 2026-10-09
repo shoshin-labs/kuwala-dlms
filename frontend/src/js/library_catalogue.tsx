@@ -241,34 +241,6 @@ export default function LibraryCatalogue() {
         </h1>
         {!library && <p className="intro-text">{s("catalogue_intro")}</p>}
       </div>
-      {versions.length > 1 && (
-        <div className="version-picker">
-          <label htmlFor="catalogue-version">{s("collection")}</label>
-          <select
-            id="catalogue-version"
-            value={version?.id || ""}
-            onChange={(event) =>
-              navigate({
-                version: event.target.value,
-                library: "",
-                section: "",
-                document: "",
-                q: "",
-                page: "1",
-              })
-            }
-          >
-            {versions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {s("version_label", {
-                  name: item.library_name,
-                  version: item.version_number,
-                })}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
       {loading ? (
         <p role="status" className="empty-state">
           {s("loading")}

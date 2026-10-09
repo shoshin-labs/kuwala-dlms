@@ -1,7 +1,5 @@
 import React from "react"
-import { Edit, Delete, CheckCircleOutline, HighlightOff, Visibility, ArrowBack, CropOriginal, FileCopy, LocalOffer, GetApp } from "@material-ui/icons"
-import IconButton from "@material-ui/core/IconButton";
-import Tooltip from "@material-ui/core/Tooltip";
+import KebabMenu from './kebab_menu';
 import strings from '../locales/curator.en.json';
 
 interface ActionPanelProps {
@@ -26,23 +24,25 @@ interface ActionPanelProps {
 }
 
 export default function ActionPanel(props: ActionPanelProps) {
-    const action = (key: string, label: string, handler: (() => void) | undefined, icon: JSX.Element) => handler ? (
-        <Tooltip title={label} key={key}>
-            <IconButton type="button" aria-label={label} onClick={handler} color="primary" style={{minWidth: 48, minHeight: 48}}>
-                {icon}
-            </IconButton>
-        </Tooltip>
-    ) : null;
-    return <span role="group" aria-label={strings.row_actions} style={{display: 'inline-flex', flexWrap: 'wrap', maxWidth: '100%', gap: 2}}>
-        {action('add', strings.action_add, props.addFn, <ArrowBack />)}
-        {action('edit', props.editHint || strings.action_edit, props.editFn, <Edit />)}
-        {action('delete', props.deleteHint || strings.action_delete, props.deleteFn, <Delete />)}
-        {props.setActive && action('active', props.row.active == 0 ? strings.action_activate : strings.action_deactivate,
-            () => props.setActive!(props.row.active == 0), props.row.active == 0 ? <CheckCircleOutline /> : <HighlightOff />)}
-        {action('view', props.viewHint || strings.action_view, props.viewFn, <Visibility />)}
-        {action('image', props.imageHint || props.logoHint || strings.action_image, props.imageFn, <CropOriginal />)}
-        {action('clone', props.cloneHint || strings.action_clone, props.cloneFn, <FileCopy />)}
-        {action('metadata', props.metadataHint || strings.action_metadata, props.buildFn, <LocalOffer />)}
-        {action('download', props.downloadHint || strings.action_download, props.downloadFn, <GetApp />)}
+    const items: [() => void, string][] = [];
+    const action = (label: string, handler?: () => void) => {
+        if (handler) items.push([handler, label]);
+    };
+    action(strings.action_add, props.addFn);
+    action(props.editHint || strings.action_edit, props.editFn);
+    action(props.deleteHint || strings.action_delete, props.deleteFn);
+    if (props.setActive) {
+        action(props.row.active == 0 ? strings.action_activate : strings.action_deactivate,
+            () => props.setActive!(props.row.active == 0));
+    }
+    action(props.viewHint || strings.action_view, props.viewFn);
+    action(props.imageHint || props.logoHint || strings.action_image, props.imageFn);
+    action(props.cloneHint || strings.action_clone, props.cloneFn);
+    action(props.metadataHint || strings.action_metadata, props.buildFn);
+    action(props.downloadHint || strings.action_download, props.downloadFn);
+    if (!items.length) return null;
+
+    return <span className="oasis-advanced-actions" role="group" aria-label={strings.row_actions}>
+        <KebabMenu items={items} />
     </span>
 }
