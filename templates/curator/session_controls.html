@@ -1,0 +1,5 @@
+<style>.oasis-session{display:flex;justify-content:flex-end;align-items:center;gap:20px;padding:8px 20px;border-bottom:1px solid #c8d7e2;color:#123c5b;background:#fff;font:16px/1.4 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.oasis-session a,.oasis-session button{display:inline-flex;align-items:center;min-height:44px;color:#075b94;font:inherit}.oasis-session a:focus-visible,.oasis-session button:focus-visible{outline:3px solid #075b94;outline-offset:3px}.oasis-session button{padding:8px 16px;border:1px solid #075b94;border-radius:6px;background:#fff;cursor:pointer}.oasis-session form{margin:0}@media(max-width:480px){.oasis-session{gap:12px;flex-wrap:wrap;padding:8px 16px}}</style>
+<nav class="oasis-session" aria-label="{{ curator_ui.private_access }}">
+  <a href="{% url 'oasis-password-change' %}">{{ curator_ui.change_password }}</a>
+  <form method="post" action="{% url 'oasis-logout' %}">{% csrf_token %}<button type="submit">{{ curator_ui.logout }}</button></form>
+</nav>

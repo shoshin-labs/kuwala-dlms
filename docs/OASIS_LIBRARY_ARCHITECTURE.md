@@ -3,12 +3,14 @@
 Architecture and implementation direction, 8 October 2026. Kuwala's DLMS fork
 is the private authoring system for Oasis Library. The first implementation
 retains Django and the existing React/Material UI framework, with Oasis styling.
-Visitors use the station reader and chat; curators use the SSH-only workspace on
+Visitors use the station reader and chat; curators use the authenticated private workspace on
 the Jetson. Both operate on the same logical collection: authoring records and
 verified immutable reader snapshots. The [catalogue transfer](OASIS_CATALOGUE_TRANSFER.md)
 preserves the existing main collection's IDs, original files, metadata and
 review scope and can adopt its matching verified index. Publication enforcement,
-remote curator authentication and the larger integrations below remain follow-ups.
+fine-grained curator/reviewer/publisher roles and the larger integrations below remain follow-ups.
+The device manager uses [standard Django staff sessions](OASIS_CURATOR_ACCESS.md)
+with SSH access or an explicitly configured private Tailscale HTTPS origin.
 
 ## What the alpha has demonstrated
 
@@ -44,8 +46,9 @@ been established. Keep those limits visible in the development plan.
 The current curator adapts the existing DLMS React interface and Django API;
 the station reader shares Oasis's header and visual language. A later shared
 Oasis React shell is a separate migration option. The deployed private Django
-runtime listens only on Jetson loopback. Remote operator routing requires real
-access enforcement rather than hidden navigation or a proxy's loopback address.
+runtime listens only on Jetson loopback. Its device shell, APIs, exports,
+originals and draft index endpoints require an active staff session in addition
+to the loopback, origin and CSRF checks.
 
 The Pi tailnet proxy stays a visitor gateway: approved readers and chat only.
 It must not forward curator, upload or publishing endpoints. A curator host

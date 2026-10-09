@@ -15,7 +15,8 @@ from content_management.standardize_format import build_response
 from content_management.paginators import PageNumberSizePagination
 
 from django.db.models import Q
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
+from django.utils import timezone
 
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
@@ -696,8 +697,13 @@ def get_csrf(request):
 def bulk_edit(request):
     to_remove = request.data.get("to_remove")
     to_add = request.data.get("to_add")
-    for content in Content.objects.filter(id__in=request.data.get("to_edit")):
-        content.metadata.remove(*to_remove)
-        content.metadata.add(*to_add)
+    with transaction.atomic():
+        for content in Content.objects.select_for_update().filter(id__in=request.data.get("to_edit")):
+            before = set(content.metadata.values_list('id', flat=True))
+            content.metadata.remove(*to_remove)
+            content.metadata.add(*to_add)
+            if before != set(content.metadata.values_list('id', flat=True)):
+                content.modified_on = timezone.now()
+                content.save(update_fields=['modified_on'])
 
     return build_response()

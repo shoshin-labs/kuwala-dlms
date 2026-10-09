@@ -707,13 +707,16 @@ class Target:
             try:
                 if service_state(WEB).get('ActiveState') != 'active':
                     raise ValueError('Curator service is not active.')
-                with urllib.request.urlopen('http://127.0.0.1:8790/api/oasis/config/', timeout=5) as response:
+                authenticated_runtime = (release / 'app/dlms/curator_auth.py').is_file()
+                endpoint = '/healthz' if authenticated_runtime else '/api/oasis/config/'
+                with urllib.request.urlopen('http://127.0.0.1:8790' + endpoint, timeout=5) as response:
                     config = json.load(response)
                 data = config.get('data', config)
-                if not data.get('curator_enabled') or config.get('success') is False:
-                    raise ValueError('The private device endpoint does not enable curator operations.')
-                if data.get('synthetic_fixtures'):
-                    raise ValueError('Synthetic fixtures must never be commissioned as the operator catalogue.')
+                if authenticated_runtime:
+                    if data != {'ready': True, 'authentication_required': True} or config.get('success') is not True:
+                        raise ValueError('The private device endpoint does not report authenticated curator readiness.')
+                elif not data.get('curator_enabled') or data.get('synthetic_fixtures') or config.get('success') is False:
+                    raise ValueError('The earlier private device runtime is not ready for rollback.')
                 process = service_state(WEB).get('MainPID', '')
                 if not process.isdigit() or not Path('/proc/' + process + '/cwd').exists() or Path('/proc/' + process + '/cwd').resolve() != release / 'app':
                     raise ValueError('The running curator process does not use this exact staged release.')

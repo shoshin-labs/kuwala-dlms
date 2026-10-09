@@ -31,9 +31,9 @@ existing operator-data testing. Neither dependency set is a public deployment re
 ## Publication and access
 
 Follow [the architecture](OASIS_LIBRARY_ARCHITECTURE.md) for immutable
-versions/releases. Add authenticated curator/reviewer/publisher roles and
-server-enforced approval before remote management. Loopback restriction is a
-development boundary. Published readers must expose only approved immutable
+versions/releases. Standard active-staff session login now protects the private
+device curator; add distinct curator/reviewer/publisher roles and server-enforced
+approval. Loopback restriction alone is a development boundary. Published readers must expose only approved immutable
 versions without staging/private authoring metadata. Upload and active flags
 do not establish approval; recorded review does not certify expert advice.
 

@@ -4,6 +4,7 @@ from content_management.models import (
     LibraryVersion, LibraryFolder, LibLayoutImage, LibraryModule)
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.exceptions import ValidationError
+from django.utils import timezone
 
 
 class ContentSerializer(ModelSerializer):
@@ -12,6 +13,15 @@ class ContentSerializer(ModelSerializer):
         fields = ('id', 'file_name', 'content_file', 'title', 'display_title', 'description', 'modified_on', 'copyright_notes',
                   'rights_statement', 'published_date', 'active', 'metadata', 'additional_notes', 'metadata_info',
                   "published_year", "filesize", "reviewed_on", 'duplicatable')
+        read_only_fields = ('modified_on',)
+
+    def create(self, validated_data):
+        validated_data['modified_on'] = timezone.now()
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data['modified_on'] = timezone.now()
+        return super().update(instance, validated_data)
 
 
 class MetadataSerializer(ModelSerializer):
