@@ -53,8 +53,22 @@ Only a canonical HTTPS Tailscale hostname with explicit port `8443` is accepted.
 No wildcard, credential, path, query, fragment or alternative public hostname is
 accepted. The optional value does not create a proxy or expose a listener.
 
-After the operator has installed and verified the authenticated release, install
-the tracked dedicated Pi user service from the exact verified release:
+After the operator has installed and verified the authenticated release, create
+a dedicated Pi SSH key at `~/.ssh/oasis-library-admin-forward` (mode `0600`):
+
+```sh
+ssh-keygen -t ed25519 -N '' -C oasis-library-admin-forward -f ~/.ssh/oasis-library-admin-forward
+```
+
+Install its public key in the Jetson operator account's `authorized_keys` with
+exactly `restrict,port-forwarding,permitopen="127.0.0.1:8790"` before the key.
+This permits the manager forward only. Retain the visitor key's existing
+restriction to its own port. The tracked unit uses `-F /dev/null` and
+`IdentitiesOnly=yes` so a host configuration cannot select the visitor key.
+Never copy or log the private key. Keep the existing verified Jetson host key
+in the Pi operator's `known_hosts`.
+
+Then install the tracked dedicated Pi user service:
 
 ```sh
 scp deploy/oasis-library-admin-forward.service brightadmin@kuwala001.local:oasis-library-admin-forward.service
