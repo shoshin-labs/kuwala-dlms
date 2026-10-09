@@ -1,7 +1,7 @@
 """Folder-backed library/section review contract; no originals or live state."""
 import copy
 from django.test import SimpleTestCase
-from scripts.prepare_oasis_catalogue import validate_manifest_placement
+from scripts.prepare_oasis_catalogue import validate_manifest_placement, validate_manifest_sections
 
 
 class KnowledgePlacementManifestTests(SimpleTestCase):
@@ -36,8 +36,10 @@ class KnowledgePlacementManifestTests(SimpleTestCase):
                 changed[3][key] = value
                 with self.assertRaises(ValueError):
                     validate_manifest_placement(self.manifest, changed, self.slugs)
+        validate_manifest_placement(self.manifest, {**self.folders, 5: {'folder_name': 'Empty holding', 'parent': 1, 'library_content': []}}, self.slugs)
+        validate_manifest_placement(self.manifest, {**self.folders, 5: {'folder_name': 'Private holding', 'parent': None, 'library_content': [999]}}, self.slugs)
         with self.assertRaises(ValueError):
-            validate_manifest_placement(self.manifest, {**self.folders, 5: {'folder_name': 'Unreviewed', 'parent': 1, 'library_content': []}}, self.slugs)
+            validate_manifest_placement(self.manifest, {**self.folders, 5: {'folder_name': 'Unreviewed descendant', 'parent': 1, 'library_content': [999]}}, self.slugs)
 
     def test_parent_cycle_and_invalid_library_are_rejected(self):
         for changes in ({'parent_id': 'maize'}, {'library_id': 'missing'}):
@@ -47,7 +49,7 @@ class KnowledgePlacementManifestTests(SimpleTestCase):
                 validate_manifest_placement(manifest, self.folders, self.slugs)
 
     def test_section_and_document_provider_id_collisions_are_rejected(self):
-        for identifier in ('general-knowledge', 'fao-grain', 'fao-mycotoxin-part-1', 'fao-mycotoxin-part-2'):
+        for identifier in ('general-knowledge', 'fao-grain', 'fao-mycotoxin-part-1', 'fao-mycotoxin-part-2', 'oasis', 'datasource'):
             manifest = copy.deepcopy(self.manifest)
             manifest['sections'][0]['id'] = identifier
             with self.assertRaises(ValueError):
@@ -56,6 +58,36 @@ class KnowledgePlacementManifestTests(SimpleTestCase):
         manifest['documents'][0]['id'] = 'fao-mycotoxin-part-1'
         with self.assertRaises(ValueError):
             validate_manifest_placement(manifest, self.folders, self.slugs)
+
+    def test_depth_boundary_is_sixteen_section_levels(self):
+        manifest = copy.deepcopy(self.manifest)
+        manifest['sections'] = [
+            {'id': 'level-%s' % index, 'label': 'Level %s' % index, 'library_id': 'farming',
+             'dlms_folder_id': index + 2, 'parent_id': ('level-%s' % (index - 1)) if index else None,
+             'document_ids': []}
+            for index in range(16)
+        ]
+        validate_manifest_sections(manifest)
+        manifest['sections'].append({'id': 'level-16', 'label': 'Too deep', 'library_id': 'farming',
+                                     'dlms_folder_id': 18, 'parent_id': 'level-15', 'document_ids': []})
+        with self.assertRaises(ValueError):
+            validate_manifest_sections(manifest)
+
+    def test_malformed_or_out_of_scope_sections_fail_cleanly(self):
+        cases = [None, [], {'library_id': []}, {'parent_id': []}, {'label': 'Bad\x00label'},
+                 {'document_ids': [None]}, {'document_ids': ['missing']}]
+        for changes in cases:
+            manifest = copy.deepcopy(self.manifest)
+            if isinstance(changes, dict):
+                manifest['sections'][0].update(changes)
+            else:
+                manifest['sections'][0] = changes
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                validate_manifest_sections(manifest)
+        manifest = copy.deepcopy(self.manifest)
+        manifest['sections'][0]['document_ids'] = []
+        with self.assertRaises(ValueError):
+            validate_manifest_sections(manifest)  # Maize must be contained in Grain's scope.
 
     def test_legacy_flat_direct_membership_contract_is_preserved(self):
         self.manifest.pop('sections')

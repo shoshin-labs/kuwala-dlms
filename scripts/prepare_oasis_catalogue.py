@@ -135,35 +135,43 @@ def validate_manifest_sections(manifest):
         raise ValueError('Reviewed sections must be a bounded list.')
     libraries = {item['id']: item for item in manifest['libraries']}
     documents = {item['id'] for item in manifest['documents']}
-    provider_ids = {'general-knowledge', 'fao-grain', 'fao-mycotoxin-part-1', 'fao-mycotoxin-part-2'}
+    provider_ids = {'general-knowledge', 'fao-grain', 'fao-mycotoxin-part-1', 'fao-mycotoxin-part-2', 'oasis', 'datasource'}
     if documents & provider_ids or (set(libraries) & (provider_ids - {'general-knowledge'})):
         raise ValueError('Document/library IDs conflict with built-in knowledge providers.')
     identifiers = set(libraries) | documents | provider_ids
     folder_ids = {item['dlms_folder_id'] for item in manifest['libraries']}
     by_id = {}
     for section in sections:
-        identifier = section.get('id')
-        label = section.get('label')
-        members = section.get('document_ids')
+        if not isinstance(section, dict):
+            raise ValueError('Reviewed section must be an object.')
+        identifier, label = section.get('id'), section.get('label')
+        members, library_id = section.get('document_ids'), section.get('library_id')
+        parent = section.get('parent_id')
         folder_id = positive(section.get('dlms_folder_id'), 'Section DLMS folder ID')
         if (not isinstance(identifier, str) or not re.fullmatch(r'[a-z][a-z0-9]*(?:-[a-z0-9]+)*', identifier) or len(identifier) > 64
                 or identifier in identifiers or identifier in by_id or folder_id in folder_ids
                 or not isinstance(label, str) or not label.strip() or len(label) > 200
-                or section.get('library_id') not in libraries
-                or not isinstance(members, list) or len(set(members)) != len(members)
-                or not set(members).issubset(documents)):
+                or any(ord(char) < 32 or 127 <= ord(char) <= 159 for char in label)
+                or not isinstance(library_id, str) or library_id not in libraries
+                or (parent is not None and (not isinstance(parent, str) or not re.fullmatch(r'[a-z][a-z0-9]*(?:-[a-z0-9]+)*', parent)))
+                or not isinstance(members, list) or len(members) > 128
+                or any(not isinstance(member, str) for member in members)
+                or len(set(members)) != len(members)
+                or not set(members).issubset(libraries[library_id]['document_ids'])):
             raise ValueError('Reviewed section identities, library and document scope must be complete and unique.')
         by_id[identifier] = section
         folder_ids.add(folder_id)
-    for identifier, section in by_id.items():
-        parent = section.get('parent_id')
-        seen = {identifier}
-        while parent is not None:
-            if (parent not in by_id or parent in seen or len(seen) > 16
-                    or by_id[parent]['library_id'] != section['library_id']):
-                raise ValueError('Section parents must belong to the same library without cycles.')
-            seen.add(parent)
-            parent = by_id[parent].get('parent_id')
+    for section in by_id.values():
+        current, seen = section, set()
+        while current.get('parent_id') is not None:
+            if current['id'] in seen or len(seen) >= 15:
+                raise ValueError('Section parents must belong to the same library without cycles or more than 16 levels.')
+            seen.add(current['id'])
+            parent = by_id.get(current['parent_id'])
+            if (parent is None or parent['library_id'] != section['library_id']
+                    or not set(current['document_ids']).issubset(parent['document_ids'])):
+                raise ValueError('Section parent must belong to the same library and contain its documents.')
+            current = parent
     return by_id
 
 
@@ -180,11 +188,9 @@ def validate_manifest_placement(manifest, folders, by_slug):
         return
     libraries = {item['id']: item for item in manifest['libraries']}
     definitions = [*libraries.values(), *sections.values()]
-    declared = {item['dlms_folder_id'] for item in definitions}
-    # The hierarchical manifest describes the complete tree, including empty
-    # sections, so an undeclared child cannot silently change a reviewed scope.
-    if set(folders) != declared:
-        raise ValueError('Reviewed libraries and sections must describe every authoring folder in this catalogue.')
+    # Private operational/holding folders may remain outside the published
+    # definitions. Any descendant of a declared scope still contributes to its
+    # exact union, so unpublished documents cannot slip into a reviewed scope.
     children = {}
     for identifier, folder in folders.items():
         parent = folder.get('parent')

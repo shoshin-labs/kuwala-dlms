@@ -129,9 +129,12 @@ For a hierarchical release, the additive manifest `sections` array declares each
 section's stable slug, label, `library_id`, `dlms_folder_id`, `parent_id` (null for
 a direct library child) and deduplicated descendant `document_ids`. Root library
 `document_ids` also describes its full subtree. Empty sections are supported;
-root library scopes must include at least one reviewed PDF. Folder labels, parents
-and complete subtree memberships must exactly match authoring/export before
-indexing or transfer. A legacy manifest without `sections` retains its prior
+root library scopes must include at least one reviewed PDF. Declared folder labels, parents
+and exact subtree memberships must match authoring/export before
+indexing or transfer. Operational holding folders may remain undeclared, but all
+descendants contribute to their declared ancestors’ exact scope. An undeclared
+empty folder does not force a public section; an extra unpublished document in a
+declared subtree rejects the reviewed scope. A legacy manifest without `sections` retains its prior
 flat direct-folder validation.
 
 ## Configure the local worker
