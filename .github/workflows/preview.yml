@@ -23,7 +23,7 @@ jobs:
         working-directory: frontend
       - run: npm run build-prod
         working-directory: frontend
-      - run: node --test scripts/test-document-updated.js
+      - run: node --test scripts/test-document-updated.js scripts/test-brand.js
         working-directory: frontend
       - run: python scripts/preview.py prepare
       - run: python scripts/preview.py check

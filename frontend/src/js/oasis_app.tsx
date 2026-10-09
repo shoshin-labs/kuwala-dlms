@@ -139,6 +139,14 @@ function Shell({
               switchView("catalogue");
             }}
           >
+            <img
+              className="brand-logo"
+              src="/static/images/kuwala-oasis.svg"
+              alt=""
+              aria-hidden="true"
+              width="40"
+              height="40"
+            />
             <span className="brand-name">{s("product")}</span>
             <span className="brand-station">{s("station")}</span>
           </a>

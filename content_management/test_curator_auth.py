@@ -140,6 +140,20 @@ class CuratorSessionTests(TestCase):
         self.assertEqual(self.client.get('/healthz', REMOTE_ADDR='192.0.2.1', HTTP_X_FORWARDED_FOR='127.0.0.1').status_code, 403)
         self.assertEqual(self.client.get('/accounts/login/', REMOTE_ADDR='192.0.2.1').status_code, 403)
 
+    def test_private_account_screens_share_decorative_logo_and_local_icons(self):
+        login = self.client.get('/accounts/login/')
+        self.assertEqual(login.status_code, 200)
+        self.assertEqual(self.sign_in().status_code, 302)
+        for response in [login, self.client.get('/accounts/password-change/'),
+                         self.client.get('/accounts/password-change/done/')]:
+            with self.subTest(path=response.wsgi_request.path):
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, '<img src="/static/images/kuwala-oasis.svg" alt="" aria-hidden="true" width="40" height="40">')
+                self.assertContains(response, '<strong>Oasis Library</strong>')
+                for name in ['favicon.ico', 'favicon-32.png', 'favicon.svg', 'apple-touch-icon.png']:
+                    self.assertContains(response, 'href="/static/images/' + name + '"')
+                self.assertNotContains(response, '/static/images/oasis-library.svg')
+
     @override_settings(OASIS_DEVICE_ADMIN_ORIGIN='https://kuwala001.tailc01a0e.ts.net:8443')
     def test_exact_trusted_https_origin_cookie_security_and_csrf(self):
         host = {'HTTP_HOST': 'kuwala001.tailc01a0e.ts.net:8443', 'HTTP_X_FORWARDED_PROTO': 'https'}
