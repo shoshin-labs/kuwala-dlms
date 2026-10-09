@@ -10,6 +10,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  MenuItem,
 } from "@material-ui/core";
 import { request } from "./manager_api";
 import { useManagerStrings } from "./manager_strings";
@@ -338,21 +339,14 @@ export function IndexingSummary() {
   const { snapshot, checking, error, notice, refresh } = useIndexing();
   const job = snapshot?.jobs.find(activeJob) || snapshot?.jobs[0];
   const config = snapshot?.configuration;
-  const [expanded, setExpanded] = useState(false);
-  useEffect(() => {
-    if (error || job && (activeJob(job) || job.state === "failed")) {
-      setExpanded(true);
-    }
-  }, [error, job?.id, job?.state]);
-  let compactStatus = s("index_checking");
+  let compactStatus = "";
   if (error) compactStatus = s("index_status_unavailable");
   else if (!checking && snapshot) {
     if (job && (activeJob(job) || job.state === "failed"))
       compactStatus = s("index_job_" + job.state);
     else if (!config!.configured || !config!.lexical_available)
       compactStatus = s("index_unconfigured");
-    else if (job) compactStatus = s("index_job_" + job.state);
-    else compactStatus = s(config!.worker_active ? "index_worker_ready" : "index_worker_inactive");
+    else if (!config!.worker_active) compactStatus = s("index_worker_inactive_short");
   }
   return (
     <section
@@ -364,12 +358,11 @@ export function IndexingSummary() {
           {notice}
         </p>
       )}
-      <details className="manager-index-disclosure" open={expanded}
-        onToggle={(event) => setExpanded(event.currentTarget.open)}>
+      <details className="manager-index-disclosure">
         <summary>
           <h2 id="manager-index-overview-title">{s("index_draft_title")}</h2>
-          <span className="manager-index-disclosure-state"
-            role={error || job?.state === "failed" ? "alert" : "status"}>{compactStatus}</span>
+          {compactStatus && <span className="manager-index-disclosure-state"
+            role={error || job?.state === "failed" ? "alert" : "status"}>{compactStatus}</span>}
         </summary>
         <div className="manager-index-disclosure-content">
           <div className="manager-index-overview-heading">
@@ -533,12 +526,21 @@ export function DocumentIndexStatus({ documentId }: { documentId: number }) {
 export function ReindexAction({
   target,
   disabled = false,
+  menuItem = false,
+  onChoose,
 }: {
   target: IndexTarget;
   disabled?: boolean;
+  menuItem?: boolean;
+  onChoose?: () => void;
 }) {
   const s = useManagerStrings();
   const { snapshot, checking, error, open } = useIndexing();
+  const label = s(target.documentId !== undefined ? "reindex_document" :
+    target.isSection ? "reindex_section" : "reindex_library");
+  const unavailable = disabled || checking || Boolean(error) || !eligible(snapshot, target);
+  const choose = () => { onChoose?.(); open(target); };
+  if (menuItem) return <MenuItem disabled={unavailable} onClick={choose}>{label}</MenuItem>;
   return (
     <button
       className="manager-text-button"
@@ -550,18 +552,10 @@ export function ReindexAction({
             : "reindex_library_named",
         { name: target.name },
       )}
-      disabled={
-        disabled || checking || Boolean(error) || !eligible(snapshot, target)
-      }
-      onClick={() => open(target)}
+      disabled={unavailable}
+      onClick={choose}
     >
-      {s(
-        target.documentId !== undefined
-          ? "reindex_document"
-          : target.isSection
-            ? "reindex_section"
-            : "reindex_library",
-      )}
+      {label}
     </button>
   );
 }

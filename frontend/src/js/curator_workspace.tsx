@@ -4,6 +4,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Menu,
+  MenuItem,
 } from "@material-ui/core";
 import {
   LibraryVersion,
@@ -48,6 +50,10 @@ const AdvancedTools = React.lazy(
 const BulkContentModal = React.lazy(
   () => import(/* webpackChunkName: "bulk-import" */ "./reusable/bulk_content_modal"),
 );
+function urlId(value: string | null, fallback = 0) {
+  const number = Number(value);
+  return Number.isSafeInteger(number) && number > 0 ? number : fallback;
+}
 type Modal = {
   kind:
     | "library-create"
@@ -101,9 +107,13 @@ export default function CuratorWorkspace() {
   const [data, setData] = useState<ManagerData | null>(null);
   const [versionId, setVersionId] = useState(
     () =>
-      Number(new URL(window.location.href).searchParams.get("version")) || 0,
+      urlId(new URL(window.location.href).searchParams.get("version")),
   );
-  const [libraryId, setLibraryId] = useState(-1);
+  const [libraryId, setLibraryId] = useState(() => {
+    const params = new URL(window.location.href).searchParams;
+    const folder = params.get("section") ?? params.get("library");
+    return folder === null ? -1 : urlId(folder);
+  });
   const [folders, setFolders] = useState<CatalogueFolder[]>([]);
   const [allDocumentCount, setAllDocumentCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -111,10 +121,10 @@ export default function CuratorWorkspace() {
   const [loadError, setLoadError] = useState("");
   const [folderError, setFolderError] = useState("");
   const [revision, setRevision] = useState(0);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => new URL(window.location.href).searchParams.get("q") || "");
   const [notice, setNotice] = useState("");
-  const [query, setQuery] = useState("");
-  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState(search);
+  const [page, setPage] = useState(() => urlId(new URL(window.location.href).searchParams.get("page"), 1));
   const [documents, setDocuments] =
     useState<DocumentPage<ManagedDocument> | null>(null);
   const [loadedDocumentScope, setLoadedDocumentScope] = useState("");
@@ -130,6 +140,9 @@ export default function CuratorWorkspace() {
   );
   const [modal, setModal] = useState<Modal | null>(null);
   const [advanced, setAdvanced] = useState(false);
+  const advancedReturnUrl = useRef<string | null>(null);
+  const [toolsAnchor, setToolsAnchor] = useState<HTMLElement | null>(null);
+  const [libraryActionsAnchor, setLibraryActionsAnchor] = useState<HTMLElement | null>(null);
   const [bulkImport, setBulkImport] = useState(false);
   const [saving, setSaving] = useState(false);
   const [mutationError, setMutationError] = useState("");
@@ -213,7 +226,7 @@ export default function CuratorWorkspace() {
         setFoldersLoading(false);
         setLibraryId((selected) =>
           selected === -1
-            ? result.folders.find((item) => item.parent === null)?.id || 0
+            ? 0
             : selected && !result.folders.some((item) => item.id === selected)
               ? 0
               : selected,
@@ -230,12 +243,13 @@ export default function CuratorWorkspace() {
     };
   }, [version?.id, revision]);
   useEffect(() => {
+    if (search === query) return;
     const timer = window.setTimeout(() => {
       setQuery(search);
       setPage(1);
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [search]);
+  }, [search, query]);
   useEffect(() => {
     let current = true;
     setDocuments(null);
@@ -279,13 +293,82 @@ export default function CuratorWorkspace() {
       moveFocus.current = false;
     }
   }, [libraryId, page, ready, documentsLoading]);
+  function locationUrl(nextVersion: number, folderId: number, nextQuery: string, nextPage: number) {
+    const url = new URL(window.location.href);
+    const folder = folders.find((item) => item.id === folderId);
+    const root = folder && folderAncestors(folder, folders)[0];
+    url.searchParams.set("workspace", "curator");
+    url.searchParams.set("tab", "contents");
+    url.searchParams.set("version", String(nextVersion));
+    url.searchParams.set("library", String(root?.id || 0));
+    if (folder && folder.parent !== null) url.searchParams.set("section", String(folder.id));
+    else url.searchParams.delete("section");
+    if (nextQuery) url.searchParams.set("q", nextQuery);
+    else url.searchParams.delete("q");
+    if (nextPage > 1) url.searchParams.set("page", String(nextPage));
+    else url.searchParams.delete("page");
+    url.searchParams.delete("document");
+    return url.toString();
+  }
+  useEffect(() => {
+    if (!ready || !documents || loadedDocumentScope !== documentScope || advanced) return;
+    history.replaceState({}, "", locationUrl(version!.id, libraryId, query, page));
+  }, [ready, loadedDocumentScope, documentScope, advanced]);
+  useEffect(() => {
+    const restore = () => {
+      const params = new URL(window.location.href).searchParams;
+      if (params.get("workspace") !== "curator") return;
+      const nextVersion = urlId(params.get("version"), data?.versions[0]?.id || 0);
+      const effectiveVersion = data?.versions.find((item) => item.id === nextVersion) || data?.versions[0];
+      if (effectiveVersion?.id !== version?.id) {
+        setFoldersLoading(true);
+        setFolders([]);
+      }
+      setVersionId(nextVersion);
+      const folderId = urlId(params.get("section") ?? params.get("library"));
+      setLibraryId(!foldersLoading && effectiveVersion?.id === version?.id &&
+        folderId && !folders.some((item) => item.id === folderId) ? 0 : folderId);
+      const nextQuery = params.get("q") || "";
+      setSearch(nextQuery);
+      setQuery(nextQuery);
+      setPage(urlId(params.get("page"), 1));
+      setNotice("");
+      moveFocus.current = true;
+      if (advancedReturnUrl.current) {
+        setReferencesReady(false);
+        setRevision((value) => value + 1);
+      }
+      advancedReturnUrl.current = null;
+      setAdvanced(false);
+      setToolsAnchor(null);
+      setLibraryActionsAnchor(null);
+    };
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, [version?.id, data?.versions, folders, foldersLoading]);
   function chooseLibrary(id: number) {
+    history.pushState({}, "", locationUrl(version!.id, id, "", 1));
     setLibraryId(id);
     setSearch("");
     setQuery("");
     setPage(1);
     moveFocus.current = true;
     setNotice("");
+  }
+  function choosePage(next: number) {
+    history.pushState({}, "", locationUrl(version!.id, libraryId, query, next));
+    setPage(next);
+    moveFocus.current = true;
+  }
+  function openAdvanced() {
+    advancedReturnUrl.current = window.location.href;
+    setAdvanced(true);
+  }
+  function closeAdvanced() {
+    if (advancedReturnUrl.current) history.replaceState({}, "", advancedReturnUrl.current);
+    advancedReturnUrl.current = null;
+    setAdvanced(false);
+    refresh();
   }
   function openModal(next: Modal) {
     setModal(next);
@@ -527,6 +610,7 @@ export default function CuratorWorkspace() {
               value={version?.id || ""}
               disabled={loading || saving}
               onChange={(event) => {
+                history.pushState({}, "", locationUrl(Number(event.target.value), 0, "", 1));
                 setVersionId(Number(event.target.value));
                 setLibraryId(-1);
                 setFolders([]);
@@ -549,12 +633,31 @@ export default function CuratorWorkspace() {
           </label>
         )}
         <button
-          className="manager-text-button"
-          disabled={loading || foldersLoading}
-          onClick={() => refresh()}
+          id="manager-tools-button"
+          className="manager-button"
+          aria-haspopup="menu"
+          aria-controls={toolsAnchor ? "manager-tools-menu" : undefined}
+          aria-expanded={Boolean(toolsAnchor)}
+          onClick={(event) => setToolsAnchor(event.currentTarget)}
         >
-          {loading || foldersLoading ? s("loading") : s("refresh")}
+          {s("tools")} <span aria-hidden="true">▾</span>
         </button>
+        <Menu
+          id="manager-tools-menu"
+          anchorEl={toolsAnchor}
+          open={Boolean(toolsAnchor)}
+          onClose={() => setToolsAnchor(null)}
+          MenuListProps={{ "aria-labelledby": "manager-tools-button" }}
+          className="manager-tools-menu"
+        >
+          <MenuItem onClick={() => { setToolsAnchor(null); openAdvanced(); }}>
+            {s("advanced")}
+          </MenuItem>
+          <MenuItem disabled={loading || foldersLoading}
+            onClick={() => { setToolsAnchor(null); refresh(); }}>
+            {s("refresh")}
+          </MenuItem>
+        </Menu>
       </div>
       {notice && (
         <p className="manager-notice" role="status">
@@ -597,7 +700,6 @@ export default function CuratorWorkspace() {
             documentIds={visible.map((item) => item.id)}
             folderId={selectedFolder?.id}
           >
-            <IndexingSummary />
             <div className="manager-layout">
               <aside
                 className="manager-libraries"
@@ -614,6 +716,26 @@ export default function CuratorWorkspace() {
                 >
                   + {s("new_library")}
                 </button>
+                <div className="manager-mobile-navigation">
+                  <label className="manager-field">{s("placement_library")}
+                    <select value={library?.id || 0} disabled={!ready}
+                      onChange={(event) => chooseLibrary(Number(event.target.value))}>
+                      <option value={0}>{s("location_option", { name: s("all_documents"), count: countLabel(allDocumentCount) })}</option>
+                      {libraries.map((item) => <option key={item.id} value={item.id}>
+                        {s("location_option", { name: item.folder_name, count: countLabel(item.document_count) })}
+                      </option>)}
+                    </select>
+                  </label>
+                  {library && sections.length > 0 && <label className="manager-field">{s("placement_section")}
+                    <select value={selectedFolder?.id || library.id} disabled={!ready}
+                      onChange={(event) => chooseLibrary(Number(event.target.value))}>
+                      <option value={library.id}>{s("all_library_documents")}</option>
+                      {sections.map((item) => <option key={item.id} value={item.id}>
+                        {s("location_option", { name: folderAncestors(item, folders).slice(1).map((parent) => parent.folder_name).join(" / "), count: countLabel(item.document_count) })}
+                      </option>)}
+                    </select>
+                  </label>}
+                </div>
                 <nav
                   className="manager-library-items"
                   aria-label={s("libraries")}
@@ -745,46 +867,43 @@ export default function CuratorWorkspace() {
                       >
                         + {s("new_section")}
                       </button>
-                      <ReindexAction
-                        disabled={!ready}
-                        target={{
-                          name: selectedFolder.folder_name,
-                          folderId: selectedFolder.id,
-                          isSection: selectedFolder.parent !== null,
-                        }}
-                      />
                       <button
-                        className="manager-text-button"
+                        id="manager-library-actions-button"
+                        className="manager-button"
                         disabled={!ready}
-                        onClick={() =>
-                          openModal({
-                            kind: "library-rename",
-                            library: selectedFolder,
-                          })
-                        }
+                        aria-haspopup="menu"
+                        aria-controls={libraryActionsAnchor ? "manager-library-actions-menu" : undefined}
+                        aria-expanded={Boolean(libraryActionsAnchor)}
+                        onClick={(event) => setLibraryActionsAnchor(event.currentTarget)}
                       >
-                        {s(
-                          selectedFolder.parent === null
-                            ? "rename_library"
-                            : "rename_section",
-                        )}
+                        {s(selectedFolder.parent === null ? "library_actions" : "section_actions")}
+                        <span aria-hidden="true"> ▾</span>
                       </button>
-                      <button
-                        className="manager-text-button manager-danger-text"
-                        disabled={!ready}
-                        onClick={() =>
-                          openModal({
-                            kind: "library-delete",
-                            library: selectedFolder,
-                          })
-                        }
+                      <Menu
+                        id="manager-library-actions-menu"
+                        anchorEl={libraryActionsAnchor}
+                        open={Boolean(libraryActionsAnchor)}
+                        onClose={() => setLibraryActionsAnchor(null)}
+                        MenuListProps={{ "aria-labelledby": "manager-library-actions-button" }}
+                        className="manager-tools-menu"
                       >
-                        {s(
-                          selectedFolder.parent === null
-                            ? "delete_library"
-                            : "delete_section",
-                        )}
-                      </button>
+                        <MenuItem onClick={() => {
+                          setLibraryActionsAnchor(null);
+                          openModal({ kind: "library-rename", library: selectedFolder });
+                        }}>
+                          {s(selectedFolder.parent === null ? "rename_library" : "rename_section")}
+                        </MenuItem>
+                        <ReindexAction menuItem disabled={!ready}
+                          onChoose={() => setLibraryActionsAnchor(null)}
+                          target={{ name: selectedFolder.folder_name, folderId: selectedFolder.id,
+                            isSection: selectedFolder.parent !== null }} />
+                        <MenuItem className="manager-danger-text" onClick={() => {
+                          setLibraryActionsAnchor(null);
+                          openModal({ kind: "library-delete", library: selectedFolder });
+                        }}>
+                          {s(selectedFolder.parent === null ? "delete_library" : "delete_section")}
+                        </MenuItem>
+                      </Menu>
                     </div>
                   )}
                 </div>
@@ -841,6 +960,9 @@ export default function CuratorWorkspace() {
                     >
                       {s("retry")}
                     </button>
+                    {page > 1 && <button className="manager-button" onClick={() => choosePage(1)}>
+                      {s("first_page")}
+                    </button>}
                   </div>
                 ) : !visible.length ? (
                   query ? (
@@ -895,8 +1017,7 @@ export default function CuratorWorkspace() {
                                 {docTitle(item) || s("unnamed")}
                               </button>
                               <p className="manager-filename">
-                                {item.file_name} ·{" "}
-                                {s("stable_id", { id: item.id })}
+                                {item.file_name}
                                 {!item.active && <> · {s("inactive")}</>}
                               </p>
                               <DocumentUpdated
@@ -979,13 +1100,12 @@ export default function CuratorWorkspace() {
                             count: documents.count,
                           })}
                         </p>
-                        <div>
+                        {(documents.previous || documents.next) && <div>
                           <button
                             className="manager-button"
                             disabled={!documents.previous || documentsLoading}
                             onClick={() => {
-                              setPage(documents.page - 1);
-                              moveFocus.current = true;
+                              choosePage(documents.page - 1);
                             }}
                           >
                             {s("previous_page")}
@@ -994,36 +1114,33 @@ export default function CuratorWorkspace() {
                             className="manager-button"
                             disabled={!documents.next || documentsLoading}
                             onClick={() => {
-                              setPage(documents.page + 1);
-                              moveFocus.current = true;
+                              choosePage(documents.page + 1);
                             }}
                           >
                             {s("next_page")}
                           </button>
-                        </div>
+                        </div>}
                       </div>
                     )}
                   </>
                 )}
               </div>
             </div>
+            <IndexingSummary />
           </IndexingProvider>
         )
       )}
-      <section className="manager-advanced">
-        <div>
-          <h2>{s("advanced")}</h2>
-          <p>{s("advanced_help")}</p>
-        </div>
-        <button
-          className="manager-button"
-          onClick={() => setAdvanced((value) => !value)}
-          aria-expanded={advanced}
-        >
-          {advanced ? s("advanced_close") : s("advanced_open")}
-        </button>
-        {advanced && (
-          <div className="manager-advanced-content">
+      {advanced && (
+        <Dialog open fullWidth maxWidth="lg" className="manager-dialog manager-advanced-dialog"
+          aria-labelledby="manager-advanced-title"
+          onClose={closeAdvanced}>
+          <DialogTitle id="manager-advanced-title" disableTypography className="manager-advanced-heading">
+            <h2>{s("advanced")}</h2>
+            <button autoFocus className="manager-button"
+              onClick={closeAdvanced}>{s("advanced_close")}</button>
+          </DialogTitle>
+          <DialogContent>
+            <p className="manager-help">{s("advanced_help")}</p>
             <AdvancedBoundary
               message={s("advanced_error")}
               reload={s("reload")}
@@ -1032,9 +1149,9 @@ export default function CuratorWorkspace() {
                 <AdvancedTools />
               </Suspense>
             </AdvancedBoundary>
-          </div>
-        )}
-      </section>
+          </DialogContent>
+        </Dialog>
+      )}
       {bulkImport && (
         <AdvancedBoundary message={s("bulk_load_error")} reload={s("reload")}
           title={s("bulk_upload_title")} cancel={s("cancel")} onClose={() => setBulkImport(false)}>

@@ -166,7 +166,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#003c6c",
+                        backgroundColor: "var(--action)",
                         color: "#FFFFFF"
                     }}
                 >New Content
@@ -178,7 +178,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#003c6c",
+                        backgroundColor: "var(--action)",
                         color: "#FFFFFF"
                     }}
                 >Delete Selected
@@ -192,7 +192,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#003c6c",
+                        backgroundColor: "var(--action)",
                         color: "#FFFFFF"
                     }}
                 >Add Bulk Content
@@ -202,7 +202,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#003c6c",
+                        backgroundColor: "var(--action)",
                         color: "#FFFFFF"
                     }}
                 >
@@ -217,7 +217,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#003c6c",
+                        backgroundColor: "var(--action)",
                         color: "#FFFFFF"
                     }}
                 >

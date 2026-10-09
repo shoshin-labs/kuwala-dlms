@@ -1,7 +1,8 @@
 {
   "product_name": "Oasis Knowledge",
   "navigation_label": "Curator workspace sections",
-  "private_notice": "Private development workspace · manage documents and export library versions on this computer.",
+  "private_notice": "Advanced catalogue tools · changes are saved in the manager.",
+  "add_selected_to_folder": "Add selected documents to this folder",
   "home": "Workspace",
   "contents": "Documents",
   "metadata": "Metadata",
@@ -19,7 +20,7 @@
   "modules_description": "Manage files and modules included in library exports.",
   "libraries_description": "Organise documents in folders such as Farming, Water and Learning, and build an export.",
   "images_description": "Create export builds from existing library versions.",
-  "system_info_description": "View available disk space on this development computer.",
+  "system_info_description": "View available disk space on the library host.",
   "workspace_error": "The curator workspace could not be displayed.",
   "close_notification": "Close notification",
   "loading": "Loading workspace data",
