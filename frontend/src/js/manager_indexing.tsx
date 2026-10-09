@@ -86,10 +86,16 @@ function diagnostics(value: unknown): string {
 function useIndexing() {
   return useContext(IndexContext)!;
 }
-export function useIndexSearchRevision() {
-  const snapshot = useIndexing().snapshot;
+export function useIndexSearchState() {
+  const { snapshot, error, refresh } = useIndexing();
   const completedJob = snapshot?.jobs.find((job) => job.state === "succeeded");
-  return `${completedJob?.id || ""}|${snapshot?.configuration.vector_available ?? ""}|${snapshot?.configuration.vector_blocked_reason || ""}`;
+  return {
+    revision: snapshot
+      ? `${completedJob?.id || ""}|${snapshot.configuration.vector_available}|${snapshot.configuration.vector_blocked_reason || ""}`
+      : "",
+    error,
+    refresh,
+  };
 }
 function eligible(snapshot: IndexSnapshot | null, target: IndexTarget) {
   if (
@@ -109,12 +115,14 @@ function eligible(snapshot: IndexSnapshot | null, target: IndexTarget) {
 export function IndexingProvider({
   versionId,
   revision,
+  enabled = true,
   documentIds,
   folderId,
   children,
 }: {
   versionId: number;
   revision: number;
+  enabled?: boolean;
   documentIds: number[];
   folderId?: number;
   children: React.ReactNode;
@@ -138,6 +146,13 @@ export function IndexingProvider({
     if (sourceRevision.current !== revision) {
       sourceRevision.current = revision;
       setSnapshot(null);
+    }
+    // Catalogue navigation and the first document page load independently.
+    // Avoid validating the same draft for an empty scope and again for each
+    // intermediate folder/page state during the initial render.
+    if (!enabled) {
+      setSnapshot(null);
+      return () => { current = false; };
     }
     request(
       `/api/oasis/indexing/?catalogue_version=${versionId}&document_ids=${encodeURIComponent(documentQuery)}${folderId ? `&folder_id=${folderId}` : ""}`,
@@ -163,7 +178,7 @@ export function IndexingProvider({
     return () => {
       current = false;
     };
-  }, [versionId, revision, sequence, documentQuery, folderId]);
+  }, [versionId, revision, sequence, documentQuery, folderId, enabled]);
   useEffect(() => {
     if (checking || !snapshot?.jobs.some(activeJob)) return;
     const timer = window.setTimeout(
@@ -323,27 +338,46 @@ export function IndexingSummary() {
   const { snapshot, checking, error, notice, refresh } = useIndexing();
   const job = snapshot?.jobs.find(activeJob) || snapshot?.jobs[0];
   const config = snapshot?.configuration;
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    if (error || job && (activeJob(job) || job.state === "failed")) {
+      setExpanded(true);
+    }
+  }, [error, job?.id, job?.state]);
+  let compactStatus = s("index_checking");
+  if (error) compactStatus = s("index_status_unavailable");
+  else if (!checking && snapshot) {
+    if (job && (activeJob(job) || job.state === "failed"))
+      compactStatus = s("index_job_" + job.state);
+    else if (!config!.configured || !config!.lexical_available)
+      compactStatus = s("index_unconfigured");
+    else if (job) compactStatus = s("index_job_" + job.state);
+    else compactStatus = s(config!.worker_active ? "index_worker_ready" : "index_worker_inactive");
+  }
   return (
     <section
-      className="manager-index-overview"
+      className="manager-index-overview manager-index-compact"
       aria-labelledby="manager-index-overview-title"
     >
-      <div className="manager-index-overview-heading">
-        <h2 id="manager-index-overview-title">{s("index_draft_title")}</h2>
-        <button
-          className="manager-text-button"
-          disabled={checking}
-          onClick={refresh}
-        >
-          {checking ? s("index_checking") : s("index_refresh")}
-        </button>
-      </div>
-      <p>{s("index_draft_help")}</p>
       {notice && (
         <p className="manager-notice" role="status">
           {notice}
         </p>
       )}
+      <details className="manager-index-disclosure" open={expanded}
+        onToggle={(event) => setExpanded(event.currentTarget.open)}>
+        <summary>
+          <h2 id="manager-index-overview-title">{s("index_draft_title")}</h2>
+          <span className="manager-index-disclosure-state"
+            role={error || job?.state === "failed" ? "alert" : "status"}>{compactStatus}</span>
+        </summary>
+        <div className="manager-index-disclosure-content">
+          <div className="manager-index-overview-heading">
+            <button className="manager-text-button" disabled={checking} onClick={refresh}>
+              {checking ? s("index_checking") : s("index_refresh")}
+            </button>
+          </div>
+          <p>{s("index_draft_help")}</p>
       {error ? (
         <div className="manager-error" role="alert">
           <p>
@@ -426,6 +460,8 @@ export function IndexingSummary() {
           )}
         </>
       )}
+        </div>
+      </details>
     </section>
   );
 }

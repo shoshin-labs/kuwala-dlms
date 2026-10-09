@@ -3,6 +3,7 @@
 This module deliberately does not import legacy settings or read a source .env.
 """
 import os
+import re
 import stat
 from pathlib import Path
 
@@ -105,6 +106,21 @@ STATIC_URL = '/static/'
 # Collect during staging into the individual release so rollback keeps its assets.
 STATIC_ROOT = str(BASE_DIR / 'collected-static')
 STATICFILES_DIRS = []
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    # Webpack already names scripts by their build hash. Compress the collected
+    # copies without rewriting the URLs or original bytes in the release receipt.
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+}
+
+
+def immutable_static_file(path, url):
+    # Webpack 4 emits a 20-character SHA-256 build hash before `.bundle.js`.
+    # Logo/favicon paths keep their short cache because their names are stable.
+    return re.fullmatch(r'/static/js/[A-Za-z0-9_~.-]+\.[0-9a-f]{20}\.bundle\.js', url) is not None
+
+
+WHITENOISE_IMMUTABLE_FILE_TEST = immutable_static_file
 WHITENOISE_USE_FINDERS = False
 WHITENOISE_AUTOREFRESH = False
 MEDIA_ROOT = str(DEVICE_DATA_ROOT / 'media')

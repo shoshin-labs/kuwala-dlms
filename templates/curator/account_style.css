@@ -1,0 +1,134 @@
+/* Server-rendered account pages use the same offline tokens as the reader. */
+:root {
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+.curator-account * { box-sizing: border-box; }
+.curator-account {
+  margin: 0;
+  min-width: 280px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+.curator-topbar { border-bottom: 1px solid var(--line); background: var(--paper); }
+.curator-topbar-inner {
+  width: min(100% - 48px, 1200px);
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+}
+.curator-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.curator-brand img {
+  display: block;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 5px;
+  border-radius: 9px;
+  background: var(--brand-graphite);
+  object-fit: contain;
+}
+.curator-brand strong {
+  color: var(--ink);
+  font-size: 1.9rem;
+  font-weight: 750;
+  letter-spacing: -.06em;
+  line-height: 1.1;
+}
+.curator-account-main { width: min(100% - 48px, 440px); margin: 64px auto; }
+.curator-account h1 {
+  margin: 0 0 14px;
+  font-size: clamp(1.9rem, 3.5vw, 2.4rem);
+  font-weight: 650;
+  letter-spacing: -.045em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.curator-account p { margin: 0 0 24px; overflow-wrap: anywhere; }
+.curator-account-intro { color: var(--muted); }
+.curator-account label {
+  display: block;
+  margin: 24px 0 8px;
+  font-size: .9rem;
+  font-weight: 600;
+}
+.curator-account input:not([type="hidden"]) {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid var(--control-border);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.curator-account input:not([type="hidden"]):hover { border-color: var(--link); }
+.curator-account button, .curator-account .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 28px;
+  padding: 11px 20px;
+  border: 1px solid var(--action);
+  border-radius: 9px;
+  background: var(--action);
+  color: var(--paper);
+  font: inherit;
+  font-size: .95rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: background .16s ease, border-color .16s ease, transform .12s ease;
+}
+.curator-account button:hover, .curator-account .button:hover {
+  background: var(--action-hover);
+  border-color: var(--action-hover);
+}
+.curator-account button:active, .curator-account .button:active { transform: scale(.98); }
+.curator-account a:not(.button) { color: var(--link); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.curator-account a:not(.button):hover { color: var(--link-hover); }
+.curator-account a:focus-visible,
+.curator-account input:focus-visible,
+.curator-account button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.curator-account input:focus-visible { box-shadow: 0 0 0 4px var(--focus-shadow); }
+.curator-account a, .curator-account button, .curator-account input { -webkit-tap-highlight-color: transparent; }
+.curator-account .errorlist {
+  margin: 12px 0;
+  padding: 12px 16px 12px 32px;
+  border-left: 3px solid var(--error);
+  background: var(--error-surface);
+  color: var(--error);
+  font-size: .9rem;
+  overflow-wrap: anywhere;
+}
+.curator-account .helptext { display: block; margin-top: 10px; color: var(--muted); font-size: .85rem; }
+.curator-account .helptext ul { padding-left: 20px; }
+.curator-account .helptext li + li { margin-top: 6px; }
+.curator-account .curator-account-note { margin-top: 24px; color: var(--muted); font-size: .85rem; }
+.curator-account .curator-account-return { margin-top: 24px; font-size: .9rem; }
+.curator-account-return a { display: inline-flex; align-items: center; min-height: 48px; }
+@media (max-width: 700px) {
+  .curator-topbar-inner { width: calc(100% - 28px); min-height: 64px; }
+  .curator-brand img { width: 32px; height: 32px; padding: 4px; border-radius: 8px; }
+  .curator-brand strong { font-size: 1.5rem; }
+  .curator-account-main { width: min(100% - 32px, 440px); margin: 40px auto; }
+}
+@media (max-width: 360px) { .curator-brand strong { font-size: 1.35rem; } }
+@media (prefers-reduced-motion: reduce) {
+  .curator-account *, .curator-account *::before, .curator-account *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

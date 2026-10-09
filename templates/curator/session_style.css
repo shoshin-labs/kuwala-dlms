@@ -1,0 +1,51 @@
+/* Scoped to the server-rendered account controls above the React workspace. */
+.oasis-session {
+  border-bottom: 1px solid var(--line, rgb(52 51 48 / .2));
+  background: var(--paper, #fff);
+  color: var(--ink, #343330);
+  font: .85rem/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+.oasis-session-inner {
+  width: min(100% - 48px, 1200px);
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin: 0 auto;
+  padding: 8px 0;
+}
+.oasis-session a, .oasis-session button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--link, #7e5920);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .16s ease, border-color .16s ease;
+}
+.oasis-session a { text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.oasis-session button { border-color: var(--line, rgb(52 51 48 / .2)); }
+.oasis-session a:hover, .oasis-session button:hover {
+  background: var(--highlight, rgb(255 167 55 / .14));
+  color: var(--link-hover, #45462a);
+}
+.oasis-session a:focus-visible, .oasis-session button:focus-visible {
+  outline: 3px solid var(--focus, #7e5920);
+  outline-offset: 3px;
+}
+.oasis-session form { margin: 0; }
+@media (max-width: 700px) {
+  .oasis-session-inner { width: calc(100% - 28px); gap: 8px; flex-wrap: wrap; }
+  .oasis-session a, .oasis-session button { padding-inline: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oasis-session a, .oasis-session button { transition: none !important; }
+}

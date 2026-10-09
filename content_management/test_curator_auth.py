@@ -149,7 +149,7 @@ class CuratorSessionTests(TestCase):
             with self.subTest(path=response.wsgi_request.path):
                 self.assertEqual(response.status_code, 200)
                 self.assertContains(response, '<img src="/static/images/kuwala-oasis.svg" alt="" aria-hidden="true" width="40" height="40">')
-                self.assertContains(response, '<strong>Oasis Library</strong>')
+                self.assertContains(response, '<strong>Oasis Knowledge</strong>')
                 for name in ['favicon.ico', 'favicon-32.png', 'favicon.svg', 'apple-touch-icon.png']:
                     self.assertContains(response, 'href="/static/images/' + name + '"')
                 self.assertNotContains(response, '/static/images/oasis-library.svg')
