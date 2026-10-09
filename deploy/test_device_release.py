@@ -486,6 +486,47 @@ class StateChecks(unittest.TestCase):
 
 
 class LifecycleChecks(unittest.TestCase):
+    def test_auth_readiness_uses_minimal_health_and_earlier_rollback_uses_config(self):
+        class Response(io.BytesIO):
+            def __enter__(self): return self
+            def __exit__(self, *args): self.close()
+        with tempfile.TemporaryDirectory() as root:
+            instance = target.Target(Path(root).resolve())
+            code = Path(root) / 'release/app'
+            (code / 'dlms').mkdir(parents=True)
+            (code / 'frontend/static').mkdir(parents=True)
+            asset = b'window.fixture=true;'
+            (code / 'frontend/static/index.html').write_text('<script src="/static/fixture.js"></script>')
+            (code.parent / 'manifest.json').write_text(json.dumps({'files': {
+                'app/frontend/static/fixture.js': hashlib.sha256(asset).hexdigest(),
+            }}))
+            state = {'ActiveState': 'active', 'MainPID': str(os.getpid())}
+            # The process/CWD comparison is independently covered by the
+            # production helper; point this disposable release at our real CWD.
+            release = code.parent
+            original_resolve = Path.resolve
+            original_exists = Path.exists
+            def resolve(path, *args, **kwargs):
+                if str(path) == '/proc/' + str(os.getpid()) + '/cwd': return code
+                return original_resolve(path, *args, **kwargs)
+            def exists(path):
+                return str(path) == '/proc/' + str(os.getpid()) + '/cwd' or original_exists(path)
+            for authenticated in (True, False):
+                marker = code / 'dlms/curator_auth.py'
+                if authenticated: marker.write_text('# authenticated device runtime')
+                else: marker.unlink()
+                result = {'success': True, 'data': {'ready': True, 'authentication_required': True}} if authenticated else {
+                    'success': True, 'data': {'curator_enabled': True, 'synthetic_fixtures': False}}
+                with patch.object(target, 'service_state', return_value=state), \
+                        patch.object(target, 'station_fingerprint', return_value={}), \
+                        patch.object(Path, 'resolve', resolve), \
+                        patch.object(Path, 'exists', exists), \
+                        patch.object(target.time, 'sleep', side_effect=AssertionError('Readiness did not pass its first check')), \
+                        patch.object(target.urllib.request, 'urlopen', side_effect=lambda url, **kwargs: Response(
+                            asset if url.endswith('/static/fixture.js') else json.dumps(result).encode())) as request:
+                    instance.readiness(release, {})
+                    self.assertEqual(request.call_args_list[0].args[0], 'http://127.0.0.1:8790' + ('/healthz' if authenticated else '/api/oasis/config/'))
+
     def fake_target(self, root, fail_migrate=False):
         owner = StateChecks()
         data = owner.make_state(root)

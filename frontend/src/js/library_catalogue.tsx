@@ -10,6 +10,7 @@ import {
   withinFolder,
 } from "./catalogue_tree";
 import { useStrings } from "./i18n";
+import DocumentUpdated from "./document_updated";
 import "../css/catalogue.css";
 
 interface CatalogueLocation {
@@ -533,6 +534,11 @@ export default function LibraryCatalogue() {
                                     .join(" · ") ||
                                   s("not_available")}
                               </span>
+                              <DocumentUpdated
+                                value={item.modified_on}
+                                label={s("last_updated")}
+                                description={s("last_updated_help")}
+                              />
                             </span>
                             <span className="document-arrow" aria-hidden="true">
                               →
@@ -678,6 +684,11 @@ function DocumentDetail({
         )}
       </div>
       <p className="review-notice">{s("review_notice")}</p>
+      <DocumentUpdated
+        value={document.modified_on}
+        label={s("last_updated")}
+        description={s("last_updated_help")}
+      />
       <dl className="detail-fields">
         <div>
           <dt>{s("membership")}</dt>

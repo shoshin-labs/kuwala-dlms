@@ -9,6 +9,7 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 
 from dlms.private_paths import checked_directory, checked_path, require_disjoint
+from dlms.curator_config import admin_origin
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -61,12 +62,17 @@ except (OSError, ValueError) as exc:
 
 DEBUG = False
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '[::1]']
+OASIS_DEVICE_ADMIN_ORIGIN = admin_origin(os.environ.get('OASIS_DEVICE_ADMIN_ORIGIN', ''))
+if OASIS_DEVICE_ADMIN_ORIGIN:
+    from urllib.parse import urlsplit
+    ALLOWED_HOSTS.append(urlsplit(OASIS_DEVICE_ADMIN_ORIGIN).hostname)
 INSTALLED_APPS = [
     'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes',
     'django.contrib.sessions', 'django.contrib.messages', 'django.contrib.staticfiles',
     'rest_framework', 'content_management', 'frontend', 'django_extensions',
 ]
 MIDDLEWARE = [
+    'dlms.curator_auth.CuratorProxyOriginMiddleware',
     'dlms.preview_middleware.PrivatePreviewMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -74,6 +80,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'dlms.curator_auth.CuratorSessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -111,13 +118,34 @@ OASIS_INDEXING_PROTECTED_ROOTS = ('/opt/kuwala',)
 OASIS_CURATOR_ENABLED = True
 OASIS_SYNTHETIC_FIXTURES = False
 OASIS_LOOPBACK_ONLY = True
+OASIS_REQUIRE_CURATOR_AUTH = True
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/?workspace=curator&tab=contents'
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.SessionAuthentication'],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'EXCEPTION_HANDLER': 'content_management.standardize_format.standard_exception_handler',
 }
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 SESSION_COOKIE_HTTPONLY = True
+USE_X_FORWARDED_HOST = False
+SECURE_PROXY_SSL_HEADER = None
+# The fixed-origin middleware marks cookies Secure on the private HTTPS
+# manager, while retaining HTTP localhost access through encrypted SSH.
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_NAME = 'oasis_curator_session'
+SESSION_COOKIE_AGE = 14400
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_SAMESITE = 'Strict'
+CSRF_COOKIE_NAME = 'oasis_curator_csrf'
+CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Strict'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = 'same-origin'

@@ -83,6 +83,16 @@
 .catalogue-main {
   min-width: 0;
 }
+.document-updated {
+  display: block;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.manager-document-updated {
+  margin: 0 0 12px;
+}
 .catalogue-overview {
   display: grid;
 }

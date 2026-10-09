@@ -7,10 +7,11 @@ from pathlib import Path
 from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponseNotAllowed
 from django.urls import include, path
-from django.views.generic import TemplateView
 
 from dlms.private_paths import checked_directory, checked_path
 from dlms.preview_middleware import PrivatePreviewMiddleware, is_loopback_request
+from dlms.curator_auth import (CuratorShellView, CuratorLoginView, CuratorLogoutView,
+                               CuratorPasswordChangeView, CuratorPasswordChangeDoneView, health)
 
 
 def private_media(request, path):
@@ -44,7 +45,12 @@ def private_media(request, path):
 
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='index.html'), name='oasis-home'),
+    path('', CuratorShellView.as_view(), name='oasis-home'),
+    path('healthz', health, name='oasis-health'),
+    path('accounts/login/', CuratorLoginView.as_view(), name='oasis-login'),
+    path('accounts/logout/', CuratorLogoutView.as_view(), name='oasis-logout'),
+    path('accounts/password-change/', CuratorPasswordChangeView.as_view(), name='oasis-password-change'),
+    path('accounts/password-change/done/', CuratorPasswordChangeDoneView.as_view(), name='oasis-password-change-done'),
     path('media/<path:path>', private_media, name='oasis-private-media'),
     path('', include('content_management.urls')),
 ]

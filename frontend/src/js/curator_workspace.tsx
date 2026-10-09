@@ -19,6 +19,7 @@ import {
 import DocumentEditor, { DocumentDraft } from "./manager_document_editor";
 import ManagerSearch from "./manager_search";
 import BulkContentModal from "./reusable/bulk_content_modal";
+import DocumentUpdated from "./document_updated";
 import {
   ManagerData,
   ManagedDocument,
@@ -876,6 +877,12 @@ export default function CuratorWorkspace() {
                                 {s("stable_id", { id: item.id })}
                                 {!item.active && <> · {s("inactive")}</>}
                               </p>
+                              <DocumentUpdated
+                                value={item.modified_on}
+                                label={s("last_updated")}
+                                description={s("last_updated_help")}
+                                className="document-updated manager-document-updated"
+                              />
                               {item.description && (
                                 <p className="manager-document-description">
                                   {item.description}

@@ -45,7 +45,8 @@ class DeviceConfigurationTests(SimpleTestCase):
             + action
             + 'print(json.dumps({"debug":s["DEBUG"],"database":s["DATABASES"]["default"]["NAME"],'
               '"media":s["MEDIA_ROOT"],"builds":s["BUILDS_ROOT"],"indexing":s["OASIS_INDEXING_STATE_ROOT"],'
-              '"static":s["STATIC_ROOT"],"curator":s["OASIS_CURATOR_ENABLED"],"loopback":s["OASIS_LOOPBACK_ONLY"]}))'
+              '"static":s["STATIC_ROOT"],"curator":s["OASIS_CURATOR_ENABLED"],"loopback":s["OASIS_LOOPBACK_ONLY"],'
+              '"authentication_required":s["OASIS_REQUIRE_CURATOR_AUTH"],"admin_origin":s["OASIS_DEVICE_ADMIN_ORIGIN"]}))'
         )
         return subprocess.run([sys.executable, '-B', '-c', script], cwd=REPOSITORY,
                               env={**os.environ, **(self.env if env is None else env)}, capture_output=True, text=True, timeout=15)
@@ -53,11 +54,13 @@ class DeviceConfigurationTests(SimpleTestCase):
     def test_device_ignores_legacy_environment_and_uses_durable_paths(self):
         result = self.load({**self.env, 'DEBUG': 'True', 'SECRET_KEY': 'untrusted',
                             'DATABASE_URL': 'sqlite:////untrusted.sqlite3', 'MEDIA_ROOT': '/untrusted',
-                            'ALLOWED_HOSTS': '*', 'BUILDS_ROOT': '/untrusted'})
+                            'ALLOWED_HOSTS': '*', 'BUILDS_ROOT': '/untrusted', 'OASIS_REQUIRE_CURATOR_AUTH': 'False'})
         self.assertEqual(result.returncode, 0, result.stderr)
         config = json.loads(result.stdout)
         self.assertFalse(config['debug'])
         self.assertTrue(config['curator'] and config['loopback'])
+        self.assertTrue(config['authentication_required'])
+        self.assertEqual(config['admin_origin'], '')
         self.assertEqual(config['database'], str(self.data / 'catalogue.sqlite3'))
         for key, relative in (('media', 'media'), ('builds', 'builds'), ('indexing', 'indexing')):
             self.assertEqual(config[key], str(self.data / relative))
@@ -136,7 +139,7 @@ class DeviceConfigurationTests(SimpleTestCase):
         self.assertTrue((job / 'receipt.json').is_file())
 
     @skipUnless(importlib.util.find_spec('gunicorn') and importlib.util.find_spec('whitenoise'), 'Requires the isolated device runtime lock.')
-    def test_real_gunicorn_device_wsgi_keeps_catalogue_empty_and_enforces_csrf(self):
+    def test_real_gunicorn_device_wsgi_keeps_catalogue_private_and_enforces_auth(self):
         environment = {**os.environ, **self.env, 'DJANGO_SETTINGS_MODULE': 'dlms.device_settings'}
         for name in ('PYTHONHOME', 'PYTHONPATH'):
             environment.pop(name, None)
@@ -156,16 +159,19 @@ class DeviceConfigurationTests(SimpleTestCase):
                 deadline = time.monotonic() + 5
                 while True:
                     try:
-                        with urlopen(base + '/api/oasis/config/', timeout=1) as response:
+                        with urlopen(base + '/healthz', timeout=1) as response:
                             config = json.load(response)['data']
                         break
                     except (URLError, OSError):
                         if process.poll() is not None or time.monotonic() >= deadline:
                             self.fail('Device WSGI did not become ready: ' + log_path.read_text())
                         time.sleep(0.05)
-                self.assertEqual(config, {'curator_enabled': True, 'synthetic_fixtures': False})
-                with urlopen(base + '/api/contents/', timeout=2) as response:
-                    self.assertEqual(json.load(response)['data']['count'], 0)
+                self.assertEqual(config, {'ready': True, 'authentication_required': True})
+                for endpoint in ('/api/oasis/config/', '/api/contents/', '/media/contents/missing.pdf'):
+                    with self.assertRaises(HTTPError) as denied:
+                        urlopen(base + endpoint, timeout=2)
+                    self.assertEqual(denied.exception.code, 401)
+                    denied.exception.close()
                 request = Request(base + '/api/oasis/index-jobs/', data=b'{}', method='POST',
                                   headers={'Content-Type': 'application/json', 'Origin': base})
                 with self.assertRaises(HTTPError) as denied:

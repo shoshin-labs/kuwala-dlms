@@ -8,6 +8,7 @@
         <title>Oasis Knowledge</title>
     </head>
     <body>
+        {% if curator_session %}{% include 'curator/session_controls.html' %}{% endif %}
         <div id="container"></div>
     </body>
 </html>

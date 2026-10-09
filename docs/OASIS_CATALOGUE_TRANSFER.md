@@ -148,7 +148,8 @@ Visitors continue reading the last verified snapshot while curators edit and
 build. Publish the reviewed result using the existing station data-release
 process, retaining the previous snapshot for rollback. This is the same logical
 Oasis collection at different revisions, not a second independent library.
-Management remains SSH-only; this transfer adds no remote login or public writes.
+The transfer adds no public writes. Device management uses the separately
+configured [administrator login and private access](OASIS_CURATOR_ACCESS.md).
 
 ## Checks
 

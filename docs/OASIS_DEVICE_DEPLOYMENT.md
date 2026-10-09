@@ -9,8 +9,8 @@ lifecycles.
 |---|---|---|
 | Oasis station | Jetson loopback `3000`, existing Pi gateway `4175` | Normal chat and local sources |
 | PDF library profile | Jetson loopback `4176` | Published catalogue, chat, passages and original PDFs |
-| PDF visitor gateway | Pi forward `4177`, password gateway `4178`, existing tailnet listener `4179` | Existing visitor access only |
-| Oasis Library curator | Jetson loopback `8790`, SSH local forward | Private files, metadata, libraries and draft search |
+| PDF visitor gateway | Pi forward `4177`, visitor gateway `4178`, existing tailnet listener `4179` | Existing visitor access only |
+| Oasis Library curator | Jetson loopback `8790`, SSH local forward or private Tailscale `8443` | Staff-session files, metadata, libraries and draft search |
 | Draft index worker | Jetson supervised process | Existing station import/vector commands into new private roots |
 
 The commissioned PDF profile has been observed with **85 documents in seven
@@ -22,9 +22,11 @@ approve their reuse automatically.
 
 The proposed `oasis.kuwala.space` address is not configured here. DNS, Funnel,
 visitor credentials and public routing remain separate commissioning work.
-The manager uses SSH forwarding only; do not forward its origin through either
-Pi gateway. Its loopback, same-origin and CSRF checks preserve the private
-development boundary, without introducing a new authentication scheme.
+The manager uses [standard Django staff login](OASIS_CURATOR_ACCESS.md) over
+SSH forwarding or a separately configured private Tailscale HTTPS origin. Do
+not forward its origin through either visitor gateway. Loopback, same-origin
+and CSRF checks remain in force alongside authentication. No public curator
+listener is installed by the release process.
 
 Station code deployment is covered by [station release PR #166](https://github.com/shoshin-labs/kuwala-station/pull/166)
 and its `docs/ALPHA_RELEASES.md`. Reader styling is covered by
@@ -172,6 +174,9 @@ ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:8796:127.0.0.1:8790 "$OASIS_DEVI
 ```
 
 Open `http://127.0.0.1:8796/?workspace=curator&tab=contents` on the prep computer.
+Sign in with the operator-provisioned active staff account; no default password
+is included. The [administrator access guide](OASIS_CURATOR_ACCESS.md) covers
+password changes and optional private phone access.
 Local `8796` keeps the existing preview on `8790` separate. The production service
 uses local assets and persistent originals, not Django `runserver`.
 

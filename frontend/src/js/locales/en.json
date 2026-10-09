@@ -65,6 +65,8 @@
     "metadata": "Source metadata",
     "no_metadata": "No additional metadata recorded.",
     "review_date": "Recorded review date",
+    "last_updated": "Last updated in this library",
+    "last_updated_help": "When the catalogue record or original file was last saved. Publication, rights review and indexing dates are separate.",
     "review_notice": "Uploading a document or recording a review date does not establish approval for technical advice. Check its source and scope before relying on it.",
     "membership": "In libraries",
     "missing_document": "This document is not in the selected library.",

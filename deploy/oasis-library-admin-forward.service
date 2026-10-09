@@ -1,0 +1,14 @@
+[Unit]
+Description=Private SSH forward to the authenticated Oasis Library manager
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ssh -4 -N -T -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=yes -o ConnectTimeout=8 -L 127.0.0.1:8792:127.0.0.1:8790 brightadmin@jetson001.local
+Restart=always
+RestartSec=10
+NoNewPrivileges=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

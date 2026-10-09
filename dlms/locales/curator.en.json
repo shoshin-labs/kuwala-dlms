@@ -1,0 +1,22 @@
+{
+  "product": "Oasis Library",
+  "login_heading": "Manage Library",
+  "login_intro": "Sign in with your administrator account to manage this station’s library.",
+  "username": "Username",
+  "password": "Password",
+  "sign_in": "Sign in",
+  "logout": "Sign out",
+  "change_password": "Change password",
+  "password_intro": "Enter your current password, then choose your new password.",
+  "current_password": "Current password",
+  "new_password": "New password",
+  "confirm_password": "Confirm new password",
+  "save_password": "Save new password",
+  "password_changed": "Your password has been changed.",
+  "return_manager": "Return to Manage Library",
+  "private_access": "Private administrator workspace",
+  "session_required": "Administrator sign-in is required.",
+  "staff_required": "An active administrator account is required.",
+  "invalid_proxy_origin": "This manager requires its configured private HTTPS origin.",
+  "invalid_browser_origin": "Administrator requests must come from the same manager origin."
+}

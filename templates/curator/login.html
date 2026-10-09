@@ -1,0 +1,16 @@
+{% extends 'curator/base.html' %}
+{% block content %}
+<h1>{{ curator_ui.login_heading }}</h1>
+<p>{{ curator_ui.login_intro }}</p>
+<form method="post" action="{% url 'oasis-login' %}">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <label for="{{ form.username.id_for_label }}">{{ curator_ui.username }}</label>
+  {{ form.username }}{{ form.username.errors }}
+  <label for="{{ form.password.id_for_label }}">{{ curator_ui.password }}</label>
+  {{ form.password }}{{ form.password.errors }}
+  <input type="hidden" name="next" value="{{ next }}">
+  <button type="submit">{{ curator_ui.sign_in }}</button>
+</form>
+<p class="note" style="margin-top:24px">{{ curator_ui.private_access }}</p>
+{% endblock %}

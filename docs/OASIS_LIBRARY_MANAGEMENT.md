@@ -18,6 +18,8 @@ Open `http://127.0.0.1:8790/?workspace=curator`. Default `run` is read-only;
 `--curator` enables local development writes only. Management belongs on a private
 operator origin. Loopback restrictions are not authentication for a proxy, LAN,
 tailnet or public deployment. Visitor gateways must not forward management routes.
+The device runtime adds [standard administrator login](OASIS_CURATOR_ACCESS.md)
+for its complete manager and private APIs. Development preview access is unchanged.
 
 ## Authoring model
 

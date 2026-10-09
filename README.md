@@ -59,9 +59,10 @@ Choose **Manage libraries** or open
 **http://127.0.0.1:8790/?workspace=curator&tab=contents**. This is a development
 restriction, not a new authentication scheme. Visitor mode denies writes,
 including upstream GET export/clone actions and their format-suffixed variants.
-Curator writes require explicit enablement and a loopback peer. Do not publish
-or proxy the curator origin onto LAN, tailnet or internet: a proxy’s loopback peer
-is not end-user authentication. No remote management exposure is provided here.
+Preview curator writes require explicit enablement and a loopback peer. Do not
+publish or proxy this development preview onto LAN, tailnet or internet: a
+proxy’s loopback peer is not end-user authentication. The separate device runtime
+requires [administrator login](docs/OASIS_CURATOR_ACCESS.md) for private management.
 The workspace saves real database records and original files. **Advanced tools**
 retains the existing metadata, catalogue-version and export workflows. See
 [private management and indexing guide](docs/OASIS_LIBRARY_MANAGEMENT.md).
@@ -150,10 +151,11 @@ Original PostgreSQL configuration keys remain in `dlms/env.example`; legacy
 dependencies are not a maintained public deployment recipe.
 For the private Jetson curator, use the [device deployment runbook](docs/OASIS_DEVICE_DEPLOYMENT.md)
 and `requirements-device.lock.txt`: production Gunicorn, persistent private
-state, verified release bundles and SSH-only management. The Pi remains the
+state, verified release bundles and [administrator session login](docs/OASIS_CURATOR_ACCESS.md)
+over SSH or a separate private Tailscale HTTPS origin. The Pi remains the
 existing visitor gateway. [Transfer the existing main catalogue](docs/OASIS_CATALOGUE_TRANSFER.md)
 into the curator with its original IDs and metadata, rather than starting a
 second empty collection. Visitors read an immutable snapshot of that same
 catalogue; curator changes become visible after the existing publication process.
 Framework/dependency upgrades, full curator translation and enforced
-publication/authentication are [separate follow-ups](docs/OASIS_LIBRARY_FOLLOW_UPS.md).
+publication roles are [separate follow-ups](docs/OASIS_LIBRARY_FOLLOW_UPS.md).

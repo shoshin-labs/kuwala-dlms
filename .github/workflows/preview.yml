@@ -23,6 +23,8 @@ jobs:
         working-directory: frontend
       - run: npm run build-prod
         working-directory: frontend
+      - run: node --test scripts/test-document-updated.js
+        working-directory: frontend
       - run: python scripts/preview.py prepare
       - run: python scripts/preview.py check
       - run: python scripts/preview.py test
@@ -46,6 +48,8 @@ jobs:
           python -W ignore::RuntimeWarning manage.py test
           content_management.test_device_runtime
           content_management.test_curator_request_security
+          content_management.test_curator_auth
+          content_management.test_document_saved_at
           content_management.test_oasis_indexing
           content_management.test_oasis_search
           content_management.test_oasis_catalogue_transfer
