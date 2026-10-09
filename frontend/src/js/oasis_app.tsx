@@ -12,9 +12,9 @@ const CuratorWorkspace = lazy(
 
 const theme = createMuiTheme({
   palette: {
-    primary: { main: "#006c67" },
-    secondary: { main: "#006c67" },
-    text: { primary: "#152536", secondary: "#4a5b6a" },
+    primary: { main: "#45462a", contrastText: "#ffffff" },
+    secondary: { main: "#ffa737", contrastText: "#343330" },
+    text: { primary: "#343330", secondary: "#5e5e55" },
     background: { default: "#ffffff", paper: "#ffffff" },
   },
   typography: {
@@ -39,12 +39,12 @@ const theme = createMuiTheme({
       paper: {
         maxWidth: "calc(100% - 32px)",
         margin: 16,
-        border: "1px solid #d4dde4",
+        border: "1px solid #dcdace",
         borderRadius: 16,
-        boxShadow: "0 16px 70px #0b283b26",
+        boxShadow: "0 16px 70px #34333026",
       },
     },
-    MuiBackdrop: { root: { backgroundColor: "#0f243c45" } },
+    MuiBackdrop: { root: { backgroundColor: "#34333045" } },
   },
 });
 export default function OasisApp() {

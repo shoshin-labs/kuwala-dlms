@@ -4,11 +4,11 @@
   "nativeName": "English",
   "reviewed": true,
   "strings": {
-    "product": "Oasis Library",
+    "product": "Oasis Knowledge",
     "station": "Kuwala",
-    "catalogue": "Catalogue",
+    "catalogue": "Libraries",
     "about": "About",
-    "curator": "Manage Library",
+    "curator": "Manage libraries",
     "language": "Language",
     "skip": "Skip to content",
     "choose_library": "Choose a library",
@@ -72,12 +72,12 @@
     "external_link": "Source link (internet may be required)",
     "synthetic_title": "Synthetic preview fixtures",
     "synthetic_text": "Example documents for interface and workflow checks. They are not community guidance.",
-    "about_heading": "About Oasis Library",
-    "about_purpose": "Oasis Library is the library catalogue and curator workspace for Kuwala’s offline community information hub.",
+    "about_heading": "About Oasis Knowledge",
+    "about_purpose": "Oasis Knowledge is the library catalogue and curator workspace for Kuwala’s offline community information hub.",
     "about_oasis": "Oasis is the conversational interface to this library. Oasis stands for Off-grid Autonomous Solar Intelligence System.",
     "about_offline": "This interface uses local assets and original files. Visitor search covers catalogue metadata; private curator passage search reuses Oasis’s local text and semantic indexes.",
     "acknowledgement_heading": "Built on SolarSPELL",
-    "acknowledgement": "Oasis Library is a Kuwala fork of SolarSPELL’s Digital Library Management System, developed at Arizona State University. We acknowledge SolarSPELL’s work in making offline educational resources available to communities.",
+    "acknowledgement": "Oasis Knowledge is a Kuwala fork of SolarSPELL’s Digital Library Management System, developed at Arizona State University. We acknowledge SolarSPELL’s work in making offline educational resources available to communities.",
     "software_licence": "Software licence",
     "licence_distinction": "The upstream MIT licence is preserved. Each library document retains its own attribution, rights and licence; the software licence does not grant rights to those documents.",
     "mit_title": "Read the upstream MIT licence",
@@ -85,6 +85,6 @@
     "curator_disabled": "The curator workspace is unavailable on this preview. Start the private loopback preview with curator access to use the existing management screens.",
     "app_error": "The interface could not display this view. Reload to try again.",
     "reload": "Reload",
-    "footer": "Oasis Library · Kuwala"
+    "footer": "Oasis Knowledge · Kuwala"
   }
 }

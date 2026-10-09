@@ -152,11 +152,12 @@
   background: var(--light-blue);
 }
 .manager-button-primary {
-  background: var(--blue);
-  color: var(--paper);
+  background: var(--amber-glow);
+  border-color: var(--olive-bark);
+  color: var(--graphite);
 }
 .manager-button-primary:hover:not(:disabled) {
-  background: var(--blue-hover);
+  background: var(--amber-earth);
 }
 .manager-text-button {
   border-color: transparent;
@@ -548,7 +549,7 @@
   line-height: 1.5;
 }
 .manager-field input::placeholder {
-  color: #52616d;
+  color: var(--muted);
   opacity: 1;
 }
 .manager-field .manager-help {
@@ -768,7 +769,7 @@
   color: var(--blue);
 }
 .manager-index-states .is-stale {
-  color: #805100;
+  color: var(--olive-bark);
 }
 .manager-index-missing {
   margin: 16px 0 0;
@@ -956,3 +957,13 @@
     animation: none !important;
   }
 }
+
+.manager-placement-picker {display: grid; gap: 16px; clear: both;}
+.manager-placement {border: 1px solid var(--line); border-radius: 8px; padding: 16px;}
+.manager-placement-controls {display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: end;}
+.manager-placement-controls .manager-field {margin-bottom: 0; min-width: 0;}
+.manager-placement-controls .manager-text-button {margin-bottom: 0;}
+.manager-placement > .manager-text-button {margin-top: 8px;}
+.manager-bulk-errors {width: 100%; border-collapse: collapse; text-align: left;}
+.manager-bulk-errors th, .manager-bulk-errors td {padding: 12px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere;}
+@media (max-width: 700px) {.manager-placement-controls {grid-template-columns: 1fr;} }

@@ -1,17 +1,22 @@
 :root {
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  --ink: #152536;
-  --muted: #4a5b6a;
-  --brand: #064b7c;
-  --accent: #006c67;
-  --accent-hover: #00534f;
-  --accent-surface: #eaf5f3;
+  --graphite: #343330;
+  --dark-khaki: #45462a;
+  --olive-bark: #7e5920;
+  --amber-earth: #dc851f;
+  --amber-glow: #ffa737;
+  --ink: var(--graphite);
+  --muted: #5e5e55;
+  --brand: var(--dark-khaki);
+  --accent: var(--olive-bark);
+  --accent-hover: var(--dark-khaki);
+  --accent-surface: #fff1dc;
   --blue: var(--accent);
   --blue-hover: var(--accent-hover);
-  --line: #d4dde4;
+  --line: #dcdace;
   --paper: #fff;
-  --surface: #f3f6f7;
+  --surface: #f6f5ef;
   --light-blue: var(--accent-surface);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -282,11 +287,12 @@ p {
   background: var(--light-blue);
 }
 .primary-button {
-  background: var(--blue);
-  color: var(--paper);
+  background: var(--amber-glow);
+  border-color: var(--olive-bark);
+  color: var(--graphite);
 }
 .primary-button:hover {
-  background: var(--blue-hover);
+  background: var(--amber-earth);
 }
 .document-toolbar {
   display: flex;
@@ -701,4 +707,9 @@ summary {
       transform: translateY(0);
     }
   }
+}
+
+@media (max-width: 390px) {
+  .brand-name {font-size: 1.4rem;}
+  .language-picker select {max-width: 100px;}
 }

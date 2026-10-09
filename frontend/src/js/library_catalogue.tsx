@@ -236,7 +236,7 @@ export default function LibraryCatalogue() {
             ? documentTitle(selectedDocument)
             : selected
               ? selected.folder_name
-              : s("choose_library")}
+              : s("libraries")}
         </h1>
         {!library && <p className="intro-text">{s("catalogue_intro")}</p>}
       </div>

@@ -122,7 +122,99 @@ def reviewed_manifest(raw):
         folder_ids.add(pk); group_ids.add(slug); covered.update(members)
     if covered != slugs:
         raise ValueError('Every reviewed PDF must belong to a reviewed library.')
+    validate_manifest_sections(manifest)
     return manifest
+
+
+def validate_manifest_sections(manifest):
+    """Validate optional root-library/section definitions, without Django."""
+    if 'sections' not in manifest:
+        return None
+    sections = manifest['sections']
+    if not isinstance(sections, list) or len(sections) > 128:
+        raise ValueError('Reviewed sections must be a bounded list.')
+    libraries = {item['id']: item for item in manifest['libraries']}
+    documents = {item['id'] for item in manifest['documents']}
+    provider_ids = {'general-knowledge', 'fao-grain', 'fao-mycotoxin-part-1', 'fao-mycotoxin-part-2', 'oasis', 'datasource'}
+    if documents & provider_ids or (set(libraries) & (provider_ids - {'general-knowledge'})):
+        raise ValueError('Document/library IDs conflict with built-in knowledge providers.')
+    identifiers = set(libraries) | documents | provider_ids
+    folder_ids = {item['dlms_folder_id'] for item in manifest['libraries']}
+    by_id = {}
+    for section in sections:
+        if not isinstance(section, dict):
+            raise ValueError('Reviewed section must be an object.')
+        identifier, label = section.get('id'), section.get('label')
+        members, library_id = section.get('document_ids'), section.get('library_id')
+        parent = section.get('parent_id')
+        folder_id = positive(section.get('dlms_folder_id'), 'Section DLMS folder ID')
+        if (not isinstance(identifier, str) or not re.fullmatch(r'[a-z][a-z0-9]*(?:-[a-z0-9]+)*', identifier) or len(identifier) > 64
+                or identifier in identifiers or identifier in by_id or folder_id in folder_ids
+                or not isinstance(label, str) or not label.strip() or len(label) > 200
+                or any(ord(char) < 32 or 127 <= ord(char) <= 159 for char in label)
+                or not isinstance(library_id, str) or library_id not in libraries
+                or (parent is not None and (not isinstance(parent, str) or not re.fullmatch(r'[a-z][a-z0-9]*(?:-[a-z0-9]+)*', parent)))
+                or not isinstance(members, list) or len(members) > 128
+                or any(not isinstance(member, str) for member in members)
+                or len(set(members)) != len(members)
+                or not set(members).issubset(libraries[library_id]['document_ids'])):
+            raise ValueError('Reviewed section identities, library and document scope must be complete and unique.')
+        by_id[identifier] = section
+        folder_ids.add(folder_id)
+    for section in by_id.values():
+        current, seen = section, set()
+        while current.get('parent_id') is not None:
+            if current['id'] in seen or len(seen) >= 15:
+                raise ValueError('Section parents must belong to the same library without cycles or more than 16 levels.')
+            seen.add(current['id'])
+            parent = by_id.get(current['parent_id'])
+            if (parent is None or parent['library_id'] != section['library_id']
+                    or not set(current['document_ids']).issubset(parent['document_ids'])):
+                raise ValueError('Section parent must belong to the same library and contain its documents.')
+            current = parent
+    return by_id
+
+
+def validate_manifest_placement(manifest, folders, by_slug):
+    """Bind exact numeric parents and deduplicated subtree scopes to review."""
+    sections = validate_manifest_sections(manifest)
+    if sections is None:
+        for library in manifest.get('libraries', []):
+            folder = folders.get(library['dlms_folder_id'])
+            expected = {by_slug[slug] for slug in library['document_ids']}
+            if (folder is None or folder.get('folder_name') != library['label']
+                    or set(folder.get('library_content', [])) != expected):
+                raise ValueError('Reviewed library label/direct memberships differ from authoring.')
+        return
+    libraries = {item['id']: item for item in manifest['libraries']}
+    definitions = [*libraries.values(), *sections.values()]
+    # Private operational/holding folders may remain outside the published
+    # definitions. Any descendant of a declared scope still contributes to its
+    # exact union, so unpublished documents cannot slip into a reviewed scope.
+    children = {}
+    for identifier, folder in folders.items():
+        parent = folder.get('parent')
+        children.setdefault(parent, []).append(identifier)
+    def scope(identifier):
+        seen, pending, members = set(), [identifier], set()
+        while pending:
+            current = pending.pop()
+            if current in seen or current not in folders:
+                raise ValueError('Authoring section tree has a cycle or missing folder.')
+            seen.add(current)
+            members.update(folders[current].get('library_content', []))
+            pending.extend(children.get(current, []))
+        return members
+    for definition in definitions:
+        folder = folders.get(definition['dlms_folder_id'])
+        parent = None
+        if definition['id'] in sections:
+            ancestor = sections.get(definition.get('parent_id')) or libraries[definition['library_id']]
+            parent = ancestor['dlms_folder_id']
+        expected = {by_slug[slug] for slug in definition['document_ids']}
+        if (folder is None or folder.get('folder_name') != definition['label']
+                or folder.get('parent') != parent or scope(definition['dlms_folder_id']) != expected):
+            raise ValueError('Reviewed library/section label, parent or descendant document scope differs from authoring.')
 
 
 def validate_package(package):
@@ -172,12 +264,7 @@ def validate_package(package):
     if linked != set(documents):
         raise ValueError('Selected authoring membership differs from reviewed documents.')
     slug_to_pk = {record['id']: record['dlms_id'] for record in manifest['documents']}
-    for library in manifest['libraries']:
-        folder = by_model['libraryfolder'].get(library['dlms_folder_id'])
-        expected = {slug_to_pk[slug] for slug in library['document_ids']}
-        if (folder is None or folder.get('folder_name') != library.get('label')
-                or set(folder.get('library_content', [])) != expected):
-            raise ValueError('Reviewed library label/direct memberships differ from authoring.')
+    validate_manifest_placement(manifest, by_model['libraryfolder'], slug_to_pk)
     def relation_ids(fields, name):
         values = fields.get(name)
         if not isinstance(values, list) or len(set(values)) != len(values):

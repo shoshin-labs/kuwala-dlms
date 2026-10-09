@@ -52,6 +52,30 @@ def file_digest(file_object):
     return digest.digest()
 
 
+def validate_folder_placement(version, folder_ids):
+    """Every selected section must resolve to a root library in this version."""
+    ids = set(folder_ids)
+    folders = {folder.pk: folder for folder in LibraryFolder.objects.filter(version=version)}
+    for identifier in ids:
+        seen = set()
+        current = identifier
+        while current is not None:
+            if current in seen or current not in folders:
+                raise serializers.ValidationError({'folder_ids': 'Every selected library or section must have a valid parent path in this catalogue version.'})
+            seen.add(current)
+            current = folders[current].parent_id
+    return sorted(ids)
+
+
+class FolderPlacementSerializer(serializers.Serializer):
+    catalogue_version = serializers.PrimaryKeyRelatedField(queryset=LibraryVersion.objects.all())
+    folder_ids = MultipartListField(child=serializers.IntegerField(min_value=1), allow_empty=False)
+
+    def validate(self, attrs):
+        attrs['folder_ids'] = validate_folder_placement(attrs['catalogue_version'], attrs['folder_ids'])
+        return attrs
+
+
 class OasisDocumentSerializer(CatalogueDocumentSerializer):
     # Validate originals here so replacement may reuse the current basename;
     # the legacy field validators reject it even when it belongs to this item.
@@ -88,14 +112,13 @@ class OasisDocumentSerializer(CatalogueDocumentSerializer):
     def validate(self, attrs):
         if not self.instance and 'content_file' not in attrs:
             raise serializers.ValidationError({'content_file': 'Choose an original file.'})
+        if not self.instance and not attrs.get('folder_ids'):
+            raise serializers.ValidationError({'folder_ids': 'Choose a library and, where applicable, a section before importing a document.'})
         if 'folder_ids' in attrs:
             version = attrs.get('catalogue_version')
             if version is None:
                 raise serializers.ValidationError({'catalogue_version': 'Select the catalogue version for library membership.'})
-            ids = set(attrs['folder_ids'])
-            if LibraryFolder.objects.filter(pk__in=ids, version=version).count() != len(ids):
-                raise serializers.ValidationError({'folder_ids': 'Every selected library folder must belong to the selected catalogue version.'})
-            attrs['folder_ids'] = sorted(ids)
+            attrs['folder_ids'] = validate_folder_placement(version, attrs['folder_ids'])
         return attrs
 
     def create(self, validated_data):

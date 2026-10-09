@@ -1,5 +1,6 @@
 """Protect API IDs/export contracts and the isolated preview access boundary."""
 import hashlib
+import json
 import sqlite3
 import tempfile
 from types import ModuleType
@@ -243,6 +244,58 @@ class OasisDocumentLifecycleTests(TestCase):
         self.assertFalse(Content.objects.filter(pk=document.id).exists())
         self.assertEqual(self.water.library_content.count(), 0)
         self.assertEqual(self.other_folder.library_content.count(), 0)
+
+    def test_upload_requires_explicit_library_placement(self):
+        for extra in ({}, {'catalogue_version': self.version.id, 'folder_ids': []}):
+            with self.subTest(extra=extra):
+                response = self.client.post('/api/oasis/documents/', {
+                    'title': 'Must remain unimported',
+                    'content_file': ContentFile(self.source_bytes, name='unplaced.pdf'),
+                    **extra,
+                }, format='multipart')
+                self.assertEqual(response.status_code, 400, response.content)
+                self.assertFalse(Content.objects.filter(title='Must remain unimported').exists())
+
+    def test_upload_into_nested_section_preserves_exact_folder_id(self):
+        grain = LibraryFolder.objects.create(folder_name='Grain storage', parent=self.farming, version=self.version)
+        maize = LibraryFolder.objects.create(folder_name='Maize', parent=grain, version=self.version)
+        response = self.client.post('/api/oasis/documents/', {
+            'title': 'Nested placement fixture', 'content_file': ContentFile(self.source_bytes, name='nested.pdf'),
+            'catalogue_version': self.version.id, 'folder_ids': '[%s,%s]' % (maize.id, self.water.id),
+        }, format='multipart')
+        self.assertEqual(response.status_code, 201, response.content)
+        document = Content.objects.get(pk=response.json()['data']['id'])
+        self.assertEqual(set(document.libraryfolder_set.values_list('id', flat=True)), {maize.id, self.water.id})
+
+    def test_section_creation_rejects_other_version_parent_and_cycle(self):
+        payload = {'folder_name': 'Invalid section', 'version': self.version.id, 'parent': self.other_folder.id}
+        response = self.client.post('/api/library_folders/', payload, format='json')
+        self.assertEqual(response.status_code, 400, response.content)
+        child = LibraryFolder.objects.create(folder_name='Child', parent=self.farming, version=self.version)
+        response = self.client.patch('/api/library_folders/%s/' % self.farming.id, {'parent': child.id}, format='json')
+        self.assertEqual(response.status_code, 400, response.content)
+        self.farming.refresh_from_db()
+        self.assertIsNone(self.farming.parent_id)
+
+    def test_curator_batch_import_requires_and_saves_section_placement(self):
+        section = LibraryFolder.objects.create(folder_name='Seed guidance', parent=self.farming, version=self.version)
+        sources = Path(self.temp.name, 'batch-originals')
+        sources.mkdir()
+        (sources / 'batch.pdf').write_bytes(self.source_bytes)
+        body = {
+            'content_path': str(sources),
+            'sheet_data': json.dumps([{'File Name': 'batch.pdf', 'Title': 'Placed batch fixture'}]),
+        }
+        missing = self.client.post('/api/content_bulk_add/', body, format='json')
+        self.assertEqual(missing.status_code, 400, missing.content)
+        self.assertFalse(Content.objects.filter(title='Placed batch fixture').exists())
+        placed = self.client.post('/api/content_bulk_add/', {
+            **body, 'catalogue_version': self.version.id, 'folder_ids': [section.id, self.water.id],
+        }, format='json')
+        self.assertEqual(placed.status_code, 200, placed.content)
+        self.assertEqual(placed.json()['data']['success_count'], 1)
+        document = Content.objects.get(title='Placed batch fixture')
+        self.assertEqual(set(document.libraryfolder_set.values_list('id', flat=True)), {section.id, self.water.id})
 
     def test_empty_library_memberships_clear_only_selected_version(self):
         document = self.upload_document()

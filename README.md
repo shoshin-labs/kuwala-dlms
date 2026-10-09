@@ -1,6 +1,6 @@
-# Oasis Library
+# Oasis Knowledge
 
-Oasis Library is the library catalogue and curator workspace for Kuwala’s offline
+Oasis Knowledge is the library catalogue and curator workspace for Kuwala’s offline
 community information hub. Visitors choose a library, browse documents and open
 an original local file or numbered PDF page. Oasis, the conversational interface,
 stands for **Off-grid Autonomous Solar Intelligence System**.
@@ -55,7 +55,7 @@ stop that preview and explicitly start private curator mode:
 .venv/bin/python scripts/preview.py run --curator
 ```
 
-Choose **Manage Library** or open
+Choose **Manage libraries** or open
 **http://127.0.0.1:8790/?workspace=curator&tab=contents**. This is a development
 restriction, not a new authentication scheme. Visitor mode denies writes,
 including upstream GET export/clone actions and their format-suffixed variants.
@@ -78,12 +78,17 @@ that remains available after its library host shuts down.
 
 - A visitor **library** is a root `LibraryFolder` in a selected `LibraryVersion`.
   Its documents include descendant folders and deduplicate stable content IDs.
+- **Oasis Knowledge** contains libraries, which contain nested sections.
 - Child folders appear as **sections**. The library overview and persistent navigation
   keep other libraries and sections visible while a selected section filters the
   documents. Curators can create sections under an existing library or section.
 - Search and document pagination run on the server, with 24 records per page and
   a maximum API page size of 100. Folder summaries contain counts, not every PDF's
   metadata; editor reference data loads when needed.
+- Upload and batch import require an explicit library; a dependent section picker
+  selects existing child sections or creates a nested section without losing the
+  document form. Library-level placement remains valid when no section applies.
+  Existing documents retain all exact memberships, including other catalogue versions.
 - The existing many-to-many relationship supports multiple library membership.
   Metadata categories/tags remain separate; this PR does not rename data.
 - Curator **Library versions** manages the original export versions/folder tree.
@@ -100,8 +105,8 @@ that remains available after its library host shuts down.
   AI semantic ranking requires matching local vectors and an installed embedding
   model. Unavailable AI is labelled honestly. Public passage search awaits an
   approved immutable release; private testing drafts remain restricted to curators.
-- Library uses Oasis chat's compact header, system typography and dark blue wordmark,
-  with a teal action accent. All interface assets are local.
+- Oasis Knowledge uses a light surface, system typography and the shared
+  [Kuwala brand palette](docs/OASIS_KNOWLEDGE_BRAND.md). All interface assets are local.
 
 The catalogue is an authoring preview, not an approval-enforced published release.
 The upstream active flag and review date do not certify technical advice.

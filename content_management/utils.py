@@ -8,6 +8,7 @@ from pathlib import Path
 from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.core.files import File
 from django.utils import timezone
+from django.db import transaction
 from django.utils.text import get_valid_filename
 from rest_framework import status
 
@@ -24,7 +25,7 @@ from django.conf import settings
 
 class ContentSheetUtil:
 
-    def upload_sheet_contents(self, sheet_contents):
+    def upload_sheet_contents(self, sheet_contents, placement=None):
         """
         This method adds bulk content data from the Excel sheet uploaded
         :param sheet_contents:
@@ -36,7 +37,7 @@ class ContentSheetUtil:
             content_data = json.loads(sheet_contents.get("sheet_data"))
             main_path = sheet_contents.get("content_path")
             # if path is provided, add content
-            if main_path is not (None or ''):
+            if main_path:
                 for each_content in content_data:
                     # if the actual file is not uploaded, don't upload its metadata
                     file_path = os.path.join(main_path, each_content.get("File Name"))
@@ -107,6 +108,21 @@ class ContentSheetUtil:
 
                                     content.metadata.add(obj)
                                 content.save()
+                                if placement is not None:
+                                    # A reported successful import must have its exact selected
+                                    # memberships. Lock/recheck in case folders were removed
+                                    # after the batch preflight. Failure uses the existing
+                                    # candidate cleanup below and never reports it imported.
+                                    with transaction.atomic():
+                                        from content_management.oasis_documents import validate_folder_placement
+                                        version = LibraryVersion.objects.select_for_update().get(pk=placement['catalogue_version'].pk)
+                                        ids = validate_folder_placement(version, placement['folder_ids'])
+                                        folders = list(LibraryFolder.objects.select_for_update().filter(pk__in=ids, version=version))
+                                        if len(folders) != len(ids):
+                                            raise ValueError('Selected libraries or sections changed; reload before importing.')
+                                        for folder in folders:
+                                            folder.library_content.add(content)
+                                        version.metadata_types.add(*content.metadata.values_list('type_id', flat=True).distinct())
                                 successful_uploads_count = successful_uploads_count + 1
                             except Exception as e:
                                 content.delete()
