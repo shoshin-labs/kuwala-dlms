@@ -138,8 +138,11 @@ Then install the tracked dedicated Pi user service:
 
 ```sh
 scp deploy/oasis-library-admin-forward.service brightadmin@kuwala001.local:oasis-library-admin-forward.service
-ssh brightadmin@kuwala001.local 'mkdir -p ~/.config/systemd/user && install -m 0600 ~/oasis-library-admin-forward.service ~/.config/systemd/user/oasis-library-admin-forward.service && rm ~/oasis-library-admin-forward.service && systemctl --user daemon-reload && systemctl --user enable --now oasis-library-admin-forward.service'
+ssh brightadmin@kuwala001.local 'mkdir -p ~/.config/systemd/user && install -m 0600 ~/oasis-library-admin-forward.service ~/.config/systemd/user/oasis-library-admin-forward.service && rm ~/oasis-library-admin-forward.service && systemctl --user daemon-reload && systemctl --user enable oasis-library-admin-forward.service && systemctl --user restart oasis-library-admin-forward.service'
 ```
+
+Restart after installing the unit so an existing connection adopts the dedicated
+account. Enabling an already running service alone does not replace its process.
 
 On the Pi, confirm the unit connects as `oasis-curator-forward`, its loopback
 `8792` forward returns the minimal Jetson `/healthz`, and an anonymous manager
