@@ -53,6 +53,9 @@ Only a canonical HTTPS Tailscale hostname with explicit port `8443` is accepted.
 No wildcard, credential, path, query, fragment or alternative public hostname is
 accepted. The optional value does not create a proxy or expose a listener.
 
+The separately configured Access-protected hostname described below does not
+replace or broaden this private Tailscale setting.
+
 After the operator has installed and verified the authenticated release, use
 the dedicated Pi SSH key at `~/.ssh/oasis-library-admin-forward` (mode `0600`).
 For a first installation, create it on the Pi; retain an existing key:
@@ -184,6 +187,98 @@ same-origin and fetch-site checks still reject requests from the visitor's
 Safe top-level browser navigation to the manager shell and password pages is
 permitted when following a link from the visitor page. This exception does not
 apply to APIs, media, exports, legacy mutating GETs or any write.
+
+## Optional Access-protected management hostname
+
+The manager may also use `https://manage.kuwala.space` behind Cloudflare Access.
+This reaches the same local catalogue; it does not publish private originals or
+move authoring data into cloud storage. Internet access is required for this
+remote entrance. Keep the existing private Tailscale and SSH entrances working.
+
+The public-origin setting defaults off and accepts only this exact value:
+
+```ini
+OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN=https://manage.kuwala.space
+```
+
+Do not replace `OASIS_DEVICE_ADMIN_ORIGIN`: the two explicitly configured
+origins coexist. Alternate hosts, explicit ports, HTTP, credentials, trailing
+slashes, paths, queries and fragments are rejected. Enabling this setting does
+not configure Cloudflare, create DNS or open a listener. Configure the external
+protection before exposing the hostname; the application still requires the
+existing active staff session for all private reads and writes.
+
+Use a self-hosted Cloudflare Access application for the **entire hostname**,
+including static files, login, APIs, originals and exports. Its only Allow policy
+must list the explicitly approved administrator email addresses. Use the
+`onetimepin` identity provider and restrict `allowed_idps` to that provider;
+four-hour Access sessions match the maximum Django session lifetime. Do not add
+Everyone, email-domain, Bypass, service-token or non-identity allowances. Keep
+administrator identities and actual account/application identifiers outside Git.
+
+The existing Pi administrator forward is the management origin:
+
+`Cloudflare Access → named Tunnel → Pi 127.0.0.1:8792 → scoped SSH forward → Jetson 127.0.0.1:8790`
+
+Preserve the visitor ingress and append only this management rule before the
+existing unmatched-host 404. Substitute the verified team slug and this
+application's audience; the example is not an executable configuration:
+
+```json
+{
+  "hostname": "manage.kuwala.space",
+  "service": "http://127.0.0.1:8792",
+  "originRequest": {
+    "access": {
+      "required": true,
+      "teamName": "VERIFIED_TEAM_SLUG",
+      "audTag": ["VERIFIED_MANAGEMENT_APPLICATION_AUDIENCE"]
+    }
+  }
+}
+```
+
+The connector must validate the management application's Access JWT before
+forwarding. Leave `httpHostHeader` unset to preserve the management Host.
+Cloudflare overwrites client `X-Forwarded-Proto` with the actual incoming scheme;
+the Django middleware accepts only the exact `https` signal for a configured Host
+from a direct loopback peer. Missing/HTTP/comma-separated signals fail closed.
+Global forwarded-host trust and `SECURE_PROXY_SSL_HEADER` remain disabled.
+Session and CSRF cookies remain secure and host-bound on each HTTPS origin, and
+cross-origin API/write requests still fail even between the two approved hosts.
+
+Commission in this order:
+
+1. Inspect the existing Access organization, identity providers, policies,
+   tunnel configuration and DNS. Preserve unrelated resources and store a
+   private configuration beforeimage. Verify the necessary account and zone
+   permissions rather than assuming a tunnel token can edit DNS.
+2. Create or reuse the OTP provider, whole-host application and explicit email
+   policy. Verify there are no broader allowances. Configure connector JWT
+   validation for that application's audience, preserving the visitor route.
+3. Run the fork's checks and CI, then deploy the exact verified authenticated
+   release through the existing device process. Set the public origin in the
+   private literal device environment and check exact Host/HTTPS handling through
+   the existing Pi forward. Do not weaken runtime access checks to make a proxy
+   work.
+4. Create only the proxied `manage` CNAME pointing to the existing named tunnel.
+   Confirm Access intercepts anonymous HTML, static, API, original and export
+   requests before they reach Django. Verify authorized email login and the
+   existing staff login, then catalogue/section reads and authoring workflows.
+5. Recheck the private manager, visitor reader, original file hashes and worker
+   health. A later visitor-header link change belongs in the station's separately
+   validated manager-origin configuration.
+
+To withdraw this remote entrance, remove only its DNS and management ingress
+rule, then disable its application/public-origin setting as appropriate. Keep
+the visitor ingress, private Tailscale listener and SSH forward intact. Normal
+staff logout invalidates the Django session; Access authentication has its own
+four-hour session.
+
+Current references: [Access applications](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/self-hosted-public-app/),
+[one-time email PINs](https://developers.cloudflare.com/cloudflare-one/integrations/identity-providers/one-time-pin/),
+[connector Access validation](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/configure-tunnels/origin-parameters/#access)
+and [forwarded HTTPS header](https://developers.cloudflare.com/fundamentals/reference/http-headers/#x-forwarded-proto).
 
 ## Deployment and verification
 
