@@ -1,4 +1,4 @@
-"""Strict, operator-selected private administrator origin configuration."""
+"""Strict, operator-selected administrator origins for loopback proxies."""
 import re
 from urllib.parse import urlsplit
 
@@ -21,4 +21,14 @@ def admin_origin(value):
             raise ValueError
     except (TypeError, ValueError):
         raise ImproperlyConfigured('OASIS_DEVICE_ADMIN_ORIGIN must be one exact https://<tailnet-name>.ts.net:8443 origin.')
+    return value
+
+
+def public_admin_origin(value):
+    """Opt in to the one protected manager hostname, never a generic proxy."""
+    if value == '':
+        return ''
+    if value != 'https://manage.kuwala.space':
+        raise ImproperlyConfigured(
+            'OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN must be empty or exactly https://manage.kuwala.space.')
     return value

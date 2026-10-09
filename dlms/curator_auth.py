@@ -22,21 +22,24 @@ def curator_ui():
 
 
 class CuratorProxyOriginMiddleware:
-    """Trust the fixed HTTPS signal only from the already-private loopback tunnel."""
+    """Trust configured HTTPS hosts only from a direct loopback proxy peer."""
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        origin = getattr(settings, 'OASIS_DEVICE_ADMIN_ORIGIN', '')
+        hosts = {urlsplit(origin).netloc for origin in (
+            getattr(settings, 'OASIS_DEVICE_ADMIN_ORIGIN', ''),
+            getattr(settings, 'OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN', ''),
+        ) if origin}
         protocol = request.META.get('HTTP_X_FORWARDED_PROTO')
         trusted = False
         if protocol is not None:
-            if (not origin or not is_loopback_request(request) or protocol != 'https'
-                    or request.get_host() != urlsplit(origin).netloc):
+            if (not hosts or not is_loopback_request(request) or protocol != 'https'
+                    or request.get_host() not in hosts):
                 return PrivatePreviewMiddleware.denied(curator_ui()['invalid_proxy_origin'])
             request.META['wsgi.url_scheme'] = 'https'
             trusted = True
-        elif origin and request.get_host() == urlsplit(origin).netloc:
+        elif hosts and request.get_host() in hosts:
             return PrivatePreviewMiddleware.denied(curator_ui()['invalid_proxy_origin'])
         response = self.get_response(request)
         if trusted:

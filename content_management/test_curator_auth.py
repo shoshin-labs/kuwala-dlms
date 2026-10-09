@@ -8,7 +8,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, SimpleTestCase, override_settings
 from rest_framework.test import APIClient
 
-from dlms.curator_config import admin_origin
+from dlms.curator_config import admin_origin, public_admin_origin
 
 
 MIDDLEWARE = [
@@ -29,9 +29,9 @@ TEMPLATES = [{
 
 
 @override_settings(ROOT_URLCONF='dlms.device_urls', MIDDLEWARE=MIDDLEWARE, TEMPLATES=TEMPLATES,
-                   ALLOWED_HOSTS=['testserver', '127.0.0.1', 'kuwala001.tailc01a0e.ts.net'],
+                   ALLOWED_HOSTS=['testserver', '127.0.0.1', 'kuwala001.tailc01a0e.ts.net', 'manage.kuwala.space'],
                    OASIS_CURATOR_ENABLED=True, OASIS_LOOPBACK_ONLY=True,
-                   OASIS_REQUIRE_CURATOR_AUTH=True, OASIS_DEVICE_ADMIN_ORIGIN='',
+                   OASIS_REQUIRE_CURATOR_AUTH=True, OASIS_DEVICE_ADMIN_ORIGIN='', OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN='',
                    LOGIN_URL='/accounts/login/', LOGIN_REDIRECT_URL='/?workspace=curator&tab=contents',
                    SESSION_COOKIE_NAME='oasis_curator_session', CSRF_COOKIE_NAME='oasis_curator_csrf',
                    SESSION_COOKIE_HTTPONLY=True, CSRF_COOKIE_HTTPONLY=True,
@@ -186,6 +186,97 @@ class CuratorSessionTests(TestCase):
             with self.subTest(headers=headers):
                 self.assertEqual(self.client.get('/accounts/login/', **headers).status_code, 403)
 
+    @override_settings(OASIS_DEVICE_ADMIN_ORIGIN='https://kuwala001.tailc01a0e.ts.net:8443',
+                       OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN='https://manage.kuwala.space')
+    def test_both_https_origins_keep_staff_login_secure_cookies_and_csrf(self):
+        origins = ('https://kuwala001.tailc01a0e.ts.net:8443', 'https://manage.kuwala.space')
+        for origin in origins:
+            with self.subTest(origin=origin):
+                self.client = APIClient(enforce_csrf_checks=True)
+                host = {'HTTP_HOST': origin.removeprefix('https://'), 'HTTP_X_FORWARDED_PROTO': 'https'}
+                token = self.token(**host)
+                csrf_cookie = self.client.cookies[settings.CSRF_COOKIE_NAME]
+                self.assertTrue(csrf_cookie['secure'])
+                self.assertTrue(csrf_cookie['httponly'])
+                self.assertEqual(csrf_cookie['samesite'], 'Strict')
+                self.assertEqual(csrf_cookie['domain'], '')
+                response = self.client.post('/accounts/login/',
+                                            {'username': 'fixture-admin', 'password': 'Test-private-login!712'},
+                                            HTTP_X_CSRFTOKEN=token, HTTP_ORIGIN=origin, **host)
+                self.assertEqual(response.status_code, 302)
+                session_cookie = response.cookies[settings.SESSION_COOKIE_NAME]
+                self.assertTrue(session_cookie['secure'])
+                self.assertTrue(session_cookie['httponly'])
+                self.assertEqual(session_cookie['samesite'], 'Strict')
+                self.assertEqual(session_cookie['domain'], '')
+                self.assertEqual(self.client.get('/api/oasis/documents/', **host).status_code, 200)
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory).resolve()
+                    (root / 'contents').mkdir()
+                    original = b'%PDF-1.4 unchanged private fixture'
+                    (root / 'contents/fixture.pdf').write_bytes(original)
+                    with override_settings(MEDIA_ROOT=str(root)):
+                        response = self.client.get('/media/contents/fixture.pdf', **host)
+                        self.assertEqual(response.status_code, 200)
+                        self.assertEqual(b''.join(response.streaming_content), original)
+                        self.assertEqual(response['Cache-Control'], 'no-store')
+                self.assertEqual(self.client.post('/api/oasis/documents/', {}, **host).status_code, 403)
+                token = self.client.get('/api/get_csrf/', **host).json()['data']
+                self.assertEqual(self.client.post('/api/oasis/documents/', {}, HTTP_X_CSRFTOKEN=token,
+                                                 HTTP_ORIGIN=origin, **host).status_code, 400)
+                other_origin = next(value for value in origins if value != origin)
+                self.assertEqual(self.client.post('/api/oasis/documents/', {}, HTTP_X_CSRFTOKEN=token,
+                                                 HTTP_ORIGIN=other_origin, **host).status_code, 403)
+                for endpoint in ('/api/oasis/documents/', '/api/create_build/6/', '/media/contents/fixture.pdf'):
+                    self.assertEqual(self.client.get(endpoint, HTTP_ORIGIN=other_origin, **host).status_code, 403)
+                self.assertEqual(self.client.get('/api/oasis/config/', HTTP_SEC_FETCH_SITE='same-site', **host).status_code, 403)
+                self.assertEqual(self.client.post('/accounts/logout/', {}, HTTP_X_CSRFTOKEN=token,
+                                                 HTTP_ORIGIN=origin, **host).status_code, 302)
+                self.assertEqual(self.client.get('/api/oasis/documents/', **host).status_code, 401)
+
+    @override_settings(OASIS_DEVICE_ADMIN_ORIGIN='https://kuwala001.tailc01a0e.ts.net:8443')
+    def test_public_proxy_origin_is_rejected_until_explicitly_enabled(self):
+        self.assertEqual(self.client.get('/accounts/login/', HTTP_HOST='manage.kuwala.space',
+                                        HTTP_X_FORWARDED_PROTO='https').status_code, 403)
+        private = {'HTTP_HOST': 'kuwala001.tailc01a0e.ts.net:8443', 'HTTP_X_FORWARDED_PROTO': 'https'}
+        self.assertEqual(self.sign_in(HTTP_ORIGIN='https://kuwala001.tailc01a0e.ts.net:8443', **private).status_code, 302)
+        self.assertEqual(self.client.get('/api/oasis/documents/', **private).status_code, 200)
+
+    @override_settings(OASIS_DEVICE_ADMIN_ORIGIN='https://kuwala001.tailc01a0e.ts.net:8443',
+                       OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN='https://manage.kuwala.space')
+    def test_public_proxy_rejects_missing_wrong_and_forwarded_signals(self):
+        host = {'HTTP_HOST': 'manage.kuwala.space', 'HTTP_X_FORWARDED_PROTO': 'https'}
+        for headers in [
+            {'HTTP_HOST': 'manage.kuwala.space'},
+            {**host, 'HTTP_X_FORWARDED_PROTO': 'http'},
+            {**host, 'HTTP_X_FORWARDED_PROTO': 'https,http'},
+            {**host, 'HTTP_HOST': 'manage.kuwala.space:443'},
+            {**host, 'HTTP_HOST': 'manage.kuwala.space:8443'},
+            {**host, 'REMOTE_ADDR': '192.0.2.1', 'HTTP_X_FORWARDED_FOR': '127.0.0.1'},
+            {'HTTP_X_FORWARDED_HOST': 'manage.kuwala.space', 'HTTP_X_FORWARDED_PROTO': 'https'},
+        ]:
+            with self.subTest(headers=headers):
+                self.assertEqual(self.client.get('/accounts/login/', **headers).status_code, 403)
+
+    @override_settings(OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN='https://manage.kuwala.space')
+    def test_public_https_proxy_does_not_grant_anonymous_or_nonstaff_access(self):
+        host = {'HTTP_HOST': 'manage.kuwala.space', 'HTTP_X_FORWARDED_PROTO': 'https'}
+        endpoints = ('/api/oasis/documents/', '/api/create_build/6/', '/api/library_versions/6/clone/',
+                     '/media/contents/fixture.pdf', '/api/spreadsheet/metadata/fixture')
+        for endpoint in endpoints:
+            with self.subTest(endpoint=endpoint):
+                response = self.client.get(endpoint, **host)
+                self.assertEqual(response.status_code, 401)
+                self.assertIsNone(response.json()['data'])
+        token = self.token(**host)
+        self.assertEqual(self.client.post('/api/oasis/documents/', {}, HTTP_X_CSRFTOKEN=token,
+                                         HTTP_ORIGIN='https://manage.kuwala.space', **host).status_code, 401)
+        self.assertEqual(self.sign_in('fixture-visitor', HTTP_ORIGIN='https://manage.kuwala.space', **host).status_code, 200)
+        self.client.force_login(self.nonstaff)
+        for endpoint in endpoints:
+            with self.subTest(endpoint=endpoint):
+                self.assertEqual(self.client.get(endpoint, **host).status_code, 403)
+
     @override_settings(OASIS_DEVICE_ADMIN_ORIGIN='https://kuwala001.tailc01a0e.ts.net:8443', TEMPLATES=[{
         **TEMPLATES[0], 'APP_DIRS': False, 'OPTIONS': {**TEMPLATES[0]['OPTIONS'], 'loaders': [
             ('django.template.loaders.locmem.Loader', {'index.html': '<title>Oasis Library</title>{% include "curator/session_controls.html" %}'}),
@@ -211,6 +302,19 @@ class CuratorSessionTests(TestCase):
 
 
 class CuratorOriginConfigurationTests(SimpleTestCase):
+    def test_public_origin_requires_the_single_exact_protected_hostname(self):
+        self.assertEqual(public_admin_origin(''), '')
+        self.assertEqual(public_admin_origin('https://manage.kuwala.space'), 'https://manage.kuwala.space')
+        for value in (None, False, 0, b'https://manage.kuwala.space', '*', 'https://*.kuwala.space',
+                      'http://manage.kuwala.space', 'https://manage.kuwala.space:443',
+                      'https://manage.kuwala.space:8443', 'https://manage.kuwala.space/',
+                      'https://manage.kuwala.space.evil.example', 'https://oasis.kuwala.space',
+                      'https://user@manage.kuwala.space', 'https://manage.kuwala.space?q=a',
+                      'https://manage.kuwala.space#x', 'https://MANAGE.kuwala.space',
+                      ' https://manage.kuwala.space', 'https://manage.kuwala.space\n'):
+            with self.subTest(value=value), self.assertRaises(ImproperlyConfigured):
+                public_admin_origin(value)
+
     def test_only_one_canonical_private_tailnet_origin_is_accepted(self):
         self.assertEqual(admin_origin(''), '')
         self.assertEqual(admin_origin('https://kuwala001.tailc01a0e.ts.net:8443'), 'https://kuwala001.tailc01a0e.ts.net:8443')

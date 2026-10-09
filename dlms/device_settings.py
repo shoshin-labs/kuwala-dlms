@@ -6,11 +6,12 @@ import os
 import re
 import stat
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from django.core.exceptions import ImproperlyConfigured
 
 from dlms.private_paths import checked_directory, checked_path, require_disjoint
-from dlms.curator_config import admin_origin
+from dlms.curator_config import admin_origin, public_admin_origin
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -64,9 +65,10 @@ except (OSError, ValueError) as exc:
 DEBUG = False
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '[::1]']
 OASIS_DEVICE_ADMIN_ORIGIN = admin_origin(os.environ.get('OASIS_DEVICE_ADMIN_ORIGIN', ''))
-if OASIS_DEVICE_ADMIN_ORIGIN:
-    from urllib.parse import urlsplit
-    ALLOWED_HOSTS.append(urlsplit(OASIS_DEVICE_ADMIN_ORIGIN).hostname)
+OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN = public_admin_origin(os.environ.get('OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN', ''))
+for origin in (OASIS_DEVICE_ADMIN_ORIGIN, OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN):
+    if origin:
+        ALLOWED_HOSTS.append(urlsplit(origin).hostname)
 INSTALLED_APPS = [
     'django.contrib.admin', 'django.contrib.auth', 'django.contrib.contenttypes',
     'django.contrib.sessions', 'django.contrib.messages', 'django.contrib.staticfiles',

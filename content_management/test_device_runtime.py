@@ -36,7 +36,8 @@ class DeviceConfigurationTests(SimpleTestCase):
         self.secret.write_text('aB7.' * 20 + 'C8dEfGhIjKlMnOpQrStUvWxYz')
         self.secret.chmod(0o600)
         self.data = self.root / 'data'
-        self.env = {'OASIS_DEVICE_SECRET_KEY_FILE': str(self.secret), 'OASIS_DEVICE_DATA_ROOT': str(self.data)}
+        self.env = {'OASIS_DEVICE_SECRET_KEY_FILE': str(self.secret), 'OASIS_DEVICE_DATA_ROOT': str(self.data),
+                    'OASIS_DEVICE_ADMIN_ORIGIN': '', 'OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN': ''}
 
     def load(self, env=None, source=None, action=''):
         script = (
@@ -46,7 +47,9 @@ class DeviceConfigurationTests(SimpleTestCase):
             + 'print(json.dumps({"debug":s["DEBUG"],"database":s["DATABASES"]["default"]["NAME"],'
               '"media":s["MEDIA_ROOT"],"builds":s["BUILDS_ROOT"],"indexing":s["OASIS_INDEXING_STATE_ROOT"],'
               '"static":s["STATIC_ROOT"],"curator":s["OASIS_CURATOR_ENABLED"],"loopback":s["OASIS_LOOPBACK_ONLY"],'
-              '"authentication_required":s["OASIS_REQUIRE_CURATOR_AUTH"],"admin_origin":s["OASIS_DEVICE_ADMIN_ORIGIN"]}))'
+              '"authentication_required":s["OASIS_REQUIRE_CURATOR_AUTH"],"admin_origin":s["OASIS_DEVICE_ADMIN_ORIGIN"],'
+              '"admin_public_origin":s["OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN"],"allowed_hosts":s["ALLOWED_HOSTS"],'
+              '"forwarded_host":s["USE_X_FORWARDED_HOST"],"proxy_ssl_header":s["SECURE_PROXY_SSL_HEADER"]}))'
         )
         return subprocess.run([sys.executable, '-B', '-c', script], cwd=REPOSITORY,
                               env={**os.environ, **(self.env if env is None else env)}, capture_output=True, text=True, timeout=15)
@@ -61,10 +64,38 @@ class DeviceConfigurationTests(SimpleTestCase):
         self.assertTrue(config['curator'] and config['loopback'])
         self.assertTrue(config['authentication_required'])
         self.assertEqual(config['admin_origin'], '')
+        self.assertEqual(config['admin_public_origin'], '')
+        self.assertNotIn('manage.kuwala.space', config['allowed_hosts'])
         self.assertEqual(config['database'], str(self.data / 'catalogue.sqlite3'))
         for key, relative in (('media', 'media'), ('builds', 'builds'), ('indexing', 'indexing')):
             self.assertEqual(config[key], str(self.data / relative))
         self.assertEqual(config['static'], str(REPOSITORY / 'collected-static'))
+
+    def test_exact_public_origin_keeps_private_origin_and_proxy_defaults(self):
+        private = 'https://kuwala001.tailc01a0e.ts.net:8443'
+        public = 'https://manage.kuwala.space'
+        for private_origin in ('', private):
+            with self.subTest(private_origin=private_origin):
+                result = self.load({**self.env, 'OASIS_DEVICE_ADMIN_ORIGIN': private_origin,
+                                    'OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN': public})
+                self.assertEqual(result.returncode, 0, result.stderr)
+                config = json.loads(result.stdout)
+                self.assertEqual(config['admin_origin'], private_origin)
+                self.assertEqual(config['admin_public_origin'], public)
+                self.assertIn('manage.kuwala.space', config['allowed_hosts'])
+                self.assertEqual('kuwala001.tailc01a0e.ts.net' in config['allowed_hosts'], bool(private_origin))
+                self.assertTrue(config['authentication_required'] and config['loopback'])
+                self.assertFalse(config['forwarded_host'])
+                self.assertIsNone(config['proxy_ssl_header'])
+
+    def test_invalid_public_origin_fails_device_startup(self):
+        for origin in ('https://oasis.kuwala.space', 'https://*.kuwala.space', 'http://manage.kuwala.space',
+                       'https://manage.kuwala.space:443', 'https://manage.kuwala.space/',
+                       'https://manage.kuwala.space?q=admin', 'https://user@manage.kuwala.space'):
+            with self.subTest(origin=origin):
+                result = self.load({**self.env, 'OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN': origin})
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn('OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN', result.stderr)
 
     def test_missing_weak_permissive_and_symlink_secrets_fail_without_key_disclosure(self):
         bad = self.root / 'bad-key'
