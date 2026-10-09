@@ -92,8 +92,12 @@ that remains available after its library host shuts down.
   Existing documents retain all exact memberships, including other catalogue versions.
 - The existing many-to-many relationship supports multiple library membership.
   Metadata categories/tags remain separate; this PR does not rename data.
-- Curator **Library versions** manages the original export versions/folder tree.
-  With several versions, visitors choose a catalogue version before its libraries.
+- Curators can import or export a named library, including its sections, original
+  PDFs and attribution/rights metadata. Imports show a review before adding new
+  records; existing documents are preserved.
+- Routine browsing and management hide catalogue version selectors. The original
+  **Library versions** and **Export builds** tools remain under Advanced tools →
+  **Show catalogue internals** for compatibility and specialist use.
 - Numeric document/folder/version IDs, API paths/envelopes, `solarspell.db`,
   `folder`, `content_folder`, rights fields and original bytes remain compatible.
   The database filename is an upstream/Oasis importer contract.
