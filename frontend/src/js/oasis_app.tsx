@@ -154,6 +154,19 @@ function Shell({
           </a>
           <div className="topbar-actions">
             <nav aria-label={s("product")}>
+              {config.curator_enabled && (
+                <a
+                  className="nav-button"
+                  href="https://oasis.kuwala.space/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s("open_oasis_help")}
+                  title={s("open_oasis_help")}
+                >
+                  <NavIcon kind="oasis" />
+                  <span className="nav-label">{s("open_oasis")}</span>
+                </a>
+              )}
               <button
                 className="nav-button"
                 aria-label={s("catalogue")}
@@ -247,7 +260,9 @@ function NavIcon({ kind }: { kind: string }) {
   return (
     <svg className="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
       strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {kind === "catalogue" ? (
+      {kind === "oasis" ? (
+        <><path d="M14 4h6v6M20 4l-9 9M10 4H4v16h16v-6" /></>
+      ) : kind === "catalogue" ? (
         <><path d="M12 5v15M3 4.5c3-1 6-.5 9 1 3-1.5 6-2 9-1V19c-3-1-6-.5-9 1-3-1.5-6-2-9-1z" /></>
       ) : kind === "about" ? (
         <><circle cx="12" cy="12" r="9" /><path d="M12 11v6m0-10v.01" /></>
