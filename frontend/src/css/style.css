@@ -135,7 +135,7 @@ button {
   flex-wrap: wrap;
 }
 .nav-button {
-  min-height: 44px;
+  min-height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -147,6 +147,8 @@ button {
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
 }
 .nav-button[aria-current="page"] {
   background: var(--accent);
