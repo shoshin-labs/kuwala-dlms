@@ -1,0 +1,1729 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-10-11",
+  "scope": "Shortlisted original PDFs for source review; no import or publication requested or performed",
+  "artifact_path_base": "private research pack library-expansion-2026-10-11/; paths do not refer to files committed in this repository",
+  "input_registers": [
+    "education/sources.json",
+    "practical/sources.json"
+  ],
+  "approvals": {
+    "imported": false,
+    "indexed": false,
+    "published": false,
+    "original_serving_approved": false,
+    "indexing_approved": false,
+    "answer_approved": false,
+    "domain_approved": false,
+    "translation_approved": false,
+    "technical_advice_approved": false
+  },
+  "existing_catalogue": {
+    "authoring_documents_checked": 108,
+    "inventory_artifact": "current-manager-catalogue.json",
+    "identity_note": "Existing library and section IDs are retained; proposed subsections are suggestions only. No new catalogue or library was created.",
+    "duplicate_review_limits": "Prior schooling hashes and current authoring titles/filenames were checked; current catalogue does not expose original file hashes."
+  },
+  "summary": {
+    "shortlisted": 17,
+    "education": 7,
+    "practical": 10,
+    "daily_scripted_sequences": 3,
+    "structured_classroom_lesson_resources": 2,
+    "teacher_activity_modules": 1,
+    "teacher_professional_development_guides": 1,
+    "rights_status_counts": {
+      "clear_grant": 5,
+      "conditions": 7,
+      "permission_required": 1,
+      "unverified": 4
+    },
+    "pdf_pages": 2190,
+    "bytes": 184822441
+  },
+  "review_limits": {
+    "original_pdf_max_bytes": 83886080,
+    "original_pdf_max_pages": 750,
+    "all_shortlisted_pass_size_and_page_bounds": true,
+    "full_importer_passage_preflight_completed": false,
+    "method": "Original PDF signature/hash/size/page checks, text extraction and representative rendered copyright/activity pages. Not a complete page-by-page content review.",
+    "pending": "Complete importer extraction/character/passage checks, matching index build, curriculum/content suitability and intended-use review; none of these checks is implied by PDF download."
+  },
+  "documents": [
+    {
+      "id": "fw-bala-wande-maths-g1-t1",
+      "group": "education",
+      "title": "Bala Wande Grade 1 Mathematics Teacher Guide - Term 1",
+      "authors": [
+        "Bala Wande-Magic Classroom Collective"
+      ],
+      "publisher": "Funda Wande / Bala Wande-Magic Classroom Collective",
+      "publication_year": 2020,
+      "edition": "Version 1.0; January 2020 PDF metadata; no later edition claimed",
+      "language": "xh/en",
+      "languages": [
+        "isiXhosa",
+        "English"
+      ],
+      "resource_kind": "daily_lesson_sequence",
+      "resource_type_note": "daily scripted teaching guide",
+      "daily_scripted_sequence": true,
+      "contains_classroom_lesson_plans": true,
+      "audience": "Grade 1",
+      "age": "Approximately 6-7; age inferred from grade, not a pupil placement recommendation",
+      "geographical_relevance": "South Africa",
+      "use_case": "A teacher plans a complete first-term daily number sequence using sorting, matching, counting, number ordering, mental maths and weekly assessment.",
+      "suggested_memberships": [
+        {
+          "library": "Learning",
+          "existing_library_id": 18,
+          "section": "Maths",
+          "existing_section_id": 31,
+          "proposed_new_subsection": "Foundational numeracy and classroom lesson plans",
+          "new_subsection_parent_id": 31,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://fundawande.org/classroom-resources",
+      "direct_pdf_url": "https://fwdata.org/img/cms/resources/BW%20Teachers%20Guide%20Term%201%20Version%201.0.pdf",
+      "resolved_pdf_url": "https://fwdata.org/img/cms/resources/BW%20Teachers%20Guide%20Term%201%20Version%201.0.pdf",
+      "rights": {
+        "status": "clear_grant",
+        "licence": "CC BY 4.0; notice uses the wording Unported",
+        "rights_url": "https://creativecommons.org/licenses/by/4.0/",
+        "evidence_source": "actual_downloaded_pdf",
+        "evidence_pdf_pages": [
+          3
+        ],
+        "evidence_artifacts": [
+          "education/evidence/fw-bala-wande-maths-g1-t1-p3.png"
+        ],
+        "conditions": "Downloaded original physical page 3 displays BY icon and Attribution 4.0 notice. Preserve collective, DBE and referenced programme acknowledgements. Attribution is required; the named notice permits adaptations, subject to any separately credited material.",
+        "recommendation": "Strong candidate for attributable original serving after curator review; adaptation and translation require attribution and clear identification of changes.",
+        "scope_approval": "not_requested_or_granted"
+      },
+      "file": {
+        "artifact_path": "education/pdfs/fw-bala-wande-maths-g1-t1.pdf",
+        "filename": "fw-bala-wande-maths-g1-t1.pdf",
+        "sha256": "67959c0ff5c1d2a8b622741bb8368b871cb4a843e34e92636b10d84cd786e28a",
+        "bytes": 38871170,
+        "pdf_pages": 288,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "Poppler pdftotext and pypdf extract_text; unchanged original",
+        "text_artifact": "education/evidence/fw-bala-wande-maths-g1-t1.txt",
+        "pypdf_characters": 196450,
+        "notes": "Poppler output and sampled lesson page are readable, with bilingual isiXhosa/English text and complex layout. Text extraction does not capture all photo instructions or poster content as prose.",
+        "holds": [
+          "Companion learner books and posters not acquired",
+          "Bilingual passage segmentation needs review"
+        ]
+      },
+      "representative_review": {
+        "rights_pdf_pages": [
+          3
+        ],
+        "activity_pdf_page": 49,
+        "activity_artifact": "education/evidence/fw-bala-wande-maths-g1-t1-p49.png",
+        "activity": "Week 2 Day 1: match, sort and count objects up to five, using a farm-scene poster and photo-guided classroom steps.",
+        "materials": [
+          "local counters or objects",
+          "farm-scene poster",
+          "learner activity book"
+        ],
+        "assessment": "Weekly Day 5 assessment and consolidation; teacher observes one-to-one matching and counting during the lesson."
+      },
+      "offline_suitability": "All teacher steps and classroom photos are in the PDF. Videos are optional support. Full programme implementation needs learner books, posters and manipulatives; those companion assets are not in this research pack.",
+      "constraints": [
+        "South African curriculum; local teacher must check fit with Malawi or other national curricula",
+        "Teacher guide alone is not the full Bala Wande classroom kit",
+        "Earliest term guide retained unchanged; not claimed to be latest edition"
+      ],
+      "recommendation_priority": "A - first classroom pilot",
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "fw-literacy-life-skills-g1-t1-2021",
+      "group": "education",
+      "title": "Funda Wande Grade 1 Literacy and Life Skills Teacher Guide - Term 1 (English reference)",
+      "authors": [
+        "Funda Wande-Molteno team"
+      ],
+      "publisher": "Funda Wande / Funda Wande-Molteno team",
+      "publication_year": 2021,
+      "edition": "January 2021 PDF; publisher source filename and PDF metadata",
+      "language": "en",
+      "languages": [
+        "English reference version"
+      ],
+      "resource_kind": "daily_lesson_sequence",
+      "resource_type_note": "daily teaching guide in an English reference edition",
+      "daily_scripted_sequence": true,
+      "contains_classroom_lesson_plans": true,
+      "audience": "Grade 1",
+      "age": "Approximately 6-7; inferred from grade",
+      "geographical_relevance": "South Africa",
+      "use_case": "A foundation teacher prepares daily listening, names, classroom routines, emergent literacy and life-skills activities for children learning in an African home language.",
+      "suggested_memberships": [
+        {
+          "library": "Learning",
+          "existing_library_id": 18,
+          "section": "Reading and languages",
+          "existing_section_id": 33,
+          "proposed_new_subsection": "Foundation literacy and life skills lesson plans",
+          "new_subsection_parent_id": 33,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://fundawande.org/classroom-resources",
+      "direct_pdf_url": "https://fundawande.org/img/cms/resources/FW%20L_LS%20Teacher%20Guide%20English%20Gr1%20Term%201%20Jan%202021.pdf",
+      "resolved_pdf_url": "https://fwdata.org/img/cms/resources/FW%20L_LS%20Teacher%20Guide%20English%20Gr1%20Term%201%20Jan%202021.pdf",
+      "rights": {
+        "status": "clear_grant",
+        "licence": "CC BY 4.0; notice uses the wording Unported",
+        "rights_url": "https://creativecommons.org/licenses/by/4.0/",
+        "evidence_source": "actual_downloaded_pdf",
+        "evidence_pdf_pages": [
+          4
+        ],
+        "evidence_artifacts": [
+          "education/evidence/fw-literacy-life-skills-g1-t1-2021-p4.png"
+        ],
+        "conditions": "Physical page 4 has BY icon and Attribution 4.0 notice as an image, missed by plain text extraction. It credits the Funda Wande-Molteno team, WCED/DBE resources, and a Rob Byron/Shutterstock photograph on printed page 186. Retain all credits; do not assume the separately credited stock photograph is independently reusable outside the original.",
+        "recommendation": "Candidate for attributable original serving with a prominent reference-language label and local language review. Do not list this as an English phonics curriculum.",
+        "scope_approval": "not_requested_or_granted"
+      },
+      "file": {
+        "artifact_path": "education/pdfs/fw-literacy-life-skills-g1-t1-2021.pdf",
+        "filename": "fw-literacy-life-skills-g1-t1-2021.pdf",
+        "sha256": "04d3ed9f6116cd7fb0f177c5ef5cc85180135375c74d8fd998a7254ff0ccbb64",
+        "bytes": 40581141,
+        "pdf_pages": 220,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "Poppler pdftotext and pypdf extract_text; unchanged original",
+        "text_artifact": "education/evidence/fw-literacy-life-skills-g1-t1-2021.txt",
+        "pypdf_characters": 210101,
+        "notes": "Poppler and pypdf extract readable lesson text; pypdf reconstructs some malformed cross-reference objects and logs warnings. Image-only licence notice requires the rendered copyright evidence.",
+        "holds": [
+          "Local language and curriculum suitability review",
+          "Companion reading and learner materials not acquired",
+          "PDF cross-reference warnings need import preflight"
+        ]
+      },
+      "representative_review": {
+        "rights_pdf_pages": [
+          4
+        ],
+        "activity_pdf_page": 23,
+        "activity_artifact": "education/evidence/fw-literacy-life-skills-g1-t1-2021-p23.png",
+        "activity": "Week 2 Monday: establish classroom routines through names, listening and teacher demonstration, with timed components and follow-on independent work.",
+        "materials": [
+          "name cards",
+          "chalkboard",
+          "poster or big book",
+          "learner activity book"
+        ],
+        "assessment": "Teacher observation and routine practice; programme includes assessment guidance and learner work."
+      },
+      "offline_suitability": "Teacher sequence, illustrations and routines are in the original. Full implementation refers to Big Books, readers, learner books and other companion materials not acquired here.",
+      "constraints": [
+        "Publisher explicitly says English versions are for reference, not teaching English Home Language; English phonics lessons are not provided",
+        "South African home-language programme; not a ready-made Chichewa or Swahili phonics syllabus",
+        "2021 advice and routines require current classroom judgement",
+        "Third-party photograph credit retained"
+      ],
+      "recommendation_priority": "A - reference and adaptation pilot with teacher",
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "nect-efal-g3-t1",
+      "group": "education",
+      "title": "PSRIP English First Additional Language Grade 3 Lesson Plan - Term 1",
+      "authors": [
+        "PSRIP / NECT programme team"
+      ],
+      "publisher": "National Education Collaboration Trust / South African Department of Basic Education",
+      "publication_year": 2023,
+      "edition": "Edition 5, 2023, printed on physical page 2; publisher uploaded this PDF in December 2025",
+      "language": "en",
+      "languages": [
+        "English"
+      ],
+      "resource_kind": "daily_lesson_sequence",
+      "resource_type_note": "daily scripted lesson plans",
+      "daily_scripted_sequence": true,
+      "contains_classroom_lesson_plans": true,
+      "audience": "Grade 3",
+      "age": "Approximately 8-9; inferred from grade",
+      "geographical_relevance": "South Africa",
+      "use_case": "An English additional-language teacher follows weekly themes with timed daily oral language, songs, phonics, shared reading, writing and guided reading.",
+      "suggested_memberships": [
+        {
+          "library": "Learning",
+          "existing_library_id": 18,
+          "section": "Reading and languages",
+          "existing_section_id": 33,
+          "proposed_new_subsection": "English additional-language lesson plans",
+          "new_subsection_parent_id": 33,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://nect.org.za/psrip-efal/",
+      "direct_pdf_url": "https://nect.org.za/wp-content/uploads/2025/12/Grade-3-Term-1-PSRIP-EFAL-Lesson-Plans-1.pdf",
+      "resolved_pdf_url": "https://nect.org.za/wp-content/uploads/2025/12/Grade-3-Term-1-PSRIP-EFAL-Lesson-Plans-1.pdf",
+      "rights": {
+        "status": "conditions",
+        "licence": "CC BY-NC-ND; version not stated in examined PDF notice",
+        "rights_url": null,
+        "evidence_source": "actual_downloaded_pdf",
+        "evidence_pdf_pages": [
+          2
+        ],
+        "evidence_artifacts": [
+          "education/evidence/nect-efal-g3-t1-p2.png"
+        ],
+        "conditions": "Physical page 2 displays CC BY NC ND icon. No numbered licence version was found in that notice or its annotations. Noncommercial and NoDerivatives restrictions must be retained; do not infer CC BY from public download availability.",
+        "recommendation": "Original-only noncommercial candidate, pending licence-version and Oasis use review. Hold translation, adapted lesson outputs and commercial serving.",
+        "scope_approval": "not_requested_or_granted"
+      },
+      "file": {
+        "artifact_path": "education/pdfs/nect-efal-g3-t1.pdf",
+        "filename": "nect-efal-g3-t1.pdf",
+        "sha256": "d59e922c0c56d27675449a13f53a310ce76bf9d9e4ceed228885824ad42d656d",
+        "bytes": 3011426,
+        "pdf_pages": 254,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "Poppler pdftotext and pypdf extract_text; unchanged original",
+        "text_artifact": "education/evidence/nect-efal-g3-t1.txt",
+        "pypdf_characters": 315212,
+        "notes": "PDF renders clearly. Both Poppler and pypdf corrupt many headings because of font encoding, although substantial body text is readable. Character counts alone are not evidence of usable indexing; import/search needs an extraction repair preflight.",
+        "holds": [
+          "Garbled encoded headings in Poppler and pypdf",
+          "Companion programme materials not acquired",
+          "Unspecified BY-NC-ND version and operational rights review"
+        ]
+      },
+      "representative_review": {
+        "rights_pdf_pages": [
+          2
+        ],
+        "activity_pdf_page": 73,
+        "activity_artifact": "education/evidence/nect-efal-g3-t1-daily-lesson.png",
+        "activity": "Week 3 Friday: ten-minute English greeting, an action rhyme counting friends, theme vocabulary and a class vote/graph about helping a friend.",
+        "materials": [
+          "teacher voice and hand actions",
+          "chalkboard or paper graph",
+          "programme story/big book for linked questions"
+        ],
+        "assessment": "Daily oral answers and class graph; writing rubrics and formal programme assessment occur elsewhere."
+      },
+      "offline_suitability": "Daily instructions are in the PDF. Complete lessons rely on the matching Resource Pack, Big Book, learner/worksheet materials and readers, not acquired here.",
+      "constraints": [
+        "English additional language, not English home-language phonics",
+        "CAPS-aligned South African programme; local curriculum fit needs teacher review",
+        "NoDerivatives restriction affects translation and adapted materials"
+      ],
+      "recommendation_priority": "B - strong lesson structure, rights and extraction hold",
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "wits-multiplicative-reasoning-g4",
+      "group": "education",
+      "title": "Multiplicative Reasoning in Intermediate Phase (M-RIP) - Grade 4 Teacher Resource Pack",
+      "authors": [
+        "Mike Askew",
+        "Hamsa Venkat",
+        "Patrick Barmby",
+        "Sameera Hansa",
+        "Corin Mathews",
+        "Samantha Morrison",
+        "Viren Ramdhany"
+      ],
+      "publisher": "University of the Witwatersrand / Wits Maths Connect Primary",
+      "publication_year": 2017,
+      "edition": "2017-09-17 final teacher booklet in PDF title metadata; created 18 September 2017",
+      "language": "en",
+      "languages": [
+        "English"
+      ],
+      "resource_kind": "structured_classroom_lessons",
+      "resource_type_note": "structured intervention lesson plans with pre/post assessment",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": true,
+      "audience": "Grade 4",
+      "age": "Approximately 9-10; inferred from grade; can inform learning-level remediation after teacher review",
+      "geographical_relevance": "South Africa",
+      "use_case": "A teacher diagnoses weak multiplicative reasoning and runs a short intervention with equal-group problems, table representations, discussion and pre/post tests.",
+      "suggested_memberships": [
+        {
+          "library": "Learning",
+          "existing_library_id": 18,
+          "section": "Maths",
+          "existing_section_id": 31,
+          "proposed_new_subsection": "Maths remediation and reasoning",
+          "new_subsection_parent_id": 31,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://www.wits.ac.za/education/research-centres/wits-maths-connect-primary/",
+      "direct_pdf_url": "https://www.wits.ac.za/media/wits-university/faculties-and-schools/humanities/wits-school-of-education/research-entities/maths-connect/documents/G4%20teacher%20booklet_MultReas.pdf",
+      "resolved_pdf_url": "https://www.wits.ac.za/media/wits-university/faculties-and-schools/humanities/wits-school-of-education/research-entities/maths-connect/documents/G4%20teacher%20booklet_MultReas.pdf",
+      "rights": {
+        "status": "conditions",
+        "licence": "CC BY-NC-ND 4.0 International",
+        "rights_url": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+        "evidence_source": "actual_downloaded_pdf",
+        "evidence_pdf_pages": [
+          1
+        ],
+        "evidence_artifacts": [
+          "education/evidence/wits-multiplicative-reasoning-g4-p1.png"
+        ],
+        "conditions": "Physical page 1 expressly names Attribution-NonCommercial-NoDerivatives 4.0 International and says teachers may share copies but may not alter or sell the material. This exact PDF governs over a generic Creative Commons description on the source page.",
+        "recommendation": "Original-only noncommercial teacher-sharing candidate. Hold translation, altered lesson plans and commercial redistribution; AI answer use requires separate review.",
+        "scope_approval": "not_requested_or_granted"
+      },
+      "file": {
+        "artifact_path": "education/pdfs/wits-multiplicative-reasoning-g4.pdf",
+        "filename": "wits-multiplicative-reasoning-g4.pdf",
+        "sha256": "8895aa58a9f6e4c6d43b3dfd20aa9f3eb63170a8969e6ce1837e0cc038601baa",
+        "bytes": 2501154,
+        "pdf_pages": 40,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "Poppler pdftotext and pypdf extract_text; unchanged original",
+        "text_artifact": "education/evidence/wits-multiplicative-reasoning-g4.txt",
+        "pypdf_characters": 44692,
+        "notes": "Poppler extraction and rendered sampled lesson are readable. Tables, equations and activity graphics require passage-level review before automatic answer use.",
+        "holds": [
+          "NoDerivatives and noncommercial restrictions require operational rights review"
+        ]
+      },
+      "representative_review": {
+        "rights_pdf_pages": [
+          1
+        ],
+        "activity_pdf_page": 17,
+        "activity_artifact": "education/evidence/wits-multiplicative-reasoning-g4-p17.png",
+        "activity": "Lesson 1: five-minute rapid recall followed by forty minutes of equal-group word problems, partner discussion and whole-class comparison of strategies.",
+        "materials": [
+          "chalkboard",
+          "paper",
+          "copies of activity/test sheets"
+        ],
+        "assessment": "Pack supplies pre/post tests and lesson activities; sampled lesson uses visible reasoning and comparison of learner methods."
+      },
+      "offline_suitability": "Small, self-contained original with printable assessments and teacher steps; no runtime internet dependency.",
+      "constraints": [
+        "Focused Grade 4 intervention, not a year-long mathematics curriculum",
+        "Cannot freely translate or change the pack under its printed grant"
+      ],
+      "recommendation_priority": "B - useful remediation, original-only rights hold",
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "fao-school-garden-teaching-toolkit-2010",
+      "group": "education",
+      "title": "Setting Up and Running a School Garden - Teaching Toolkit",
+      "authors": [
+        "Jane Sherman",
+        "Ellen Muehlhoff (technical editor)",
+        "Hitomi Sato (horticultural review)",
+        "Mel Futter (illustrations and photographs)"
+      ],
+      "publisher": "Food and Agriculture Organization of the United Nations",
+      "publication_year": 2009,
+      "edition": "ISBN 978-92-5-106404-7; PDF copyright 2009. HTML edition footer says 2010; original filename in this pack retains the research identifier 2010.",
+      "language": "en",
+      "languages": [
+        "English"
+      ],
+      "resource_kind": "structured_classroom_lessons",
+      "resource_type_note": "practical lesson outlines with objectives, preparation and follow-up",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": true,
+      "audience": "School pupils aged 9-14; explicit age differentiation for 9-11 and 12-14",
+      "age": "9-14, stated in publisher guidance",
+      "geographical_relevance": "Global guidance; adaptable to sub-Saharan African school gardens",
+      "use_case": "A teacher combines gardening with observation, measurement, water conservation, food education and simple budgets, using local plants and seasons.",
+      "suggested_memberships": [
+        {
+          "library": "Learning",
+          "existing_library_id": 18,
+          "section": "Science",
+          "existing_section_id": 32,
+          "proposed_new_subsection": "School gardens and applied science",
+          "new_subsection_parent_id": 32,
+          "create_new_library": false
+        },
+        {
+          "library": "Farming",
+          "existing_library_id": 16,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": null,
+          "new_subsection_parent_id": null,
+          "create_new_library": false,
+          "placement_note": "Optional cross-library membership; section requires curator selection."
+        },
+        {
+          "library": "Water",
+          "existing_library_id": 17,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": null,
+          "new_subsection_parent_id": null,
+          "create_new_library": false,
+          "placement_note": "Optional cross-library membership; section requires curator selection."
+        }
+      ],
+      "source_page_url": "https://www.fao.org/4/i1118e/I1118E01.htm",
+      "direct_pdf_url": "https://www.fao.org/4/i1118e/i1118e.pdf",
+      "resolved_pdf_url": "https://www.fao.org/4/i1118e/i1118e.pdf",
+      "rights": {
+        "status": "conditions",
+        "licence": "FAO educational/noncommercial reproduction and dissemination grant; not a Creative Commons licence",
+        "rights_url": "https://www.fao.org/4/i1118e/i1118e.pdf#page=2",
+        "evidence_source": "actual_downloaded_pdf",
+        "evidence_pdf_pages": [
+          2
+        ],
+        "evidence_artifacts": [
+          "education/evidence/fao-school-garden-teaching-toolkit-2010-p2.png"
+        ],
+        "conditions": "Physical page 2 reserves rights but expressly authorizes educational or other noncommercial reproduction and dissemination without prior written permission when the source is fully acknowledged. Resale or commercial uses require written permission. This edition does not separately grant every form of translation or AI-generated adaptation.",
+        "recommendation": "Good unchanged-original candidate for an acknowledged noncommercial school deployment after review. Hold commercial reuse and automatic advice/translation approval.",
+        "scope_approval": "not_requested_or_granted"
+      },
+      "file": {
+        "artifact_path": "education/pdfs/fao-school-garden-teaching-toolkit-2010.pdf",
+        "filename": "fao-school-garden-teaching-toolkit-2010.pdf",
+        "sha256": "ab321e5d667648a120ad67ebb90500ff79ff2e6ac0030b3cacdadbcd7d9a4474",
+        "bytes": 5418940,
+        "pdf_pages": 193,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "Poppler pdftotext and pypdf extract_text; unchanged original",
+        "text_artifact": "education/evidence/fao-school-garden-teaching-toolkit-2010.txt",
+        "pypdf_characters": 285074,
+        "notes": "Poppler text and sampled lesson/illustrations are readable. Some diagrams and plant-strip instructions need image viewing rather than plain-text answers.",
+        "holds": [
+          "Operational noncommercial reuse review",
+          "Local crop/season/water and safeguarding suitability review"
+        ]
+      },
+      "representative_review": {
+        "rights_pdf_pages": [
+          2
+        ],
+        "activity_pdf_page": 12,
+        "activity_artifact": "education/evidence/fao-school-garden-teaching-toolkit-2010-lesson.png",
+        "activity": "Shall we have a garden? Establish what learners know, inspect local home gardens, discuss crop uses and tasks, then produce a collage or crop-use table.",
+        "materials": [
+          "paper plant strips",
+          "paper",
+          "colour pencils",
+          "glue for younger pupils"
+        ],
+        "assessment": "Teacher observes initial knowledge and explanations; pupils produce a collage, table or home discussion task."
+      },
+      "offline_suitability": "Illustrated lesson outlines are readable offline and use low-cost local materials. Many garden activities also need land or containers, water, tools, adult supervision and a seasonal plan; companion School Garden Manual is referenced but not acquired.",
+      "constraints": [
+        "Global guidance rather than an African national curriculum",
+        "2009 original; agronomic/nutrition details need local qualified review",
+        "Garden viability and safe tool use cannot be assumed from a PDF"
+      ],
+      "recommendation_priority": "A - applied school-garden pilot, conditional original rights",
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "oer4schools-facilitator-2014",
+      "group": "education",
+      "title": "OER4Schools - Facilitator Book",
+      "authors": [
+        "Sara Hennessy",
+        "Bjorn Hassler",
+        "Janet Blair",
+        "Nitu Duggal",
+        "Wei Shin Leong",
+        "Abel Makonga",
+        "Agness Tembo"
+      ],
+      "publisher": "University of Cambridge Centre for Commonwealth Education / OER4Schools",
+      "publication_year": 2014,
+      "edition": "November 2013, updated October 2014; footer version 20141006154000",
+      "language": "en",
+      "languages": [
+        "English"
+      ],
+      "resource_kind": "teacher_professional_development",
+      "resource_type_note": "teacher professional-development workshop guide; not a pupil daily curriculum",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Adult primary teachers and facilitators; classroom examples across primary grades",
+      "age": "Adult teacher professional development",
+      "geographical_relevance": "Zambia and South Africa classroom examples; programme developed with Zambian teachers",
+      "use_case": "A teacher group practises questioning, peer discussion, mixed-pace group work and formative assessment in large classes with few computers or none.",
+      "suggested_memberships": [
+        {
+          "library": "Learning",
+          "existing_library_id": 18,
+          "section": "Teaching and accessibility",
+          "existing_section_id": 34,
+          "proposed_new_subsection": "Teacher development and large-class practice",
+          "new_subsection_parent_id": 34,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://oer.opendeved.net/wiki/OER4Schools",
+      "direct_pdf_url": "https://oer.opendeved.net/images/b/be/OER4Schools_Facilitator_book.pdf",
+      "resolved_pdf_url": "https://oer.opendeved.net/images/b/be/OER4Schools_Facilitator_book.pdf",
+      "rights": {
+        "status": "clear_grant",
+        "licence": "Choice of CC BY-SA 2.0 UK or CC BY-NC 2.0 UK; recommend BY-SA option",
+        "rights_url": "https://creativecommons.org/licenses/by-sa/2.0/uk/",
+        "evidence_source": "actual_downloaded_pdf",
+        "evidence_pdf_pages": [
+          2
+        ],
+        "evidence_artifacts": [
+          "education/evidence/oer4schools-facilitator-2014-p2.png",
+          "education/evidence/oer4schools-facilitator-2014-early-links.json"
+        ],
+        "conditions": "Physical page 2 explicitly gives the choice of Attribution-ShareAlike or Attribution-NonCommercial and prints the exact 2.0 UK links. Acknowledge The OER4Schools Resource, www.oer4schools.org. BY-SA option permits broader reuse with attribution and ShareAlike obligations for adapted material; preserve other credited components.",
+        "recommendation": "Separate teacher-development candidate under BY-SA option. Do not count as a pupil lesson-plan curriculum or a complete offline video programme.",
+        "scope_approval": "not_requested_or_granted"
+      },
+      "file": {
+        "artifact_path": "education/pdfs/oer4schools-facilitator-2014.pdf",
+        "filename": "oer4schools-facilitator-2014.pdf",
+        "sha256": "0cacef167fd4d649383fd3ced2f0949831e0ba49708896b8ac340450f3a9665f",
+        "bytes": 15061116,
+        "pdf_pages": 408,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "Poppler pdftotext and pypdf extract_text; unchanged original",
+        "text_artifact": "education/evidence/oer4schools-facilitator-2014.txt",
+        "pypdf_characters": 1015759,
+        "notes": "Substantial text extracts, but encoded headings and dropped ligatures occur in Poppler/pypdf. Reader-visible PDF is legible; search/index use requires extraction repair review.",
+        "holds": [
+          "Encoded headings and missing ligatures need extraction repair review",
+          "Linked videos/assets absent"
+        ]
+      },
+      "representative_review": {
+        "rights_pdf_pages": [
+          2
+        ],
+        "activity_pdf_page": 75,
+        "activity_artifact": "education/evidence/oer4schools-facilitator-2014-p75.png",
+        "activity": "Facilitator runs five-minute partner talk and ten-minute group discussion about sharing limited computers across sixty learners. This is teacher training, not a pupil lesson.",
+        "materials": [
+          "facilitator and teacher group",
+          "paper",
+          "optional computers/videos"
+        ],
+        "assessment": "Reflection, discussion of teaching practice and follow-on classroom experiments."
+      },
+      "offline_suitability": "PDF workshops and discussion prompts are locally readable. Linked classroom videos and external assets are absent, so some activities cannot run as written offline.",
+      "constraints": [
+        "Professional development rather than ready-to-deliver pupil lessons",
+        "Historical programme includes ICT examples; not all sessions suit an unplugged classroom",
+        "408-page PDF is below the existing 750-page limit but needs careful navigation"
+      ],
+      "recommendation_priority": "C - professional-development adjunct",
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "zambia-oral-english-g1-t1-2025",
+      "group": "education",
+      "title": "Oral English Language Teaching Module - Grade 1, Term One",
+      "authors": [
+        "Stephen Moyo",
+        "Nawa Mushiba",
+        "Friday Nyimbili",
+        "Charity C. Mbalamweshi",
+        "Charles Chibwika",
+        "Dan Whitcombe",
+        "Patrick Mutwale",
+        "Blessing Sikalinda",
+        "Caster Hambaza Moonga",
+        "Mildred Moono"
+      ],
+      "publisher": "Republic of Zambia Ministry of Education / Curriculum Development Centre",
+      "publication_year": 2025,
+      "edition": "2025; based on the approved 2024 competence-based English language syllabus",
+      "language": "en",
+      "languages": [
+        "English"
+      ],
+      "resource_kind": "teacher_activity_module",
+      "resource_type_note": "teaching module with sequenced activities and assessment prompts; teachers create their own timed lessons",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Grade 1",
+      "age": "Approximately 6-7; inferred from grade",
+      "geographical_relevance": "Zambia",
+      "use_case": "A teacher introduces practical spoken English through greeting role play, pair rotation, songs, classroom commands and oral observation checks in a multilingual Zambian classroom.",
+      "suggested_memberships": [
+        {
+          "library": "Learning",
+          "existing_library_id": 18,
+          "section": "Reading and languages",
+          "existing_section_id": 33,
+          "proposed_new_subsection": "Oral language and classroom communication",
+          "new_subsection_parent_id": 33,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://www.edu.gov.zm/?page_id=1142",
+      "direct_pdf_url": "https://www.edu.gov.zm/wp-content/uploads/2025/02/Teaching-Module-for-Oral-English-G1-TERM-1.pdf",
+      "resolved_pdf_url": "https://www.edu.gov.zm/wp-content/uploads/2025/02/Teaching-Module-for-Oral-English-G1-TERM-1.pdf",
+      "rights": {
+        "status": "permission_required",
+        "licence": "All rights reserved; prior CDC permission required for reproduction, retrieval-system storage and transmission",
+        "rights_url": "https://www.edu.gov.zm/wp-content/uploads/2025/02/Teaching-Module-for-Oral-English-G1-TERM-1.pdf#page=3",
+        "evidence_source": "actual_downloaded_pdf",
+        "evidence_pdf_pages": [
+          3
+        ],
+        "evidence_artifacts": [
+          "education/evidence/zambia-oral-english-g1-t1-2025-copyright.png"
+        ],
+        "conditions": "Physical page 3 explicitly reserves all rights and requires CDC permission for reproduction, retrieval-system storage or transmission. Public official download availability is not a hosting, indexing or adaptation licence.",
+        "recommendation": "Hold serving, indexing, translation and answer use; pursue publisher permission or keep only a catalogue link to the official original.",
+        "scope_approval": "not_requested_or_granted"
+      },
+      "file": {
+        "artifact_path": "education/pdfs/zambia-oral-english-g1-t1-2025.pdf",
+        "filename": "zambia-oral-english-g1-t1-2025.pdf",
+        "sha256": "40c86320027b49726e939fddf88c572aff5071c33404e07ac6af5c012398a1f6",
+        "bytes": 507737,
+        "pdf_pages": 45,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "Poppler pdftotext and pypdf extract_text; unchanged original",
+        "text_artifact": "education/evidence/zambia-oral-english-g1-t1-2025.txt",
+        "pypdf_characters": 63325,
+        "notes": "Poppler extraction and rendered copyright/activity pages are readable. This is a source review copy; explicit retrieval-system restriction prevents treating extraction success as import permission.",
+        "holds": [
+          "Publisher permission required before deployment storage/indexing"
+        ]
+      },
+      "representative_review": {
+        "rights_pdf_pages": [
+          3
+        ],
+        "activity_pdf_page": 11,
+        "activity_artifact": "education/evidence/zambia-oral-english-g1-t1-2025-activity.png",
+        "activity": "Good-morning greeting: present the phrase, demonstrate, practise in rotating pairs, perform group role plays and close with a song.",
+        "materials": [
+          "teacher voice",
+          "optional puppets",
+          "conversation posters"
+        ],
+        "assessment": "Oral demonstrations, presentations and questions/answers check correct greetings for the time of day."
+      },
+      "offline_suitability": "Small self-contained teacher activity module usable offline once the applicable rights permit local storage. Activities use voice, pair work, songs and optional simple materials.",
+      "constraints": [
+        "Activities are sequenced within a module, not fully timed daily lesson plans",
+        "2025 Zambian curriculum transition resource; not an automatically applicable Malawi syllabus",
+        "All-rights-reserved copyright blocks proposed import without permission"
+      ],
+      "recommendation_priority": "D - permission request or official-link-only",
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "humboldt-african-leafy-vegetables-2020",
+      "group": "practical",
+      "title": "Production and Marketing of African Indigenous Leafy Vegetables: Training Manual for Extension Officers and Practitioners",
+      "authors": [
+        "Judith Henze",
+        "Mary Abukutsa-Onyango",
+        "Arnold Opiyo"
+      ],
+      "publisher": "Humboldt-Universität zu Berlin, Seminar für Ländliche Entwicklung (SLE)",
+      "publication_year": 2020,
+      "edition": "Copyright and repository publication year 2020; repository accession and PDF file creation 2021.",
+      "language": "en",
+      "languages": [
+        "en"
+      ],
+      "resource_kind": "practical_training_or_design_guide",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Smallholders, horticulture trainers and extension officers.",
+      "geographical_relevance": "Kenyan farmer-tested material covering amaranth, cowpea, Ethiopian kale, spiderplant and African nightshade.",
+      "use_case": "Plan indigenous leafy vegetable production, crop care, seed saving, harvest and marketing with an extension worker.",
+      "suggested_memberships": [
+        {
+          "library": "Farming",
+          "existing_library_id": 16,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "Indigenous vegetables and home gardens",
+          "new_subsection_parent_id": 16,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://edoc.hu-berlin.de/items/ea3cb14d-873a-43bc-8008-09630d553b9c/full",
+      "direct_pdf_url": "https://edoc.hu-berlin.de/server/api/core/bitstreams/db57a16b-a734-4ad2-a7fc-6e1a5ea72743/content",
+      "rights": {
+        "status": "clear_grant",
+        "licence": "CC BY-SA 4.0",
+        "evidence_source": "actual_downloaded_pdf",
+        "conditions": [
+          "Preserve author/source attribution and licence.",
+          "Adaptations must follow ShareAlike; preserve separately credited image rights."
+        ],
+        "scope_approval": "not_requested_or_granted",
+        "evidence_pdf_pages": [
+          4
+        ],
+        "rights_url": "https://edoc.hu-berlin.de/server/api/core/bitstreams/db57a16b-a734-4ad2-a7fc-6e1a5ea72743/content#page=4"
+      },
+      "file": {
+        "artifact_path": "practical/pdf/humboldt-african-leafy-vegetables-2020.pdf",
+        "filename": "humboldt-african-leafy-vegetables-2020.pdf",
+        "sha256": "8f3f0bb49c7f766f942b5ab1175d874f069758f722d67da164b585701bb4b86a",
+        "bytes": 15354840,
+        "pdf_pages": 93,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "pypdf extract_text; no OCR or PDF transformation",
+        "text_artifact": "practical/tmp/pdfs/humboldt-african-leafy-vegetables-2020.txt",
+        "pypdf_characters": 181937,
+        "notes": "Representative rendered page and extracted text reviewed; diagrams still require original-page inspection."
+      },
+      "representative_review": {
+        "activity_pdf_page": 36,
+        "activity_artifact": "practical/evidence/humboldt-african-leafy-vegetables-2020-page-36.png",
+        "notes": "Compost construction illustrations and text are readable. Poppler emitted an Invalid Font Weight warning, with no visible defect on the reviewed page."
+      },
+      "constraints": [
+        "Complement to existing document 90 (general agroecological vegetable manual), with specific indigenous leafy crops and market planning.",
+        "Adapt crop calendars, seed availability, pest controls and market assumptions to the local agroecological zone; do not present nutritional content as treatment advice."
+      ],
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "cifor-icraf-agroforestry-primer-2022",
+      "group": "practical",
+      "title": "Agroforestry: A primer. Design and management principles for people and the environment",
+      "authors": [
+        "Anja Gassner (editor)",
+        "Philip Dobie (editor)"
+      ],
+      "publisher": "CIFOR-ICRAF",
+      "publication_year": 2022,
+      "edition": "2022 edition; ISBN 978-9-96-610861-6; DOI 10.5716/cifor-icraf/BK.25114.",
+      "language": "en",
+      "languages": [
+        "en"
+      ],
+      "resource_kind": "practical_training_or_design_guide",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Extension workers, farmers and community land-restoration groups.",
+      "geographical_relevance": "Tropical and African contexts, with CIFOR/ICRAF expertise and contributions from Kenya, Uganda, Rwanda, Zambia and Ethiopia.",
+      "use_case": "Co-design trees with crops or livestock: species selection, nursery material, planting plans, pruning and management.",
+      "suggested_memberships": [
+        {
+          "library": "Farming",
+          "existing_library_id": 16,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "Trees and agroforestry",
+          "new_subsection_parent_id": 16,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://doi.org/10.5716/cifor-icraf/BK.25114",
+      "direct_pdf_url": "https://www.international-climate-initiative.com/fileadmin/iki/Dokumente/Publikationen/Projekte/18_IV_064/Agroforestry-primer.pdf",
+      "rights": {
+        "status": "clear_grant",
+        "licence": "CC BY 4.0",
+        "evidence_source": "actual_downloaded_pdf",
+        "conditions": [
+          "Preserve source attribution and licence; identify any later adaptations."
+        ],
+        "scope_approval": "not_requested_or_granted",
+        "evidence_pdf_pages": [
+          4
+        ],
+        "rights_url": "https://www.international-climate-initiative.com/fileadmin/iki/Dokumente/Publikationen/Projekte/18_IV_064/Agroforestry-primer.pdf#page=4"
+      },
+      "file": {
+        "artifact_path": "practical/pdf/cifor-icraf-agroforestry-primer-2022.pdf",
+        "filename": "cifor-icraf-agroforestry-primer-2022.pdf",
+        "sha256": "8fa620f6dfa6978858377967803fe6f505a4e115c1f214ac8eae858a92e3f865",
+        "bytes": 10061217,
+        "pdf_pages": 180,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "pypdf extract_text; no OCR or PDF transformation",
+        "text_artifact": "practical/tmp/pdfs/cifor-icraf-agroforestry-primer-2022.txt",
+        "pypdf_characters": 219193,
+        "notes": "Representative rendered page and extracted text reviewed; diagrams still require original-page inspection."
+      },
+      "representative_review": {
+        "activity_pdf_page": 33,
+        "activity_artifact": "practical/evidence/cifor-icraf-agroforestry-primer-2022-page-33.png",
+        "notes": "Root-type illustrations and their labels render clearly with readable body text."
+      },
+      "constraints": [
+        "A design and management guide, not a universal planting recipe; local species, land tenure, water, labour and invasive-species checks are essential.",
+        "Downloaded from the official International Climate Initiative project/funder host after the publisher PDF URL returned HTTP 403."
+      ],
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "fao-african-beekeeping-2021",
+      "group": "practical",
+      "title": "Visual manual on good beekeeping practices for small-scale beekeepers in Africa",
+      "authors": [
+        "FAO",
+        "Apimondia",
+        "IZSLT"
+      ],
+      "publisher": "FAO",
+      "publication_year": 2021,
+      "edition": "TECA – Technologies and practices for small agricultural producers, 2; DOI 10.4060/cb4576en.",
+      "language": "en",
+      "languages": [
+        "en"
+      ],
+      "resource_kind": "practical_training_or_design_guide",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Small-scale African beekeepers and trainers, including groups needing visual teaching material.",
+      "geographical_relevance": "Explicitly designed for African beekeepers.",
+      "use_case": "Run a visual beekeeper training discussion about good and poor apiary practices.",
+      "suggested_memberships": [
+        {
+          "library": "Farming",
+          "existing_library_id": 16,
+          "section": "Livestock and beekeeping",
+          "existing_section_id": 27,
+          "proposed_new_subsection": null,
+          "new_subsection_parent_id": null,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://doi.org/10.4060/cb4576en",
+      "direct_pdf_url": "https://www.fao.org/4/cb4576en/cb4576en.pdf",
+      "rights": {
+        "status": "conditions",
+        "licence": "CC BY-NC-SA 3.0 IGO",
+        "evidence_source": "actual_downloaded_pdf",
+        "conditions": [
+          "Noncommercial reuse only; attribute FAO, Apimondia and IZSLT; no implied endorsement or FAO logo use.",
+          "Adaptations require the same/equivalent licence; translations require the FAO disclaimer; separately attributed third-party material needs its own rights check."
+        ],
+        "scope_approval": "not_requested_or_granted",
+        "evidence_pdf_pages": [
+          3
+        ],
+        "rights_url": "https://www.fao.org/4/cb4576en/cb4576en.pdf#page=3"
+      },
+      "file": {
+        "artifact_path": "practical/pdf/fao-african-beekeeping-2021.pdf",
+        "filename": "fao-african-beekeeping-2021.pdf",
+        "sha256": "30709f2daf5237c74226b9d21be2de8fd2373fa6d613e79429f7a464dcda7002",
+        "bytes": 19178053,
+        "pdf_pages": 73,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "pypdf extract_text; no OCR or PDF transformation",
+        "text_artifact": "practical/tmp/pdfs/fao-african-beekeeping-2021.txt",
+        "pypdf_characters": 55317,
+        "notes": "Representative rendered page and extracted text reviewed; diagrams still require original-page inspection."
+      },
+      "representative_review": {
+        "activity_pdf_page": 30,
+        "activity_artifact": "practical/evidence/fao-african-beekeeping-2021-page-30.png",
+        "notes": "Colour story illustrations are legible; original page orientation is sideways."
+      },
+      "constraints": [
+        "Distinct visual companion to existing document 91, not another copy of that general apiculture manual.",
+        "Some illustrated story pages are sideways within the PDF and require viewer rotation or landscape printing.",
+        "19 MB original; retain unchanged but consider download size in a mobile catalogue. Local bee behaviour and safe handling still need experienced training."
+      ],
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "worldfish-tilapia-cage-ghana-nigeria-2023",
+      "group": "practical",
+      "title": "Best management practices guidelines for small-scale tilapia cage aquaculture in Ghana and Nigeria",
+      "authors": [
+        "Jemimah Etornam Kassah"
+      ],
+      "publisher": "WorldFish",
+      "publication_year": 2023,
+      "edition": "Manual 2023-09.",
+      "language": "en",
+      "languages": [
+        "en"
+      ],
+      "resource_kind": "practical_training_or_design_guide",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Small-scale cage producers and aquaculture trainers.",
+      "geographical_relevance": "Ghana and Nigeria, with wider West African relevance.",
+      "use_case": "Manage cage feeding, feed storage, stocking, records, fish health and water-quality monitoring.",
+      "suggested_memberships": [
+        {
+          "library": "Farming",
+          "existing_library_id": 16,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "Aquaculture and fish farming",
+          "new_subsection_parent_id": 16,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://digitalarchive.worldfishcenter.org/items/fa7eaabd-3058-4f86-93cb-93abf520e6d3/full",
+      "direct_pdf_url": "https://digitalarchive.worldfishcenter.org/bitstreams/5bdd93e5-923e-469a-9b8c-5e95644a64a7/download",
+      "rights": {
+        "status": "conditions",
+        "licence": "CC BY-NC 4.0",
+        "evidence_source": "actual_downloaded_pdf",
+        "conditions": [
+          "Noncommercial reproduction, adaptation and distribution with proper citation; preserve photo credits."
+        ],
+        "scope_approval": "not_requested_or_granted",
+        "evidence_pdf_pages": [
+          2
+        ],
+        "rights_url": "https://digitalarchive.worldfishcenter.org/bitstreams/5bdd93e5-923e-469a-9b8c-5e95644a64a7/download#page=2"
+      },
+      "file": {
+        "artifact_path": "practical/pdf/worldfish-tilapia-cage-ghana-nigeria-2023.pdf",
+        "filename": "worldfish-tilapia-cage-ghana-nigeria-2023.pdf",
+        "sha256": "74ac03d6bfcf88ec7fea23932070e40cb385720685795e51adb6e2a6b8ed13f6",
+        "bytes": 8937873,
+        "pdf_pages": 46,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "pypdf extract_text; no OCR or PDF transformation",
+        "text_artifact": "practical/tmp/pdfs/worldfish-tilapia-cage-ghana-nigeria-2023.txt",
+        "pypdf_characters": 81266,
+        "notes": "Representative rendered page and extracted text reviewed; diagrams still require original-page inspection."
+      },
+      "representative_review": {
+        "activity_pdf_page": 19,
+        "activity_artifact": "practical/evidence/worldfish-tilapia-cage-ghana-nigeria-2023-page-19.png",
+        "notes": "Two-column feed storage and recordkeeping page is readable."
+      },
+      "constraints": [
+        "The PDF explicitly says it was not formally peer-reviewed.",
+        "Check local permits, species rules, environmental conditions and biosecurity; Ghana/Nigeria guidance is not automatically a Malawi operating standard."
+      ],
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "fao-aquaculture-technical-2017",
+      "group": "practical",
+      "title": "Doing aquaculture as a business for small- and medium-scale farmers: Module 1. The technical dimension of commercial aquaculture",
+      "authors": [
+        "A. Menezes",
+        "N. Hishamunda",
+        "L. Lovshin",
+        "E. Martone"
+      ],
+      "publisher": "FAO",
+      "publication_year": 2017,
+      "edition": "Module 1; ISBN 978-92-5-109807-3; 53 PDF pages including front matter.",
+      "language": "en",
+      "languages": [
+        "en"
+      ],
+      "resource_kind": "practical_training_or_design_guide",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Farmers with extension support and aquaculture training providers.",
+      "geographical_relevance": "Developed with Eastern African training context; Burundi, Kenya, Uganda and Rwanda are discussed.",
+      "use_case": "Assess pond sites, water supply, inputs, feed conversion and pond layout before starting a fish-farming enterprise.",
+      "suggested_memberships": [
+        {
+          "library": "Farming",
+          "existing_library_id": 16,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "Aquaculture and fish farming",
+          "new_subsection_parent_id": 16,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://www.fao.org/4/i7461e/i7461e.pdf",
+      "direct_pdf_url": "https://www.fao.org/4/i7461e/i7461e.pdf",
+      "rights": {
+        "status": "conditions",
+        "licence": "FAO noncommercial study, research, teaching and products/services permission; no CC licence stated in this PDF",
+        "evidence_source": "actual_downloaded_pdf",
+        "conditions": [
+          "Attribute FAO as source/copyright holder; no implied endorsement.",
+          "Translation/adaptation, resale and other commercial uses require a separate FAO request; check separately credited material."
+        ],
+        "scope_approval": "not_requested_or_granted",
+        "evidence_pdf_pages": [
+          2
+        ],
+        "rights_url": "https://www.fao.org/4/i7461e/i7461e.pdf#page=2"
+      },
+      "file": {
+        "artifact_path": "practical/pdf/fao-aquaculture-technical-2017.pdf",
+        "filename": "fao-aquaculture-technical-2017.pdf",
+        "sha256": "9c6585cff0497ed2766f8a21fda1ef8da493cb1eb0881a0d36f32996bc2c756e",
+        "bytes": 1092696,
+        "pdf_pages": 53,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "pypdf extract_text; no OCR or PDF transformation",
+        "text_artifact": "practical/tmp/pdfs/fao-aquaculture-technical-2017.txt",
+        "pypdf_characters": 125323,
+        "notes": "Representative rendered page and extracted text reviewed; diagrams still require original-page inspection."
+      },
+      "representative_review": {
+        "activity_pdf_page": 45,
+        "activity_artifact": "practical/evidence/fao-aquaculture-technical-2017-page-45.png",
+        "notes": "Pond-farm layout illustration, source credit and water-supply explanation render clearly."
+      },
+      "constraints": [
+        "More technical than the WorldFish cage manual; suitable as a foundation/reference, not a profit forecast.",
+        "Local water rights, soils, pond engineering, species suitability and extension support must inform any actual project."
+      ],
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "wedc-school-sanitation-africa-2008",
+      "group": "practical",
+      "title": "Sanitation for Primary Schools in Africa",
+      "authors": [
+        "Bob Reed",
+        "Rod Shaw"
+      ],
+      "publisher": "WEDC, Loughborough University",
+      "publication_year": 2008,
+      "edition": "2008 edition; ISBN 978-1-84380-127-6.",
+      "language": "en",
+      "languages": [
+        "en"
+      ],
+      "resource_kind": "practical_training_or_design_guide",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Headteachers, school management committees, WASH facilitators and trained builders.",
+      "geographical_relevance": "African primary schools; developed from a DFID Kenya school-infrastructure analysis.",
+      "use_case": "Assess existing school toilets, choose priorities, plan maintenance and discuss appropriate sanitation improvements.",
+      "suggested_memberships": [
+        {
+          "library": "Water",
+          "existing_library_id": 17,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "School WASH and maintenance",
+          "new_subsection_parent_id": 17,
+          "create_new_library": false
+        },
+        {
+          "library": "Building and shelter",
+          "existing_library_id": 20,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "Safe school facilities",
+          "new_subsection_parent_id": 20,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://wedc-knowledge.lboro.ac.uk/resources/books/Sanitation_for_Primary_Schools_in_Africa_-_Complete.pdf",
+      "direct_pdf_url": "https://wedc-knowledge.lboro.ac.uk/resources/books/Sanitation_for_Primary_Schools_in_Africa_-_Complete.pdf",
+      "rights": {
+        "status": "conditions",
+        "licence": "WEDC express permission for attributed free/at-cost noncommercial copying, reproduction and local adaptation",
+        "evidence_source": "actual_downloaded_pdf",
+        "conditions": [
+          "Fully acknowledge Reed, Shaw, WEDC and source.",
+          "Distribute free or at cost, not for commercial ends; publisher asks for copies of materials using its text or illustrations."
+        ],
+        "scope_approval": "not_requested_or_granted",
+        "evidence_pdf_pages": [
+          2
+        ],
+        "rights_url": "https://wedc-knowledge.lboro.ac.uk/resources/books/Sanitation_for_Primary_Schools_in_Africa_-_Complete.pdf#page=2"
+      },
+      "file": {
+        "artifact_path": "practical/pdf/wedc-school-sanitation-africa-2008.pdf",
+        "filename": "wedc-school-sanitation-africa-2008.pdf",
+        "sha256": "2cea998e9b24dafdde333c72535054ec2fa6c8dddd4ab932cf18bbf4756897ea",
+        "bytes": 9180213,
+        "pdf_pages": 62,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "pypdf extract_text; no OCR or PDF transformation",
+        "text_artifact": "practical/tmp/pdfs/wedc-school-sanitation-africa-2008.txt",
+        "pypdf_characters": 92222,
+        "notes": "Representative rendered page and extracted text reviewed; diagrams still require original-page inspection."
+      },
+      "representative_review": {
+        "activity_pdf_page": 26,
+        "activity_artifact": "practical/evidence/wedc-school-sanitation-africa-2008-page-26.png",
+        "notes": "Large school latrine construction drawing and dimension labels are legible."
+      },
+      "constraints": [
+        "2008 guide: current national school-WASH requirements and construction standards need checking.",
+        "Illustrated building details support discussion with qualified builders; they do not approve excavation or construction at a particular site."
+      ],
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "wedc-accessible-wash-compendium-2014",
+      "group": "practical",
+      "title": "Compendium of accessible WASH technologies",
+      "authors": [
+        "Hazel Jones",
+        "Jane Wilbur"
+      ],
+      "publisher": "WaterAid / WEDC",
+      "publication_year": 2014,
+      "edition": "2014 original; later publisher web posting does not change the edition.",
+      "language": "en",
+      "languages": [
+        "en"
+      ],
+      "resource_kind": "practical_training_or_design_guide",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Community volunteers, health workers, disabled people’s organisations and families.",
+      "geographical_relevance": "Designed explicitly for rural sub-Saharan African households.",
+      "use_case": "Discuss household ramps, rails, seats and washing adaptations with disabled or older residents and trial their dimensions.",
+      "suggested_memberships": [
+        {
+          "library": "Water",
+          "existing_library_id": 17,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "Accessible household WASH",
+          "new_subsection_parent_id": 17,
+          "create_new_library": false
+        },
+        {
+          "library": "Building and shelter",
+          "existing_library_id": 20,
+          "section": "Inclusive housing and communities",
+          "existing_section_id": 40,
+          "proposed_new_subsection": null,
+          "new_subsection_parent_id": null,
+          "create_new_library": false,
+          "research_suggested_label": "Inclusive housing and planning",
+          "placement_note": "Use the current section ID/name; this research does not propose renaming it."
+        },
+        {
+          "library": "Health and wellbeing",
+          "existing_library_id": 21,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "Disability and inclusive care",
+          "new_subsection_parent_id": 21,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://washmatters.wateraid.org/publications/compendium-of-accessible-water-sanitation-and-hygiene-technologies",
+      "direct_pdf_url": "https://wedc-knowledge.lboro.ac.uk/resources/learning/EI_Compendium_of_accessible_WASH_Technologies.pdf",
+      "rights": {
+        "status": "unverified",
+        "licence": "Free download and illustrated discussion/printing uses described; no whole-PDF redistribution licence verified",
+        "evidence_source": "actual_downloaded_pdf",
+        "conditions": [
+          "Hold whole-PDF republication and answer activation pending a verified grant; free access is not assumed to permit domain redistribution.",
+          "Preserve image credits and source attribution."
+        ],
+        "scope_approval": "not_requested_or_granted",
+        "evidence_pdf_pages": [
+          2
+        ],
+        "rights_url": "https://wedc-knowledge.lboro.ac.uk/resources/learning/EI_Compendium_of_accessible_WASH_Technologies.pdf#page=2"
+      },
+      "file": {
+        "artifact_path": "practical/pdf/wedc-accessible-wash-compendium-2014.pdf",
+        "filename": "wedc-accessible-wash-compendium-2014.pdf",
+        "sha256": "2beb0359d546a95c4b1facf19c27173ff3718f2fc52df38c806e08759e2ab29a",
+        "bytes": 5292985,
+        "pdf_pages": 58,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "pypdf extract_text; no OCR or PDF transformation",
+        "text_artifact": "practical/tmp/pdfs/wedc-accessible-wash-compendium-2014.txt",
+        "pypdf_characters": 43497,
+        "notes": "Representative rendered page and extracted text reviewed; diagrams still require original-page inspection."
+      },
+      "representative_review": {
+        "activity_pdf_page": 29,
+        "activity_artifact": "practical/evidence/wedc-accessible-wash-compendium-2014-page-29.png",
+        "notes": "Photographs of latrine seats and their pros/cons are clear and readable."
+      },
+      "constraints": [
+        "Household guide, not a school/clinic specification; dimensions depend on the individual user.",
+        "The PDF permits free downloading and describes printing flashcards/posters, but a grant for serving the whole original on another domain was not verified."
+      ],
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "practicalaction-solar-fish-drier-2010",
+      "group": "practical",
+      "title": "Construction and maintenance of Solar Fish Drier",
+      "authors": [
+        "Practical Action Sri Lanka"
+      ],
+      "publisher": "Practical Action",
+      "publication_year": 2010,
+      "edition": "Publisher listing year 2010; original technical brief uses earlier Sri Lankan fisheries/cost context.",
+      "language": "en",
+      "languages": [
+        "en"
+      ],
+      "resource_kind": "practical_training_or_design_guide",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Food-processing cooperatives, trained fabricators and fisheries extension workers.",
+      "geographical_relevance": "Sri Lankan source; the solar drying task is relevant to African fisheries but requires local evaluation.",
+      "use_case": "Compare stationary and mobile solar fish-dryer construction, materials and maintenance for a producer group.",
+      "suggested_memberships": [
+        {
+          "library": "Energy and preparedness",
+          "existing_library_id": 22,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "Solar drying and food processing",
+          "new_subsection_parent_id": 22,
+          "create_new_library": false
+        },
+        {
+          "library": "Farming",
+          "existing_library_id": 16,
+          "section": "Harvest and storage",
+          "existing_section_id": 26,
+          "proposed_new_subsection": null,
+          "new_subsection_parent_id": null,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://practicalactionpublishing.com/book/2855/construction-and-maintenance-of-the-solar-fish-drier",
+      "direct_pdf_url": "https://practicalactionpublishing.com/book/2855/download?type=download",
+      "rights": {
+        "status": "unverified",
+        "licence": "No exact redistribution licence verified",
+        "evidence_source": "actual_downloaded_pdf",
+        "conditions": [
+          "Hold whole-PDF serving and activation pending an explicit item-level grant; retain original credits."
+        ],
+        "scope_approval": "not_requested_or_granted",
+        "evidence_pdf_pages": [
+          1
+        ],
+        "rights_url": "https://practicalactionpublishing.com/book/2855/download?type=download#page=1"
+      },
+      "file": {
+        "artifact_path": "practical/pdf/practicalaction-solar-fish-drier-2010.pdf",
+        "filename": "practicalaction-solar-fish-drier-2010.pdf",
+        "sha256": "3d0c452170255beecb2eb130aa0c7655a228db7f3d163d359541dfe24a585f7c",
+        "bytes": 894842,
+        "pdf_pages": 12,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "pypdf extract_text; no OCR or PDF transformation",
+        "text_artifact": "practical/tmp/pdfs/practicalaction-solar-fish-drier-2010.txt",
+        "pypdf_characters": 17997,
+        "notes": "Representative rendered page and extracted text reviewed; diagrams still require original-page inspection."
+      },
+      "representative_review": {
+        "activity_pdf_page": 5,
+        "activity_artifact": "practical/evidence/practicalaction-solar-fish-drier-2010-page-5.png",
+        "notes": "Construction diagram, photograph and explanatory text are readable; some small diagram labels need zoom."
+      },
+      "constraints": [
+        "Local humidity, rain, materials and food-hygiene controls need validation; no claim of food-safe approval.",
+        "Historic rupee material/cost schedules are not contemporary African prices.",
+        "Download is free/Open Access on the publisher site, but the actual PDF has Copyright footers and no verified redistribution grant."
+      ],
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "climatecentre-city-heatwave-2019",
+      "group": "practical",
+      "title": "City heatwave guide for Red Cross Red Crescent branches",
+      "authors": [
+        "Julie Arrighi",
+        "Roop Singh",
+        "Ramiz Khan",
+        "Bettina Koelle",
+        "Eddie Jjemba"
+      ],
+      "publisher": "Red Cross Red Crescent Climate Centre",
+      "publication_year": 2020,
+      "edition": "Partner catalogue lists 2020; download URL says 2019 and PDF creation is June 2020. No printed publication year was located.",
+      "language": "en",
+      "languages": [
+        "en"
+      ],
+      "resource_kind": "programme_guidance",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Trained community volunteers, Red Cross/Red Crescent branches and local-authority partners.",
+      "geographical_relevance": "Urban heat in low-resource settings, including a Nairobi informal-settlement case study and Southern African seasonality.",
+      "use_case": "Prepare household/school visits, identify cool spaces, arrange drinking-water points and review community heat response.",
+      "suggested_memberships": [
+        {
+          "library": "Energy and preparedness",
+          "existing_library_id": 22,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "Heat safety and community preparedness",
+          "new_subsection_parent_id": 22,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://preparecenter.org/toolkit/heat/",
+      "direct_pdf_url": "https://climatecentre.org/downloads/files/RCCC%20Heatwave%20Guide%202019%20NS.pdf",
+      "rights": {
+        "status": "unverified",
+        "licence": "No redistribution licence located in actual PDF",
+        "evidence_source": "actual_downloaded_pdf",
+        "conditions": [
+          "Hold whole-PDF republication and answer activation until an applicable grant is verified."
+        ],
+        "scope_approval": "not_requested_or_granted",
+        "evidence_pdf_pages": [],
+        "rights_url": "https://climatecentre.org/downloads/files/RCCC%20Heatwave%20Guide%202019%20NS.pdf"
+      },
+      "file": {
+        "artifact_path": "practical/pdf/climatecentre-city-heatwave-2019.pdf",
+        "filename": "climatecentre-city-heatwave-2019.pdf",
+        "sha256": "ebc324727fce381b85b63066033b1b66bbb2d5b1546a564f185fbf6ce86cb8cd",
+        "bytes": 5536456,
+        "pdf_pages": 72,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "pypdf extract_text; no OCR or PDF transformation",
+        "text_artifact": "practical/tmp/pdfs/climatecentre-city-heatwave-2019.txt",
+        "pypdf_characters": 93158,
+        "notes": "Representative rendered page and extracted text reviewed; diagrams still require original-page inspection."
+      },
+      "representative_review": {
+        "activity_pdf_page": 43,
+        "activity_artifact": "practical/evidence/climatecentre-city-heatwave-2019-page-43.png",
+        "notes": "Household-visit action card is clear, concise and legible."
+      },
+      "constraints": [
+        "Coordinate warning thresholds and public messages with local authorities and health services.",
+        "First aid and clinical action require trained personnel; reading the guide is not medical approval.",
+        "No copying/reuse grant was located in the original PDF; do not infer permission from an IFRC grant on another title."
+      ],
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    },
+    {
+      "id": "unicef-menstrual-health-hygiene-2019",
+      "group": "practical",
+      "title": "Guidance on Menstrual Health and Hygiene",
+      "authors": [
+        "UNICEF",
+        "Leisa Gibson",
+        "Brooke Yamakoshi"
+      ],
+      "publisher": "UNICEF Programme Division / WASH",
+      "publication_year": 2019,
+      "edition": "March 2019, first edition.",
+      "language": "en",
+      "languages": [
+        "en"
+      ],
+      "resource_kind": "programme_guidance",
+      "daily_scripted_sequence": false,
+      "contains_classroom_lesson_plans": false,
+      "audience": "Teachers, school-health focal staff and WASH/gender programme planners; not a pupil lesson workbook.",
+      "geographical_relevance": "Global programme guidance with African examples including Ethiopia, Zambia and Burkina Faso.",
+      "use_case": "Assess school/community menstrual-health barriers, privacy, facilities, product access and inclusive programme priorities.",
+      "suggested_memberships": [
+        {
+          "library": "Health and wellbeing",
+          "existing_library_id": 21,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "Menstrual health and dignity",
+          "new_subsection_parent_id": 21,
+          "create_new_library": false
+        },
+        {
+          "library": "Water",
+          "existing_library_id": 17,
+          "section": null,
+          "existing_section_id": null,
+          "proposed_new_subsection": "School WASH and maintenance",
+          "new_subsection_parent_id": 17,
+          "create_new_library": false
+        }
+      ],
+      "source_page_url": "https://www.unicef.org/documents/guidance-menstrual-health-and-hygiene",
+      "direct_pdf_url": "https://www.unicef.org/media/91341/file/UNICEF-Guidance-menstrual-health-hygiene-2019.pdf",
+      "rights": {
+        "status": "unverified",
+        "licence": "No whole-PDF redistribution grant verified",
+        "evidence_source": "actual_downloaded_pdf",
+        "conditions": [
+          "Hold serving/activation pending an item-level grant; preserve original photo and author credits."
+        ],
+        "scope_approval": "not_requested_or_granted",
+        "evidence_pdf_pages": [
+          2
+        ],
+        "rights_url": "https://www.unicef.org/media/91341/file/UNICEF-Guidance-menstrual-health-hygiene-2019.pdf#page=2"
+      },
+      "file": {
+        "artifact_path": "practical/pdf/unicef-menstrual-health-hygiene-2019.pdf",
+        "filename": "unicef-menstrual-health-hygiene-2019.pdf",
+        "sha256": "3a826f1797cbb89c910686e2c7461c8abe840f69f24f56709c03f8d76233874f",
+        "bytes": 3340582,
+        "pdf_pages": 93,
+        "original_unchanged": true,
+        "pdf_magic_verified": true
+      },
+      "extraction": {
+        "method": "pypdf extract_text; no OCR or PDF transformation",
+        "text_artifact": "practical/tmp/pdfs/unicef-menstrual-health-hygiene-2019.txt",
+        "pypdf_characters": 222348,
+        "notes": "Representative rendered page and extracted text reviewed; diagrams still require original-page inspection."
+      },
+      "representative_review": {
+        "activity_pdf_page": 55,
+        "activity_artifact": "practical/evidence/unicef-menstrual-health-hygiene-2019-page-55.png",
+        "notes": "Case-study page and two-column programme text render correctly; denser than a learner worksheet."
+      },
+      "constraints": [
+        "Programme planning guidance, not a current clinical guideline or a ready-made pupil lesson plan.",
+        "The original credits UNICEF photographs; no whole-PDF redistribution grant was located in this file."
+      ],
+      "acquisition_status": "acquired_local_review_only",
+      "approvals": {
+        "imported": false,
+        "indexed": false,
+        "published": false,
+        "original_serving_approved": false,
+        "indexing_approved": false,
+        "answer_approved": false,
+        "domain_approved": false,
+        "translation_approved": false,
+        "technical_advice_approved": false
+      }
+    }
+  ]
+}
