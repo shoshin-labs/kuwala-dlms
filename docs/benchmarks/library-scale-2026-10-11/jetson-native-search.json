@@ -1,0 +1,986 @@
+{
+  "synthetic": true,
+  "method": "Native FTS5 and exact sqlite-vec queries; deterministic artificial text/vectors; no extraction, embeddings or model answers.",
+  "limits": "Installed trial limits are not changed. Larger results are component projections only.",
+  "cache_state": "OS caches not cleared. First request follows fixture creation; p95 has very few samples.",
+  "host": "Jetson001 (private benchmark host)",
+  "machine": "aarch64",
+  "python": "3.12.3",
+  "sqlite": "3.45.1",
+  "sqlite_vec": "0.1.9",
+  "dimensions": 768,
+  "repeats": 3,
+  "text_chars": 1000,
+  "sqlite_cache_kib_per_connection": 8192,
+  "sqlite_variable_limit": 250000,
+  "station_root": "Station release397daf1450c53809a9a35332992703f3433f83c0/app",
+  "cases": [
+    {
+      "documents": 1000,
+      "passages": 221000,
+      "passages_per_document": 221,
+      "build_seconds": 14.35,
+      "lexical_bytes": 352301056,
+      "vector_bytes": 1027018752,
+      "metrics": {
+        "hash-both-index-files": {
+          "first_ms": 3318.47,
+          "p50_ms": 3257.07,
+          "p95_ms": 3318.47,
+          "samples_ms": [
+            3318.47,
+            3197.98,
+            3257.07
+          ],
+          "result": 2,
+          "outcomes": [
+            2,
+            2,
+            2
+          ],
+          "timeouts": 0
+        },
+        "fts-rare-all": {
+          "first_ms": 6.29,
+          "p50_ms": 3.18,
+          "p95_ms": 6.29,
+          "samples_ms": [
+            6.29,
+            3.18,
+            3.01
+          ],
+          "result": {
+            "returned": 2,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 2,
+              "timed_out": false
+            },
+            {
+              "returned": 2,
+              "timed_out": false
+            },
+            {
+              "returned": 2,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-common-all": {
+          "first_ms": 384.4,
+          "p50_ms": 255.45,
+          "p95_ms": 384.4,
+          "samples_ms": [
+            384.4,
+            255.45,
+            246.75
+          ],
+          "result": {
+            "returned": 10,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-miss-all": {
+          "first_ms": 5.84,
+          "p50_ms": 2.48,
+          "p95_ms": 5.84,
+          "samples_ms": [
+            5.84,
+            2.48,
+            2.34
+          ],
+          "result": {
+            "returned": 0,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "exact-vector-all": {
+          "first_ms": 2305.26,
+          "p50_ms": 2406.45,
+          "p95_ms": 2463.78,
+          "samples_ms": [
+            2305.26,
+            2406.45,
+            2463.78
+          ],
+          "result": {
+            "returned": 10,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-rare-one-library": {
+          "first_ms": 1.86,
+          "p50_ms": 1.43,
+          "p95_ms": 1.86,
+          "samples_ms": [
+            1.86,
+            1.43,
+            1.24
+          ],
+          "result": {
+            "returned": 0,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-common-one-library": {
+          "first_ms": 244.62,
+          "p50_ms": 241.11,
+          "p95_ms": 244.62,
+          "samples_ms": [
+            244.62,
+            240.76,
+            241.11
+          ],
+          "result": {
+            "returned": 10,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-miss-one-library": {
+          "first_ms": 1.62,
+          "p50_ms": 1.22,
+          "p95_ms": 1.62,
+          "samples_ms": [
+            1.62,
+            1.22,
+            1.1
+          ],
+          "result": {
+            "returned": 0,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "exact-vector-one-library": {
+          "first_ms": 2706.26,
+          "p50_ms": 2706.26,
+          "p95_ms": 2780.41,
+          "samples_ms": [
+            2706.26,
+            2780.41,
+            2694.64
+          ],
+          "result": {
+            "returned": 10,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-rare-one-document": {
+          "first_ms": 2.74,
+          "p50_ms": 2.13,
+          "p95_ms": 2.74,
+          "samples_ms": [
+            2.74,
+            2.13,
+            2.07
+          ],
+          "result": {
+            "returned": 1,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 1,
+              "timed_out": false
+            },
+            {
+              "returned": 1,
+              "timed_out": false
+            },
+            {
+              "returned": 1,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-common-one-document": {
+          "first_ms": 115.87,
+          "p50_ms": 91.98,
+          "p95_ms": 115.87,
+          "samples_ms": [
+            115.87,
+            91.98,
+            91.39
+          ],
+          "result": {
+            "returned": 0,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-miss-one-document": {
+          "first_ms": 1.45,
+          "p50_ms": 0.97,
+          "p95_ms": 1.45,
+          "samples_ms": [
+            1.45,
+            0.97,
+            0.89
+          ],
+          "result": {
+            "returned": 0,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "exact-vector-one-document": {
+          "first_ms": 2186.06,
+          "p50_ms": 131.7,
+          "p95_ms": 2186.06,
+          "samples_ms": [
+            2186.06,
+            131.7,
+            116.21
+          ],
+          "result": {
+            "returned": 10,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        }
+      },
+      "vector_query_timeout_seconds": 15,
+      "fts_query_timeout_seconds": 1.5,
+      "visitor_render": {
+        "overview": {
+          "first_ms": 86.26,
+          "p50_ms": 6.19,
+          "p95_ms": 86.26,
+          "samples_ms": [
+            86.26,
+            6.19,
+            5.71
+          ],
+          "result": {
+            "html_bytes": 21234,
+            "document_links": 0
+          },
+          "outcomes": [
+            {
+              "html_bytes": 21234,
+              "document_links": 0
+            },
+            {
+              "html_bytes": 21234,
+              "document_links": 0
+            },
+            {
+              "html_bytes": 21234,
+              "document_links": 0
+            }
+          ],
+          "timeouts": 0
+        },
+        "synthetic-all": {
+          "first_ms": 15.23,
+          "p50_ms": 15.23,
+          "p95_ms": 15.45,
+          "samples_ms": [
+            15.23,
+            14.82,
+            15.45
+          ],
+          "result": {
+            "html_bytes": 232448,
+            "document_links": 1000
+          },
+          "outcomes": [
+            {
+              "html_bytes": 232448,
+              "document_links": 1000
+            },
+            {
+              "html_bytes": 232448,
+              "document_links": 1000
+            },
+            {
+              "html_bytes": 232448,
+              "document_links": 1000
+            }
+          ],
+          "timeouts": 0
+        },
+        "synthetic-water": {
+          "first_ms": 7.15,
+          "p50_ms": 7.22,
+          "p95_ms": 67.85,
+          "samples_ms": [
+            7.15,
+            67.85,
+            7.22
+          ],
+          "result": {
+            "html_bytes": 49888,
+            "document_links": 143
+          },
+          "outcomes": [
+            {
+              "html_bytes": 49888,
+              "document_links": 143
+            },
+            {
+              "html_bytes": 49888,
+              "document_links": 143
+            },
+            {
+              "html_bytes": 49888,
+              "document_links": 143
+            }
+          ],
+          "timeouts": 0
+        }
+      },
+      "cumulative_process_peak_rss_kib": 76712.0
+    },
+    {
+      "documents": 5000,
+      "passages": 1105000,
+      "passages_per_document": 221,
+      "build_seconds": 97.32,
+      "lexical_bytes": 1752625152,
+      "vector_bytes": 5135220736,
+      "metrics": {
+        "hash-both-index-files": {
+          "first_ms": 16357.02,
+          "p50_ms": 16357.02,
+          "p95_ms": 16693.31,
+          "samples_ms": [
+            16357.02,
+            16693.31,
+            16322.46
+          ],
+          "result": 2,
+          "outcomes": [
+            2,
+            2,
+            2
+          ],
+          "timeouts": 0
+        },
+        "fts-rare-all": {
+          "first_ms": 16.85,
+          "p50_ms": 11.81,
+          "p95_ms": 16.85,
+          "samples_ms": [
+            16.85,
+            11.81,
+            11.18
+          ],
+          "result": {
+            "returned": 6,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 6,
+              "timed_out": false
+            },
+            {
+              "returned": 6,
+              "timed_out": false
+            },
+            {
+              "returned": 6,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-common-all": {
+          "first_ms": 1504.61,
+          "p50_ms": 1504.66,
+          "p95_ms": 1504.73,
+          "samples_ms": [
+            1504.61,
+            1504.73,
+            1504.66
+          ],
+          "result": {
+            "returned": null,
+            "timed_out": true,
+            "deadline_seconds": 1.5
+          },
+          "outcomes": [
+            {
+              "returned": null,
+              "timed_out": true,
+              "deadline_seconds": 1.5
+            },
+            {
+              "returned": null,
+              "timed_out": true,
+              "deadline_seconds": 1.5
+            },
+            {
+              "returned": null,
+              "timed_out": true,
+              "deadline_seconds": 1.5
+            }
+          ],
+          "timeouts": 3
+        },
+        "fts-miss-all": {
+          "first_ms": 11.76,
+          "p50_ms": 9.77,
+          "p95_ms": 11.76,
+          "samples_ms": [
+            11.76,
+            9.77,
+            8.63
+          ],
+          "result": {
+            "returned": 0,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "exact-vector-all": {
+          "first_ms": 12251.05,
+          "p50_ms": 12251.05,
+          "p95_ms": 12416.44,
+          "samples_ms": [
+            12251.05,
+            12148.04,
+            12416.44
+          ],
+          "result": {
+            "returned": 10,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-rare-one-library": {
+          "first_ms": 3.57,
+          "p50_ms": 2.86,
+          "p95_ms": 3.57,
+          "samples_ms": [
+            3.57,
+            2.86,
+            2.85
+          ],
+          "result": {
+            "returned": 1,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 1,
+              "timed_out": false
+            },
+            {
+              "returned": 1,
+              "timed_out": false
+            },
+            {
+              "returned": 1,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-common-one-library": {
+          "first_ms": 1502.25,
+          "p50_ms": 1503.55,
+          "p95_ms": 1504.18,
+          "samples_ms": [
+            1502.25,
+            1504.18,
+            1503.55
+          ],
+          "result": {
+            "returned": null,
+            "timed_out": true,
+            "deadline_seconds": 1.5
+          },
+          "outcomes": [
+            {
+              "returned": null,
+              "timed_out": true,
+              "deadline_seconds": 1.5
+            },
+            {
+              "returned": null,
+              "timed_out": true,
+              "deadline_seconds": 1.5
+            },
+            {
+              "returned": null,
+              "timed_out": true,
+              "deadline_seconds": 1.5
+            }
+          ],
+          "timeouts": 3
+        },
+        "fts-miss-one-library": {
+          "first_ms": 3.46,
+          "p50_ms": 2.67,
+          "p95_ms": 3.46,
+          "samples_ms": [
+            3.46,
+            2.67,
+            2.47
+          ],
+          "result": {
+            "returned": 0,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "exact-vector-one-library": {
+          "first_ms": 13266.71,
+          "p50_ms": 13266.71,
+          "p95_ms": 13305.15,
+          "samples_ms": [
+            13266.71,
+            13305.15,
+            12925.67
+          ],
+          "result": {
+            "returned": 10,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-rare-one-document": {
+          "first_ms": 3.22,
+          "p50_ms": 2.14,
+          "p95_ms": 3.22,
+          "samples_ms": [
+            3.22,
+            2.14,
+            2.13
+          ],
+          "result": {
+            "returned": 1,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 1,
+              "timed_out": false
+            },
+            {
+              "returned": 1,
+              "timed_out": false
+            },
+            {
+              "returned": 1,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "fts-common-one-document": {
+          "first_ms": 1503.3,
+          "p50_ms": 1502.54,
+          "p95_ms": 1503.3,
+          "samples_ms": [
+            1503.3,
+            1502.54,
+            1502.32
+          ],
+          "result": {
+            "returned": null,
+            "timed_out": true,
+            "deadline_seconds": 1.5
+          },
+          "outcomes": [
+            {
+              "returned": null,
+              "timed_out": true,
+              "deadline_seconds": 1.5
+            },
+            {
+              "returned": null,
+              "timed_out": true,
+              "deadline_seconds": 1.5
+            },
+            {
+              "returned": null,
+              "timed_out": true,
+              "deadline_seconds": 1.5
+            }
+          ],
+          "timeouts": 3
+        },
+        "fts-miss-one-document": {
+          "first_ms": 1.81,
+          "p50_ms": 1.29,
+          "p95_ms": 1.81,
+          "samples_ms": [
+            1.81,
+            1.29,
+            1.0
+          ],
+          "result": {
+            "returned": 0,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            },
+            {
+              "returned": 0,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        },
+        "exact-vector-one-document": {
+          "first_ms": 11974.54,
+          "p50_ms": 11974.54,
+          "p95_ms": 12080.66,
+          "samples_ms": [
+            11974.54,
+            11772.87,
+            12080.66
+          ],
+          "result": {
+            "returned": 10,
+            "timed_out": false
+          },
+          "outcomes": [
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            },
+            {
+              "returned": 10,
+              "timed_out": false
+            }
+          ],
+          "timeouts": 0
+        }
+      },
+      "vector_query_timeout_seconds": 15,
+      "fts_query_timeout_seconds": 1.5,
+      "visitor_render": {
+        "overview": {
+          "first_ms": 43.81,
+          "p50_ms": 43.81,
+          "p95_ms": 99.99,
+          "samples_ms": [
+            43.81,
+            99.99,
+            27.52
+          ],
+          "result": {
+            "html_bytes": 21234,
+            "document_links": 0
+          },
+          "outcomes": [
+            {
+              "html_bytes": 21234,
+              "document_links": 0
+            },
+            {
+              "html_bytes": 21234,
+              "document_links": 0
+            },
+            {
+              "html_bytes": 21234,
+              "document_links": 0
+            }
+          ],
+          "timeouts": 0
+        },
+        "synthetic-all": {
+          "first_ms": 156.52,
+          "p50_ms": 156.41,
+          "p95_ms": 156.52,
+          "samples_ms": [
+            156.52,
+            79.06,
+            156.41
+          ],
+          "result": {
+            "html_bytes": 1084448,
+            "document_links": 5000
+          },
+          "outcomes": [
+            {
+              "html_bytes": 1084448,
+              "document_links": 5000
+            },
+            {
+              "html_bytes": 1084448,
+              "document_links": 5000
+            },
+            {
+              "html_bytes": 1084448,
+              "document_links": 5000
+            }
+          ],
+          "timeouts": 0
+        },
+        "synthetic-water": {
+          "first_ms": 33.7,
+          "p50_ms": 34.21,
+          "p95_ms": 99.23,
+          "samples_ms": [
+            33.7,
+            34.21,
+            99.23
+          ],
+          "result": {
+            "html_bytes": 171724,
+            "document_links": 715
+          },
+          "outcomes": [
+            {
+              "html_bytes": 171724,
+              "document_links": 715
+            },
+            {
+              "html_bytes": 171724,
+              "document_links": 715
+            },
+            {
+              "html_bytes": 171724,
+              "document_links": 715
+            }
+          ],
+          "timeouts": 0
+        }
+      },
+      "cumulative_process_peak_rss_kib": 104588.0
+    }
+  ],
+  "benchmark_date": "2026-10-11",
+  "executed_script_sha256": "6da595adad126e70cc6e4bb5535d7001279646d34997f839cb6e3988e66b5146",
+  "execution_limits": {
+    "cpu_quota": "100% (one core)",
+    "memory_max_mib": 384,
+    "memory_high_mib": 256,
+    "nice": 19,
+    "io_weight": 10,
+    "io_scheduling": "idle",
+    "tasks_max": 8,
+    "runtime_seconds": 1200
+  },
+  "execution_result": {
+    "status": "success",
+    "wall_seconds": 319.528,
+    "cpu_seconds": 235.951,
+    "cgroup_peak_bytes": 269217792,
+    "swap_peak_bytes": 0,
+    "temporary_indexes_retained": false
+  },
+  "source_note": "Executed harness precedes explicit preflight connection cleanup and standard even-sample median in the final PR; three-sample medians and query/fixture logic are unchanged."
+}

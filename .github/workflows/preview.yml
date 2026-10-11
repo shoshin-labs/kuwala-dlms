@@ -19,6 +19,8 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: python -m pip install -r requirements-preview.lock.txt
+      - name: Check isolated benchmark safeguards
+        run: python -m unittest scripts/test_benchmark_catalogue.py scripts/test_benchmark_library_search.py
       - run: npm ci --ignore-scripts
         working-directory: frontend
       - run: npm run build-prod

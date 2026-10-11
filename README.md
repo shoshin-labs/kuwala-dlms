@@ -138,6 +138,7 @@ database and leaves the main preview untouched:
 
 ```bash
 .venv/bin/python scripts/benchmark_catalogue.py
+.venv/bin/python scripts/benchmark_catalogue.py --documents 1000 --repeats 7
 ```
 
 It creates 5,000 labelled catalogue records sharing one synthetic PDF original,
@@ -145,6 +146,12 @@ checks bounded page/section/search queries and prints a separate loopback previe
 command. It does not create or claim a 5,000-document index. The adapter follows
 the configured station importer's shared limit (currently 128 PDFs per reviewed
 snapshot); larger index packages remain part of separate maintenance work.
+The [trial exit and capacity plan](docs/OASIS_LIBRARY_SCALE_PLAN.md) sequences
+browsing/search improvements, publishing enforcement and offline recovery before
+qualifying 1,000 and then 5,000 real PDFs. Its
+[measured synthetic benchmarks](docs/benchmarks/library-scale-2026-10-11/README.md)
+include native search on the Jetson and reproducible commands; they do not change
+the supported production capacity.
 
 English resources are bundled in `frontend/src/js/locales`. See
 [translation instructions](frontend/src/js/locales/README.md) for reviewed
