@@ -101,6 +101,9 @@ page, passage, manifest, byte, memory and time budgets. Use explicit package sch
 and capacity versions; importers and readers must reject unsupported profiles
 before partial activation. Existing 128-document packages continue to work.
 Do not increase one global constant and claim production capacity.
+Stream artifact validation and keep passage/vector reads bounded during startup
+and queries. Current semantic startup loads the full passage/vector corpus;
+optimising queries alone cannot make a multi-gigabyte snapshot fit safely.
 
 Align station, manager transfer and export constraints, including Unicode and long
 filenames, generated slugs and library/section counts. Current transfer filenames
