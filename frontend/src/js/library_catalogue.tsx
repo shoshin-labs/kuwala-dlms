@@ -6,11 +6,11 @@ import {
   CataloguedDocument,
   DocumentPage,
   catalogueQuery,
-  folderAncestors,
   withinFolder,
 } from "./catalogue_tree";
 import { useStrings } from "./i18n";
 import DocumentUpdated from "./document_updated";
+import CatalogueNavigation from "./catalogue_navigation";
 import "../css/catalogue.css";
 
 interface CatalogueLocation {
@@ -78,26 +78,6 @@ export default function LibraryCatalogue() {
       withinFolder(folder, library, folders),
   );
   const selected = section || library;
-  const sections = library
-    ? folders
-        .filter(
-          (folder) =>
-            folder.id !== library.id && withinFolder(folder, library, folders),
-        )
-        .sort((a, b) =>
-          folderAncestors(a, folders)
-            .map((item) => item.folder_name)
-            .join(" / ")
-            .localeCompare(
-              folderAncestors(b, folders)
-                .map((item) => item.folder_name)
-                .join(" / "),
-            ),
-        )
-    : [];
-  const children = selected
-    ? folders.filter((folder) => folder.parent === selected.id)
-    : [];
   const selectedDocument = location.document
     ? result?.results.find((item) => String(item.id) === location.document)
     : undefined;
@@ -264,106 +244,21 @@ export default function LibraryCatalogue() {
         <p role="alert">{s("missing_library")}</p>
       ) : (
         <div className="catalogue-layout">
-          <aside
-            className="catalogue-navigation"
-            aria-labelledby="catalogue-library-nav-title"
-          >
-            <h2 id="catalogue-library-nav-title">{s("libraries")}</h2>
-            <nav className="catalogue-library-nav" aria-label={s("libraries")}>
-              {libraries.map((root) => (
-                <button
-                  key={root.id}
-                  className={library?.id === root.id ? "is-selected" : ""}
-                  aria-current={library?.id === root.id ? "page" : undefined}
-                  onClick={() => choose(root)}
-                >
-                  <strong>{root.folder_name}</strong>
-                  <span>{countLabel(root.document_count)}</span>
-                </button>
-              ))}
-            </nav>
-            {library && sections.length > 0 && (
-              <nav
-                className="catalogue-section-nav"
-                aria-label={s("sections_in", { name: library.folder_name })}
-              >
-                <h3>{s("sections")}</h3>
-                <button
-                  className={!section ? "is-selected" : ""}
-                  onClick={() => choose(library)}
-                  aria-current={!section ? "page" : undefined}
-                >
-                  <span>{s("all_library_documents")}</span>
-                  <span>{library.document_count}</span>
-                </button>
-                {sections.map((child) => (
-                  <button
-                    key={child.id}
-                    className={section?.id === child.id ? "is-selected" : ""}
-                    aria-current={section?.id === child.id ? "page" : undefined}
-                    style={{
-                      paddingLeft:
-                        12 +
-                        Math.max(
-                          0,
-                          folderAncestors(child, folders).length - 2,
-                        ) *
-                          12,
-                    }}
-                    onClick={() => choose(library, child)}
-                  >
-                    <span>{child.folder_name}</span>
-                    <span>{child.document_count}</span>
-                  </button>
-                ))}
-              </nav>
-            )}
-          </aside>
+          {libraries.length > 0 && <CatalogueNavigation
+            id="catalogue-location"
+            folders={folders}
+            libraries={libraries}
+            library={library}
+            section={section}
+            initialOpen={!library}
+            onChoose={(root, child) => root && choose(root, child)}
+          />}
           <div className="catalogue-main">
             {(location.library && !library) ||
             (location.section && !section) ? (
               <p role="alert">{s("missing_library")}</p>
             ) : !library ? (
-              libraries.length ? (
-                <div className="catalogue-overview">
-                  {libraries.map((root) => (
-                    <article
-                      key={root.id}
-                      className="catalogue-overview-library"
-                    >
-                      <h2>
-                        <button onClick={() => choose(root)}>
-                          <span>{root.folder_name}</span>
-                          <span className="catalogue-overview-count">
-                            {countLabel(root.document_count)}{" "}
-                            <span aria-hidden="true">→</span>
-                          </span>
-                        </button>
-                      </h2>
-                      {folders.some((child) => child.parent === root.id) && (
-                        <>
-                          <h3>{s("sections")}</h3>
-                          <ul>
-                            {folders
-                              .filter((child) => child.parent === root.id)
-                              .map((child) => (
-                                <li key={child.id}>
-                                  <button onClick={() => choose(root, child)}>
-                                    <span>{child.folder_name}</span>
-                                    <span>
-                                      {countLabel(child.document_count)}{" "}
-                                      <span aria-hidden="true">→</span>
-                                    </span>
-                                  </button>
-                                </li>
-                              ))}
-                          </ul>
-                        </>
-                      )}
-                    </article>
-                  ))}
-                </div>
-              ) : (
+              !libraries.length && (
                 <div className="empty-state">
                   <h2>{s("no_libraries")}</h2>
                   <p>{s("no_libraries_help")}</p>
@@ -371,50 +266,13 @@ export default function LibraryCatalogue() {
               )
             ) : (
               <>
-                {(section || location.document) && (
-                  <nav
-                    className="catalogue-breadcrumbs"
-                    aria-label={s("breadcrumb")}
-                  >
-                    <button onClick={() => choose(library)}>
-                      {library.folder_name}
+                {location.document && (
+                  <nav className="catalogue-back" aria-label={s("back_documents")}>
+                    <button className="text-button"
+                      onClick={() => navigate({ document: "" })}>
+                      ← {s("back_documents")}
                     </button>
-                    {section &&
-                      folderAncestors(section, folders)
-                        .filter((item) => item.id !== library.id)
-                        .map((child) => (
-                          <React.Fragment key={child.id}>
-                            <span aria-hidden="true">/</span>
-                            <button onClick={() => choose(library, child)}>
-                              {child.folder_name}
-                            </button>
-                          </React.Fragment>
-                        ))}
-                    {location.document && (
-                      <button
-                        className="text-button"
-                        onClick={() => navigate({ document: "" })}
-                      >
-                        ← {s("back_documents")}
-                      </button>
-                    )}
                   </nav>
-                )}
-                {!location.document && children.length > 0 && (
-                  <section className="catalogue-sections">
-                    <h2>{s("sections")}</h2>
-                    <div className="catalogue-section-cards">
-                      {children.map((child) => (
-                        <button
-                          key={child.id}
-                          onClick={() => choose(library, child)}
-                        >
-                          <strong>{child.folder_name}</strong>
-                          <span>{countLabel(child.document_count)}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
                 )}
                 {!location.document && (
                   <div className="document-toolbar">

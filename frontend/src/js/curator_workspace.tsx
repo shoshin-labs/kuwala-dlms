@@ -21,6 +21,7 @@ import {
 import DocumentEditor, { DocumentDraft } from "./manager_document_editor";
 import ManagerSearch from "./manager_search";
 import DocumentUpdated from "./document_updated";
+import CatalogueNavigation from "./catalogue_navigation";
 import LibraryTransferControls from "./manager_library_transfer";
 import {
   ManagerData,
@@ -158,26 +159,6 @@ export default function CuratorWorkspace() {
   const libraries = folders.filter((folder) => folder.parent === null);
   const selectedFolder = folders.find((item) => item.id === libraryId);
   const library = selectedFolder && folderAncestors(selectedFolder, folders)[0];
-  const sections = library
-    ? folders
-        .filter(
-          (item) =>
-            item.id !== library.id && withinFolder(item, library, folders),
-        )
-        .sort((a, b) =>
-          folderAncestors(a, folders)
-            .map((item) => item.folder_name)
-            .join(" / ")
-            .localeCompare(
-              folderAncestors(b, folders)
-                .map((item) => item.folder_name)
-                .join(" / "),
-            ),
-        )
-    : [];
-  const children = selectedFolder
-    ? folders.filter((item) => item.parent === selectedFolder.id)
-    : [];
   const ready = Boolean(
     version && !loading && !foldersLoading && !loadError && !folderError,
   );
@@ -678,14 +659,17 @@ export default function CuratorWorkspace() {
             folderId={selectedFolder?.id}
           >
             <div className="manager-layout">
-              <aside
-                className="manager-libraries"
-                aria-labelledby="manager-libraries-title"
-              >
-                <div className="manager-section-heading">
-                  <h2 id="manager-libraries-title">{s("libraries")}</h2>
-                  <span>{libraries.length}</span>
-                </div>
+              <div className="manager-navigation-bar">
+                <CatalogueNavigation
+                  id="manager-location"
+                  folders={folders}
+                  libraries={libraries}
+                  library={library}
+                  section={selectedFolder && selectedFolder.parent !== null ? selectedFolder : undefined}
+                  allDocuments={{ name: s("all_documents"), count: allDocumentCount }}
+                  disabled={!ready}
+                  onChoose={(root, child) => chooseLibrary(child?.id || root?.id || 0)}
+                />
                 <button
                   className="manager-button manager-new-library"
                   disabled={!ready}
@@ -693,128 +677,11 @@ export default function CuratorWorkspace() {
                 >
                   + {s("new_library")}
                 </button>
-                <div className="manager-mobile-navigation">
-                  <label className="manager-field">{s("placement_library")}
-                    <select value={library?.id || 0} disabled={!ready}
-                      onChange={(event) => chooseLibrary(Number(event.target.value))}>
-                      <option value={0}>{s("location_option", { name: s("all_documents"), count: countLabel(allDocumentCount) })}</option>
-                      {libraries.map((item) => <option key={item.id} value={item.id}>
-                        {s("location_option", { name: item.folder_name, count: countLabel(item.document_count) })}
-                      </option>)}
-                    </select>
-                  </label>
-                  {library && sections.length > 0 && <label className="manager-field">{s("placement_section")}
-                    <select value={selectedFolder?.id || library.id} disabled={!ready}
-                      onChange={(event) => chooseLibrary(Number(event.target.value))}>
-                      <option value={library.id}>{s("all_library_documents")}</option>
-                      {sections.map((item) => <option key={item.id} value={item.id}>
-                        {s("location_option", { name: folderAncestors(item, folders).slice(1).map((parent) => parent.folder_name).join(" / "), count: countLabel(item.document_count) })}
-                      </option>)}
-                    </select>
-                  </label>}
-                </div>
-                <nav
-                  className="manager-library-items"
-                  aria-label={s("libraries")}
-                >
-                  <button
-                    className={
-                      "manager-library-choice" +
-                      (libraryId === 0 ? " is-selected" : "")
-                    }
-                    aria-current={libraryId === 0 ? "page" : undefined}
-                    disabled={!ready}
-                    onClick={() => chooseLibrary(0)}
-                  >
-                    <strong>{s("all_documents")}</strong>
-                    <span>{countLabel(allDocumentCount)}</span>
-                  </button>
-                  {libraries.map((item) => (
-                    <button
-                      key={item.id}
-                      className={
-                        "manager-library-choice" +
-                        (library?.id === item.id ? " is-selected" : "")
-                      }
-                      aria-current={
-                        library?.id === item.id ? "page" : undefined
-                      }
-                      disabled={!ready}
-                      onClick={() => chooseLibrary(item.id)}
-                    >
-                      <strong>{item.folder_name}</strong>
-                      <span>{countLabel(item.document_count)}</span>
-                    </button>
-                  ))}
-                </nav>
                 {!libraries.length && !foldersLoading && (
                   <p className="manager-help">{s("no_libraries_help")}</p>
                 )}
-                {library && sections.length > 0 && (
-                  <nav
-                    className="manager-section-items"
-                    aria-label={s("sections_in", { name: library.folder_name })}
-                  >
-                    <h3>{s("sections")}</h3>
-                    <button
-                      className={
-                        selectedFolder?.id === library.id ? "is-selected" : ""
-                      }
-                      disabled={!ready}
-                      onClick={() => chooseLibrary(library.id)}
-                    >
-                      <span>{s("all_library_documents")}</span>
-                      <span>{library.document_count}</span>
-                    </button>
-                    {sections.map((item) => (
-                      <button
-                        key={item.id}
-                        className={
-                          selectedFolder?.id === item.id ? "is-selected" : ""
-                        }
-                        disabled={!ready}
-                        style={{
-                          paddingLeft:
-                            12 +
-                            Math.max(
-                              0,
-                              folderAncestors(item, folders).length - 2,
-                            ) *
-                              12,
-                        }}
-                        aria-current={
-                          selectedFolder?.id === item.id ? "page" : undefined
-                        }
-                        onClick={() => chooseLibrary(item.id)}
-                      >
-                        <span>{item.folder_name}</span>
-                        <span>{item.document_count}</span>
-                      </button>
-                    ))}
-                  </nav>
-                )}
-              </aside>
+              </div>
               <div className="manager-documents">
-                {selectedFolder && selectedFolder.parent !== null && (
-                  <nav
-                    className="catalogue-breadcrumbs"
-                    aria-label={s("breadcrumb")}
-                  >
-                    {folderAncestors(selectedFolder, folders).map(
-                      (item, index) => (
-                        <React.Fragment key={item.id}>
-                          {index > 0 && <span aria-hidden="true">/</span>}
-                          <button
-                            disabled={!ready}
-                            onClick={() => chooseLibrary(item.id)}
-                          >
-                            {item.folder_name}
-                          </button>
-                        </React.Fragment>
-                      ),
-                    )}
-                  </nav>
-                )}
                 <div className="manager-document-heading">
                   <div>
                     <h2 ref={heading} tabIndex={-1}>
@@ -884,23 +751,6 @@ export default function CuratorWorkspace() {
                     </div>
                   )}
                 </div>
-                {children.length > 0 && (
-                  <section className="catalogue-sections">
-                    <h3>{s("sections")}</h3>
-                    <div className="catalogue-section-cards">
-                      {children.map((child) => (
-                        <button
-                          key={child.id}
-                          disabled={!ready}
-                          onClick={() => chooseLibrary(child.id)}
-                        >
-                          <strong>{child.folder_name}</strong>
-                          <span>{countLabel(child.document_count)}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                )}
                 <ManagerSearch
                   versionId={version.id}
                   folderId={selectedFolder?.id}

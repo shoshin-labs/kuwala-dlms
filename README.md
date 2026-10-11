@@ -80,9 +80,10 @@ that remains available after its library host shuts down.
 - A visitor **library** is a root `LibraryFolder` in a selected `LibraryVersion`.
   Its documents include descendant folders and deduplicate stable content IDs.
 - **Oasis Knowledge** contains libraries, which contain nested sections.
-- Child folders appear as **sections**. The library overview and persistent navigation
-  keep other libraries and sections visible while a selected section filters the
-  documents. Curators can create sections under an existing library or section.
+- Child folders appear as **sections**. A compact location control shows the current
+  library and section; opening it reveals searchable lists with bounded heights.
+  The initial catalogue shows its library list once. Curators can create sections
+  under an existing library or section. See [navigation verification](docs/OASIS_COMPACT_NAVIGATION.md).
 - Search and document pagination run on the server, with 24 records per page and
   a maximum API page size of 100. Folder summaries contain counts, not every PDF's
   metadata; editor reference data loads when needed.
