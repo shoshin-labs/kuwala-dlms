@@ -1,0 +1,1039 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "fixture": "oasis-catalogue-scale-v1",
+  "documents": 5000,
+  "libraries": 3,
+  "sections": 12,
+  "shared_originals": 1,
+  "reused_state": true,
+  "repeats_per_phase": 7,
+  "generated_at_utc": "2026-10-11T13:05:55.150269+00:00",
+  "state_root": ".preview/scale-check",
+  "measurement": "In-process Django test client; query capture and preview DEBUG enabled; no network or browser rendering.",
+  "cold_definition": "SQLite connection closed before each connection_cold sample; OS/page caches are not evicted. First request may include URL/module initialization.",
+  "percentile_method": "Linear interpolation over the requested samples; small local samples are not a production latency guarantee.",
+  "limitations": [
+    "One labelled synthetic PDF original is shared by all catalogue records.",
+    "No PDF extraction, OCR, full-text/vector index, model inference, concurrent-user or device performance is measured."
+  ],
+  "results": [
+    {
+      "name": "tree",
+      "url": "/api/oasis/catalogue/?catalogue_version=1",
+      "validated": true,
+      "connection_cold": {
+        "samples": [
+          {
+            "milliseconds": 29.242,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.399,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.315,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.398,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.587,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.285,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.301,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          }
+        ],
+        "p50_ms": 7.398,
+        "p95_ms": 22.745,
+        "min_ms": 7.285,
+        "max_ms": 29.242,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 1992,
+        "response_bytes_max": 1992
+      },
+      "steady": {
+        "samples": [
+          {
+            "milliseconds": 7.072,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.05,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.158,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.05,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.077,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 7.096,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          },
+          {
+            "milliseconds": 6.755,
+            "queries": 5,
+            "bytes": 1992,
+            "count": 5000,
+            "returned": 15
+          }
+        ],
+        "p50_ms": 7.072,
+        "p95_ms": 7.139,
+        "min_ms": 6.755,
+        "max_ms": 7.158,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 1992,
+        "response_bytes_max": 1992
+      }
+    },
+    {
+      "name": "first-page",
+      "url": "/api/oasis/catalogue/documents/?catalogue_version=1",
+      "validated": true,
+      "connection_cold": {
+        "samples": [
+          {
+            "milliseconds": 13.459,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.866,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.548,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.383,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.644,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.838,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.722,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          }
+        ],
+        "p50_ms": 12.722,
+        "p95_ms": 13.281,
+        "min_ms": 12.383,
+        "max_ms": 13.459,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 15383,
+        "response_bytes_max": 15383
+      },
+      "steady": {
+        "samples": [
+          {
+            "milliseconds": 12.445,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.023,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.085,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 13.879,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.015,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.281,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.529,
+            "queries": 5,
+            "bytes": 15383,
+            "count": 5000,
+            "returned": 24
+          }
+        ],
+        "p50_ms": 12.281,
+        "p95_ms": 13.474,
+        "min_ms": 12.015,
+        "max_ms": 13.879,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 15383,
+        "response_bytes_max": 15383
+      }
+    },
+    {
+      "name": "second-page",
+      "url": "/api/oasis/catalogue/documents/?catalogue_version=1&page=2",
+      "validated": true,
+      "connection_cold": {
+        "samples": [
+          {
+            "milliseconds": 12.996,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.663,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.716,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.705,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.578,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.659,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 13.553,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          }
+        ],
+        "p50_ms": 12.705,
+        "p95_ms": 13.386,
+        "min_ms": 12.578,
+        "max_ms": 13.553,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 15458,
+        "response_bytes_max": 15458
+      },
+      "steady": {
+        "samples": [
+          {
+            "milliseconds": 11.961,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.716,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.014,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 11.8,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.463,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.96,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          },
+          {
+            "milliseconds": 12.28,
+            "queries": 5,
+            "bytes": 15458,
+            "count": 5000,
+            "returned": 24
+          }
+        ],
+        "p50_ms": 12.28,
+        "p95_ms": 12.887,
+        "min_ms": 11.8,
+        "max_ms": 12.96,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 15458,
+        "response_bytes_max": 15458
+      }
+    },
+    {
+      "name": "last-page",
+      "url": "/api/oasis/catalogue/documents/?catalogue_version=1&page=209",
+      "validated": true,
+      "connection_cold": {
+        "samples": [
+          {
+            "milliseconds": 13.807,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 13.465,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 13.52,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 13.318,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 13.518,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 13.669,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 13.648,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          }
+        ],
+        "p50_ms": 13.52,
+        "p95_ms": 13.766,
+        "min_ms": 13.318,
+        "max_ms": 13.807,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 5274,
+        "response_bytes_max": 5274
+      },
+      "steady": {
+        "samples": [
+          {
+            "milliseconds": 13.395,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 13.087,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 13.037,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 13.347,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 24.159,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 15.735,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          },
+          {
+            "milliseconds": 13.395,
+            "queries": 5,
+            "bytes": 5274,
+            "count": 5000,
+            "returned": 8
+          }
+        ],
+        "p50_ms": 13.395,
+        "p95_ms": 21.632,
+        "min_ms": 13.037,
+        "max_ms": 24.159,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 5274,
+        "response_bytes_max": 5274
+      }
+    },
+    {
+      "name": "max-page-size",
+      "url": "/api/oasis/catalogue/documents/?catalogue_version=1&size=10000",
+      "validated": true,
+      "connection_cold": {
+        "samples": [
+          {
+            "milliseconds": 17.441,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 17.951,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 17.394,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 17.887,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 17.566,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 17.393,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 17.648,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          }
+        ],
+        "p50_ms": 17.566,
+        "p95_ms": 17.932,
+        "min_ms": 17.393,
+        "max_ms": 17.951,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 63540,
+        "response_bytes_max": 63540
+      },
+      "steady": {
+        "samples": [
+          {
+            "milliseconds": 16.956,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 17.126,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 16.455,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 16.66,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 16.487,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 16.867,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          },
+          {
+            "milliseconds": 16.62,
+            "queries": 5,
+            "bytes": 63540,
+            "count": 5000,
+            "returned": 100
+          }
+        ],
+        "p50_ms": 16.66,
+        "p95_ms": 17.075,
+        "min_ms": 16.455,
+        "max_ms": 17.126,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 63540,
+        "response_bytes_max": 63540
+      }
+    },
+    {
+      "name": "section",
+      "url": "/api/oasis/catalogue/documents/?catalogue_version=1&folder_id=4",
+      "validated": true,
+      "connection_cold": {
+        "samples": [
+          {
+            "milliseconds": 4.501,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 4.333,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 4.769,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 4.315,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 4.556,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 4.317,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 4.127,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          }
+        ],
+        "p50_ms": 4.333,
+        "p95_ms": 4.705,
+        "min_ms": 4.127,
+        "max_ms": 4.769,
+        "queries_min": 6,
+        "queries_max": 6,
+        "response_bytes_min": 15405,
+        "response_bytes_max": 15405
+      },
+      "steady": {
+        "samples": [
+          {
+            "milliseconds": 3.583,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 3.787,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 4.571,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 3.701,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 3.61,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 3.782,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          },
+          {
+            "milliseconds": 3.697,
+            "queries": 6,
+            "bytes": 15405,
+            "count": 417,
+            "returned": 24
+          }
+        ],
+        "p50_ms": 3.701,
+        "p95_ms": 4.336,
+        "min_ms": 3.583,
+        "max_ms": 4.571,
+        "queries_min": 6,
+        "queries_max": 6,
+        "response_bytes_min": 15405,
+        "response_bytes_max": 15405
+      }
+    },
+    {
+      "name": "search",
+      "url": "/api/oasis/catalogue/documents/?catalogue_version=1&q=004200",
+      "validated": true,
+      "connection_cold": {
+        "samples": [
+          {
+            "milliseconds": 8.359,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.88,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.766,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.887,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.913,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.766,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 8.446,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          }
+        ],
+        "p50_ms": 7.887,
+        "p95_ms": 8.42,
+        "min_ms": 7.766,
+        "max_ms": 8.446,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 748,
+        "response_bytes_max": 748
+      },
+      "steady": {
+        "samples": [
+          {
+            "milliseconds": 7.548,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.34,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.524,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.387,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.378,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.627,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          },
+          {
+            "milliseconds": 7.438,
+            "queries": 5,
+            "bytes": 748,
+            "count": 1,
+            "returned": 1
+          }
+        ],
+        "p50_ms": 7.438,
+        "p95_ms": 7.603,
+        "min_ms": 7.34,
+        "max_ms": 7.627,
+        "queries_min": 5,
+        "queries_max": 5,
+        "response_bytes_min": 748,
+        "response_bytes_max": 748
+      }
+    },
+    {
+      "name": "section-search-miss",
+      "url": "/api/oasis/catalogue/documents/?catalogue_version=1&folder_id=4&q=000002",
+      "validated": true,
+      "connection_cold": {
+        "samples": [
+          {
+            "milliseconds": 1.88,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.866,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.691,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.679,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.63,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.699,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.657,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          }
+        ],
+        "p50_ms": 1.691,
+        "p95_ms": 1.876,
+        "min_ms": 1.63,
+        "max_ms": 1.88,
+        "queries_min": 3,
+        "queries_max": 3,
+        "response_bytes_min": 113,
+        "response_bytes_max": 113
+      },
+      "steady": {
+        "samples": [
+          {
+            "milliseconds": 1.242,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.245,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.319,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.26,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.234,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.488,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          },
+          {
+            "milliseconds": 1.374,
+            "queries": 3,
+            "bytes": 113,
+            "count": 0,
+            "returned": 0
+          }
+        ],
+        "p50_ms": 1.26,
+        "p95_ms": 1.454,
+        "min_ms": 1.234,
+        "max_ms": 1.488,
+        "queries_min": 3,
+        "queries_max": 3,
+        "response_bytes_min": 113,
+        "response_bytes_max": 113
+      }
+    }
+  ],
+  "host_class": "Local development Mac; Python3.12 preview environment"
+}

@@ -9,6 +9,8 @@ verified immutable reader snapshots. The [catalogue transfer](OASIS_CATALOGUE_TR
 preserves the existing main collection's IDs, original files, metadata and
 review scope and can adopt its matching verified index. Publication enforcement,
 fine-grained curator/reviewer/publisher roles and the larger integrations below remain follow-ups.
+The [trial exit plan](OASIS_LIBRARY_SCALE_PLAN.md) orders those publication checks,
+bounded browsing/search and recovery work before qualifying larger libraries.
 The device manager uses [standard Django staff sessions](OASIS_CURATOR_ACCESS.md)
 with SSH access or an explicitly configured private Tailscale HTTPS origin.
 
