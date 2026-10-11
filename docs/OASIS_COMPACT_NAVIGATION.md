@@ -66,7 +66,7 @@ control.
 
 - Production frontend build: passed; existing bundle-size/Browserslist warnings.
 - Frontend checks: **39 passed**, including eight navigation behavior checks.
-- Django preview checks: **163 passed**, six existing environment-dependent skips.
+- Django preview suite: **163 run: 157 passed and six existing environment-dependent skips**.
 - Deployment regression checks: **36 passed**.
 - Django system check and migration-drift check: passed; no new migrations.
 
