@@ -10,7 +10,7 @@ The design keeps the current location visible and makes changing it deliberate:
 - One location disclosure replaces the long sidebar and mobile selection grids.
   Browsing a selected library, reading a document and managing documents begin
   with the disclosure closed.
-- Opening it exposes searchable library and section lists with bounded heights.
+- Opening it exposes searchable library and section lists using normal page scroll.
   The initial visitor catalogue opens the library list for discovery, once.
 - Choosing a library with sections previews its sections in the same control.
   Choosing a section or all documents commits the existing folder selection.
@@ -52,7 +52,7 @@ only to the isolated verification database; ordinary seeding creates three PDFs.
 The isolated fixture has **50 libraries** and **51 sections** in one library,
 including nested sections and documents with multiple memberships. Browser
 checks at 390 × 844 and 1280 × 900 CSS pixels covered selection, independent
-library/section searches, no-match states, bounded lists, keyboard Escape and
+library/section searches, no-match states, keyboard Escape and
 focus, browser history, returning to the overview and document back navigation.
 Upload still preselects the current library; editing retains all memberships.
 The new-library, upload and edit dialogs were opened and cancelled in the browser;
@@ -73,3 +73,22 @@ control.
 See the [desktop and phone screenshots](screenshots/compact-navigation-2026-10-11/README.md).
 They are visibly synthetic. This is a UI check, not evidence of a 5,000-PDF search
 index or production capacity.
+
+## Scrolling and document-row refinement
+
+The expanded picker now uses the page's normal scroll. Both the outer choices
+panel and its library/section lists have no maximum height or internal scroll
+container. Search remains available for long lists, and the picker still starts
+closed on document and management pages. Document rows omit the redundant
+PDF/File badge, giving their titles and descriptions more room; original
+filenames and PDF page controls remain on document details.
+
+The follow-up check used the same synthetic 50-library/51-section fixture at
+390 × 844 and 1280 × 900 CSS pixels. The unfiltered phone library list measured
+4,258 pixels and the section list 4,429 pixels: both had `overflow-y: visible`,
+`max-height: none`, and matching client/scroll heights. Library/section search,
+selection, collapse, Escape, document details and PDF page controls were checked.
+There was no horizontal page overflow. The production build and all 12 targeted
+navigation/brand checks passed.
+
+See the [updated phone and desktop screenshots](screenshots/simpler-picker-2026-10-11/README.md).

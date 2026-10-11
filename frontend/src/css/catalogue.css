@@ -63,8 +63,6 @@
   grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   align-items: start;
   gap: 24px;
-  max-height: min(70vh, 720px);
-  overflow: auto;
   padding: 8px 4px 20px;
   animation: catalogue-location-reveal 160ms ease;
 }
@@ -98,9 +96,6 @@
 .catalogue-location-list {
   display: grid;
   align-content: start;
-  max-height: min(36vh, 320px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
   padding: 4px;
   gap: 4px;
 }

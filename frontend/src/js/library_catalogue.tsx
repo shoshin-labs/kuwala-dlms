@@ -343,11 +343,6 @@ export default function LibraryCatalogue() {
                               navigate({ document: String(item.id) })
                             }
                           >
-                            <span className="document-format">
-                              {item.file_name?.toLowerCase().endsWith(".pdf")
-                                ? s("pdf")
-                                : s("file")}
-                            </span>
                             <span className="document-summary">
                               <span className="document-name">
                                 {documentTitle(item)}
