@@ -378,13 +378,6 @@ p {
   background: var(--paper);
   text-align: left;
 }
-.document-format {
-  color: var(--muted);
-  font-size: 0.88rem;
-  font-weight: 700;
-  width: 42px;
-  flex: none;
-}
 .document-summary {
   display: flex;
   flex-direction: column;
@@ -700,10 +693,6 @@ summary {
   .document-choice {
     gap: 10px;
     padding: 24px 0;
-  }
-  .document-format {
-    width: 32px;
-    font-size: 0.8rem;
   }
   .document-name {
     font-size: 1.12rem;

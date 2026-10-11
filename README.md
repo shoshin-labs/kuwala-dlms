@@ -81,7 +81,7 @@ that remains available after its library host shuts down.
   Its documents include descendant folders and deduplicate stable content IDs.
 - **Oasis Knowledge** contains libraries, which contain nested sections.
 - Child folders appear as **sections**. A compact location control shows the current
-  library and section; opening it reveals searchable lists with bounded heights.
+  library and section; opening it reveals searchable lists using normal page scroll.
   The initial catalogue shows its library list once. Curators can create sections
   under an existing library or section. See [navigation verification](docs/OASIS_COMPACT_NAVIGATION.md).
 - Search and document pagination run on the server, with 24 records per page and
