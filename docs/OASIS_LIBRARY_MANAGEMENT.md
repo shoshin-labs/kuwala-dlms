@@ -130,7 +130,7 @@ command and, for the optional hybrid profile, `index_pdf_vectors`. Existing
 published/evaluation roots are never selected as destinations. Logs, timestamps,
 queued/running/succeeded/failed states and worker heartbeat are real persisted data.
 
-The adapter follows the station importer's shared limit, currently 128 PDFs per
+The adapter follows the station importer's shared limit, currently 512 PDFs per
 reviewed snapshot. The catalogue
 can browse thousands of records through server pagination; this worker does not
 claim to index thousands in one build. Larger packages and incremental jobs remain

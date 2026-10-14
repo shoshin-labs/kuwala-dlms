@@ -145,7 +145,7 @@ database and leaves the main preview untouched:
 It creates 5,000 labelled catalogue records sharing one synthetic PDF original,
 checks bounded page/section/search queries and prints a separate loopback preview
 command. It does not create or claim a 5,000-document index. The adapter follows
-the configured station importer's shared limit (currently 128 PDFs per reviewed
+the configured station importer's shared limit (currently 512 PDFs per reviewed
 snapshot); larger index packages remain part of separate maintenance work.
 The [trial exit and capacity plan](docs/OASIS_LIBRARY_SCALE_PLAN.md) sequences
 browsing/search improvements, publishing enforcement and offline recovery before

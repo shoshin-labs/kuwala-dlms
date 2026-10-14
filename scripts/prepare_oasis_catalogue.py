@@ -12,13 +12,16 @@ import json
 import os
 import re
 import sqlite3
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Support both the standalone operator CLI and the imported Django adapter.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from dlms.library_limits import MAX_DOCUMENTS, MAX_MANIFEST_BYTES, MAX_PDF_BYTES
+
 MAX_PACKAGE_BYTES = 16 * 1024 * 1024
 MAX_ASSET_BYTES = 4 * 1024 * 1024
-MAX_MANIFEST_BYTES = 256 * 1024
-MAX_PDF_BYTES = 80 * 1024 * 1024
 MODELS = ('metadatatype', 'metadata', 'user', 'liblayoutimage', 'librarymodule',
           'content', 'libraryversion', 'libraryfolder')
 M2M = {
@@ -86,9 +89,9 @@ def reviewed_manifest(raw):
         raise ValueError('Reviewed manifest needs a safe library version and schema version 1.')
     documents = manifest.get('documents')
     libraries = manifest.get('libraries')
-    if not isinstance(documents, list) or not 1 <= len(documents) <= 128:
-        raise ValueError('Reviewed manifest needs 1–128 documents.')
-    if not isinstance(libraries, list) or not 1 <= len(libraries) <= 128:
+    if not isinstance(documents, list) or not 1 <= len(documents) <= MAX_DOCUMENTS:
+        raise ValueError('Reviewed manifest needs 1–%s documents.' % MAX_DOCUMENTS)
+    if not isinstance(libraries, list) or not 1 <= len(libraries) <= MAX_DOCUMENTS:
         raise ValueError('Reviewed manifest needs explicit library memberships.')
     ids, slugs, filenames = set(), set(), set()
     for record in documents:
@@ -131,7 +134,7 @@ def validate_manifest_sections(manifest):
     if 'sections' not in manifest:
         return None
     sections = manifest['sections']
-    if not isinstance(sections, list) or len(sections) > 128:
+    if not isinstance(sections, list) or len(sections) > MAX_DOCUMENTS:
         raise ValueError('Reviewed sections must be a bounded list.')
     libraries = {item['id']: item for item in manifest['libraries']}
     documents = {item['id'] for item in manifest['documents']}
@@ -154,7 +157,7 @@ def validate_manifest_sections(manifest):
                 or any(ord(char) < 32 or 127 <= ord(char) <= 159 for char in label)
                 or not isinstance(library_id, str) or library_id not in libraries
                 or (parent is not None and (not isinstance(parent, str) or not re.fullmatch(r'[a-z][a-z0-9]*(?:-[a-z0-9]+)*', parent)))
-                or not isinstance(members, list) or len(members) > 128
+                or not isinstance(members, list) or len(members) > MAX_DOCUMENTS
                 or any(not isinstance(member, str) for member in members)
                 or len(set(members)) != len(members)
                 or not set(members).issubset(libraries[library_id]['document_ids'])):

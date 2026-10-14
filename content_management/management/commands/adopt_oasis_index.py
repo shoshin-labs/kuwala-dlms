@@ -13,6 +13,7 @@ from django.utils import timezone
 from content_management.models import LibraryVersion, OasisIndexJob
 from content_management.oasis_indexing import job_root, preflight, run_probe, staging_base
 from dlms.private_paths import checked_directory, checked_path, require_disjoint
+from dlms.library_limits import MAX_MANIFEST_BYTES
 
 
 def manifest_digest(manifest):
@@ -54,7 +55,7 @@ def snapshot_manifest(root):
     if not snapshot.is_dir():
         raise ValueError('Adoption selected snapshot must be a directory.')
     manifest_path = regular_file(snapshot / 'manifest.json')
-    if manifest_path.stat().st_size > 256 * 1024:
+    if manifest_path.stat().st_size > MAX_MANIFEST_BYTES:
         raise ValueError('Adoption manifest exceeds the station manifest limit.')
     manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
     return snapshot, manifest

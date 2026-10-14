@@ -133,7 +133,7 @@ Check Manage Library's total count, all seven memberships, document metadata,
 original downloads and separate PDF-text/semantic statuses. Check the reader's
 document identities, rights notes, original and membership fingerprints again.
 The 71,375,120-byte Student Success original must remain usable; the curator and
-station both permit up to 80 MiB per PDF and 128 PDFs per reviewed snapshot.
+station both permit up to 256 MiB per PDF and 512 PDFs per reviewed snapshot.
 
 ## Subsequent changes
 
