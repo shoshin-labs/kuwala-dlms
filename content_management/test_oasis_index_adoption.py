@@ -102,6 +102,19 @@ class AdoptOasisIndexTests(TestCase):
         self.assertEqual(before, after)
         self.probe_mock.assert_called_once()
 
+    def test_large_review_is_parsed_intact_and_over_limit_adoption_is_rejected(self):
+        from dlms.library_limits import MAX_MANIFEST_BYTES
+        value = copy.deepcopy(self.manifest)
+        value['operator_archive'] = 'Retained full original review. ' * 10000
+        path = self.snapshot / 'manifest.json'
+        path.write_text(json.dumps(value))
+        self.assertGreater(path.stat().st_size, 256 * 1024)
+        self.assertEqual(adoption.snapshot_manifest(self.source), (self.snapshot, value))
+        with path.open('r+b') as stream:
+            stream.truncate(MAX_MANIFEST_BYTES + 1)
+        with self.assertRaisesRegex(ValueError, 'exceeds the station manifest limit'):
+            adoption.snapshot_manifest(self.source)
+
     def test_apply_copies_only_required_artifacts_and_records_actual_receipt(self):
         (self.source / '.pdf-import-failed').mkdir()
         (self.source / '.pdf-import-failed' / 'ignored.lock').write_text('failed import')

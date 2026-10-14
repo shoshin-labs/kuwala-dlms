@@ -67,16 +67,25 @@ class PrivateIndexingTests(TestCase):
     def post_job(self, **extra):
         return self.client.post('/api/oasis/index-jobs/', {'catalogue_version': self.version.id, **extra}, format='json')
 
-    def test_original_limit_matches_station_eighty_mib_and_accepts_larger_existing_pdf(self):
+    def test_original_limit_matches_station_and_accepts_whole_books_above_eighty_mib(self):
         path = Path(self.first.content_file.path)
         with path.open('r+b') as stream:
-            stream.truncate(40 * 1024 * 1024)
+            stream.truncate(90 * 1024 * 1024)
         record = original_record(self.first)
         self.assertEqual(record['sha256'], hashlib.sha256(path.read_bytes()).hexdigest())
         with path.open('r+b') as stream:
-            stream.truncate(80 * 1024 * 1024 + 1)
-        with self.assertRaisesRegex(ValueError, '80 MiB'):
+            stream.truncate(256 * 1024 * 1024 + 1)
+        with self.assertRaisesRegex(ValueError, '256 MiB'):
             original_record(self.first)
+
+    def test_operator_review_manifest_accepts_above_old_bound_and_rejects_new_boundary(self):
+        from dlms.library_limits import MAX_MANIFEST_BYTES
+        self.manifest_path.write_bytes(b' ' * (256 * 1024 + 1))
+        self.assertEqual(operator_config()['manifest'], self.manifest_path)
+        with self.manifest_path.open('r+b') as stream:
+            stream.truncate(MAX_MANIFEST_BYTES + 1)
+        with self.assertRaisesRegex(ValueError, 'small, explicit reviewed manifest'):
+            operator_config()
 
     def test_reviewed_library_names_and_memberships_are_required_without_export(self):
         self.probe['manifest']['libraries'] = [{

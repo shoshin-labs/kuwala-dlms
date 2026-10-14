@@ -73,10 +73,25 @@ test('failed apply keeps the reviewed package and chosen library name',async()=>
 test('changing the file discards a previous review and oversized packages never upload',async()=>{
   let calls=0;const ui=harness(async()=>{calls++;return plan;});
   ui.button(text.import_library).props.onClick();ui.choose(zip);await ui.button(text.inspect).props.onClick();
-  ui.choose({name:'other.zip',size:81*1024*1024});
+  ui.choose({name:'other.zip',size:256*1024*1024+1});
   assert.equal(ui.nodes(ui.render(),node=>node.props?.children===text.confirm_import).length,0);
   await ui.button(text.inspect).props.onClick();assert.equal(calls,1);
   assert.equal(ui.nodes(ui.render(),node=>node.props?.role==='alert')[0].props.children,text.size_error);
+});
+
+test('whole-book packages above the old limit and at the new boundary reach normal review',async()=>{
+  const calls=[];const ui=harness(async(url,method,body)=>{calls.push({url,body});return plan;});
+  ui.button(text.import_library).props.onClick();
+  for (const size of [201039307,256*1024*1024]) {
+    // Metadata-only UI fixture: backend tests separately exercise streamed
+    // original bytes. This does not allocate or claim a real large upload.
+    const file={name:'synthetic-whole-book.zip',size};
+    ui.choose(file);await ui.button(text.inspect).props.onClick();
+    assert.equal(calls.at(-1).url,'/api/oasis/libraries/import/?dry_run=1');
+    assert.equal(calls.at(-1).body.values.get('bundle'),file);
+    assert.equal(ui.button(text.confirm_import).props.disabled,false);
+  }
+  assert.equal(calls.length,2);
 });
 
 

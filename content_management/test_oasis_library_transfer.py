@@ -142,6 +142,34 @@ class OasisLibraryTransferTests(TestCase):
         response.close()
         self.assertTrue(stream.closed)
 
+    def test_whole_book_above_previous_eighty_mib_roundtrips_original_bytes(self):
+        from dlms.library_limits import MAX_PDF_BYTES
+        from content_management.oasis_library_transfer import MAX_ARCHIVE_BYTES
+        self.assertGreaterEqual(MAX_PDF_BYTES, 201039307)
+        self.assertGreaterEqual(MAX_ARCHIVE_BYTES, 201039307)
+        original = Path(self.first.content_file.path)
+        with original.open('r+b') as stream:
+            stream.truncate(90 * 1024 * 1024)
+            stream.seek(-8, 2)
+            stream.write(b'\n%%EOF\n\n')
+        # A padded synthetic original exercises streaming ZIP verification;
+        # it is not a textbook extraction or real-library capacity benchmark.
+        from content_management.management.commands.adopt_oasis_index import file_digest
+        expected_sha = file_digest(original)
+        response = self.client.get(self.export_url)
+        self.assertEqual(response.status_code, 200)
+        raw = b''.join(response.streaming_content)
+        response.close()
+        dry_run = self.request_import(raw, dry_run=True)
+        self.assertEqual(dry_run.status_code, 200, dry_run.content)
+        applied = self.commit(raw)
+        self.assertEqual(applied.status_code, 201, applied.content)
+        imported = Content.objects.filter(title=self.first.title).exclude(pk=self.first.pk).get()
+        self.assertEqual(imported.content_file.size, original.stat().st_size)
+        self.assertEqual(file_digest(Path(imported.content_file.path)), expected_sha)
+        self.assertEqual(imported.rights_statement, self.first.rights_statement)
+        self.assertEqual(Content.objects.values().get(pk=self.sentinel.pk), self.original_rows[-1])
+
     def test_inspection_is_read_only_and_reports_name_conflict(self):
         count = (Content.objects.count(), LibraryFolder.objects.count(), Metadata.objects.count())
         response = self.request_import(dry_run=True, library_name=self.other.folder_name)

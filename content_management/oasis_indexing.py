@@ -20,11 +20,10 @@ from content_management.models import Content, LibraryFolder, LibraryVersion, Oa
 from content_management.oasis_documents import PrivateCuratorAccess
 from content_management.standardize_format import build_response
 from dlms.private_paths import checked_directory, checked_path, require_disjoint
+from dlms.library_limits import MAX_MANIFEST_BYTES, MAX_PDF_BYTES
 
 CONFIG_FIELDS = ('root', 'python', 'manifest', 'model', 'base_url', 'dependency_path')
-# Match the installed station importer. Its own manifest/original validators
-# still enforce the bound before any extraction or indexing command runs.
-MAX_PDF_BYTES = 80 * 1024 * 1024
+# Match the station importer; it still validates every original/review.
 
 
 def staging_base():
@@ -113,7 +112,7 @@ def operator_config():
         raise ValueError('Configured station root does not contain the existing PDF maintenance commands.')
     if not python.is_file() or not os.access(python, os.X_OK):
         raise ValueError('Configured station Python is not executable.')
-    if not manifest.is_file() or manifest.stat().st_size > 256 * 1024:
+    if not manifest.is_file() or manifest.stat().st_size > MAX_MANIFEST_BYTES:
         raise ValueError('Configure a small, explicit reviewed manifest JSON file.')
     dependency_path = os.environ.get('OASIS_INDEXING_DEPENDENCY_PATH', '')
     if dependency_path:
@@ -240,7 +239,7 @@ def original_record(document):
     if path.is_symlink() or not path.is_file():
         raise ValueError('Original PDF is missing or is not a regular file.')
     if not 1 <= path.stat().st_size <= MAX_PDF_BYTES:
-        raise ValueError('The existing importer supports PDF originals up to 80 MiB.')
+        raise ValueError('The existing importer supports PDF originals up to %s MiB.' % (MAX_PDF_BYTES // (1024 * 1024)))
     return {'document_id': document.id, 'filename': document.file_name, 'sha256': _file_hash(str(path), file_signature(path))}
 
 

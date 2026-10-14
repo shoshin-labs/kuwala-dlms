@@ -26,6 +26,7 @@ from rest_framework.views import APIView
 
 from dlms.preview_middleware import PrivatePreviewMiddleware
 from dlms.private_paths import checked_directory, checked_path
+from dlms.library_limits import MAX_PDF_BYTES
 from content_management.models import Content, LibraryFolder, LibraryVersion, Metadata, MetadataType
 from content_management.oasis_documents import PrivateCuratorAccess
 from content_management.standardize_format import build_response
@@ -33,8 +34,7 @@ from content_management.standardize_format import build_response
 logger = logging.getLogger(__name__)
 FORMAT = 'oasis-library-bundle'
 SCHEMA_VERSION = 1
-MAX_ARCHIVE_BYTES = 80 * 1024 * 1024
-MAX_PDF_BYTES = 80 * 1024 * 1024
+MAX_ARCHIVE_BYTES = 256 * 1024 * 1024
 MAX_EXPANDED_BYTES = 512 * 1024 * 1024
 MAX_DOCUMENTS = 512
 MAX_FOLDERS = 512
@@ -148,7 +148,7 @@ def validate_manifest(manifest):
             invalid('Every PDF needs a valid SHA-256 checksum.')
         size = document['size']
         if type(size) is not int or not 1 <= size <= MAX_PDF_BYTES:
-            invalid('Every PDF must be nonempty and at most 80 MiB.')
+            invalid('Every PDF must be nonempty and at most 256 MiB.')
         total_bytes += size
         if total_bytes > MAX_EXPANDED_BYTES:
             invalid('Expanded original PDFs exceed the 512 MiB library limit.')
@@ -239,7 +239,7 @@ class InspectedBundle:
         self.paths = {}
         try:
             if not 0 < upload.size <= MAX_ARCHIVE_BYTES:
-                invalid('Choose a library ZIP of at most 80 MiB.')
+                invalid('Choose a library ZIP of at most 256 MiB.')
             upload.seek(0)
             if upload.read(4) != b'PK\x03\x04':
                 invalid('Choose an ordinary ZIP library bundle.')
@@ -248,7 +248,7 @@ class InspectedBundle:
             for chunk in iter(lambda: upload.read(CHUNK), b''):
                 uploaded_bytes += len(chunk)
                 if uploaded_bytes > MAX_ARCHIVE_BYTES:
-                    invalid('Choose a library ZIP of at most 80 MiB.')
+                    invalid('Choose a library ZIP of at most 256 MiB.')
                 digest.update(chunk)
             self.sha256 = digest.hexdigest()
             upload.seek(0)
@@ -413,7 +413,7 @@ def export_library(library):
                 with os.fdopen(descriptor, 'rb') as original:
                     info = os.fstat(original.fileno())
                     if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= MAX_PDF_BYTES:
-                        invalid('Every library original must be a regular PDF of at most 80 MiB.')
+                        invalid('Every library original must be a regular PDF of at most 256 MiB.')
                     if total + info.st_size > MAX_EXPANDED_BYTES:
                         invalid('Expanded original PDFs exceed the 512 MiB library limit.')
                     member = 'documents/' + str(document.pk) + '.pdf'
@@ -432,7 +432,7 @@ def export_library(library):
                 invalid('The library manifest exceeds 4 MiB; this library cannot be bundled.')
             archive.writestr(MANIFEST, raw)
         if output.tell() > MAX_ARCHIVE_BYTES:
-            invalid('The resulting ZIP exceeds 80 MiB. Export a smaller library so the bundle can be imported.')
+            invalid('The resulting ZIP exceeds 256 MiB. Export a smaller library so the bundle can be imported.')
         output.seek(0)
         try:
             download_name = get_valid_filename(library.folder_name)
@@ -485,7 +485,7 @@ class LibraryBundleImportView(APIView):
     def post(self, request):
         length = request.META.get('CONTENT_LENGTH', '')
         if length.isdigit() and int(length) > MAX_ARCHIVE_BYTES + 65536:
-            invalid('Choose a library ZIP of at most 80 MiB.')
+            invalid('Choose a library ZIP of at most 256 MiB.')
         allowed = {'bundle', 'catalogue_version', 'expected_sha256', 'confirmed', 'library_name'}
         if set(request.data) - allowed:
             invalid('Unsupported library import fields.')

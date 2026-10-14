@@ -19,9 +19,32 @@ from django.test import TestCase, override_settings
 from content_management.management.commands.seed_oasis_preview import sample_pdf
 from content_management.models import Content, LibLayoutImage, LibraryFolder, LibraryVersion, Metadata, MetadataType, User
 from scripts.prepare_oasis_catalogue import M2M, MODELS, canonical, prepare, validate_package
+from scripts.prepare_oasis_catalogue import reviewed_manifest
 
 
 class AuthoringTransferTests(TestCase):
+    def test_expanded_review_preserves_all_documents_and_full_notes_with_finite_bounds(self):
+        from dlms.library_limits import MAX_DOCUMENTS, MAX_MANIFEST_BYTES
+        base = {'version': 1, 'library_version': 'synthetic-expansion',
+                'usage_scope': 'private-development-testing'}
+        def candidate(count):
+            documents = [{'id': 'book-' + str(n), 'dlms_id': n+1, 'filename': 'book-' + str(n) + '.pdf',
+                          'approved': True, 'sha256': 'a'*64,
+                          'rights_notes': 'Complete synthetic provenance retained. '*40,
+                          'testing_only': True, 'rights_review_pending': True} for n in range(count)]
+            return {**base, 'documents': documents,
+                    'libraries': [{'id': 'learning', 'label': 'Learning', 'dlms_folder_id': 1,
+                                   'document_ids': [d['id'] for d in documents]}]}
+        value = candidate(176)
+        self.assertGreater(len(canonical(value)), 256*1024)
+        self.assertEqual(reviewed_manifest(canonical(value)), value)
+        maximum = candidate(MAX_DOCUMENTS)
+        self.assertEqual(len(reviewed_manifest(canonical(maximum))['documents']), MAX_DOCUMENTS)
+        with self.assertRaisesRegex(ValueError, '1–512 documents'):
+            reviewed_manifest(canonical(candidate(MAX_DOCUMENTS+1)))
+        with self.assertRaisesRegex(ValueError, 'byte limit'):
+            reviewed_manifest(b' '* (MAX_MANIFEST_BYTES+1))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

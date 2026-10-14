@@ -19,7 +19,7 @@ interface Props {
   selectedLibraryId?: number;
   onImported: (libraryId: number) => void;
 }
-const LIMIT = 80 * 1024 * 1024;
+const LIMIT = 256 * 1024 * 1024;
 
 export default function LibraryTransferControls({ versionId, libraries, selectedLibraryId, onImported }: Props) {
   const text = useLibraryTransferStrings();
