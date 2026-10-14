@@ -3,6 +3,7 @@ import copy
 import hashlib
 import json
 import tempfile
+from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
@@ -266,3 +267,180 @@ class AdoptOasisIndexTests(TestCase):
         self.assertEqual(queued.state, 'queued')
         self.assertEqual(OasisIndexJob.objects.count(), 1)
         self.assertFalse((self.root / 'indexing').exists())
+
+
+class ProbeMaintenanceIntegrityTests(TestCase):
+    """Probe dispatch contracts; synthetic station bindings do not prove model performance.
+
+    A real SQLite fixture is checked by the maintenance callback. The interactive
+    connection refuses full integrity scans, representing the real station's
+    separate short query lease without adding timing-sensitive sleeps to CI.
+    """
+
+    def setUp(self):
+        import importlib.util
+        import sqlite3
+        import sys
+        from types import ModuleType, SimpleNamespace
+        from unittest.mock import MagicMock, Mock
+
+        self.sqlite3 = sqlite3
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.snapshot = self.root / 'v-synthetic-probe'
+        (self.snapshot / 'content').mkdir(parents=True)
+        self.original = self.snapshot / 'content' / 'synthetic.pdf'
+        self.original.write_bytes(b'%PDF-1.4 labelled synthetic probe fixture only')
+        self.index = self.snapshot / 'index.sqlite3'
+        with sqlite3.connect(self.index) as connection:
+            connection.execute('CREATE TABLE metadata (key TEXT PRIMARY KEY,value TEXT NOT NULL)')
+            connection.execute('INSERT INTO metadata VALUES (?,?)', ('library_version', 'synthetic-v1'))
+        self.vectors = self.root / 'semantic' / self.snapshot.name / 'vectors.sqlite3'
+        self.vectors.parent.mkdir(parents=True)
+        self.vectors.write_bytes(b'Synthetic vector binding fixture; no embeddings produced')
+        self.manifest = {'library_version': 'synthetic-v1', 'documents': [{
+            'id': 'synthetic-pdf', 'dlms_id': 4, 'filename': self.original.name,
+            'sha256': hashlib.sha256(self.original.read_bytes()).hexdigest(),
+        }]}
+        (self.snapshot / 'manifest.json').write_text(json.dumps(self.manifest))
+        self.events = []
+        self.record = {'page_count': 1, 'passage_count': 2}
+        self.library = SimpleNamespace(available=True, _snapshot=self.snapshot,
+                                       document=Mock(side_effect=lambda _: self.record))
+        self.semantic = SimpleNamespace(available=True, error='', _digest='a' * 64)
+
+        def interactive(path):
+            self.events.append('interactive_open')
+            connection = sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True)
+            connection.row_factory = sqlite3.Row
+            connection.execute('PRAGMA query_only=ON')
+            events = self.events
+
+            class ShortQueryConnection:
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *_):
+                    return False
+
+                def execute(self, sql, *args):
+                    if 'integrity_check' in sql.lower():
+                        raise sqlite3.OperationalError('interrupted: full scan used interactive lease')
+                    events.append('interactive_metadata')
+                    return connection.execute(sql, *args)
+
+                def close(self):
+                    events.append('interactive_close')
+                    connection.close()
+
+            return ShortQueryConnection()
+
+        def maintenance(path):
+            self.events.append('maintenance_integrity')
+            with sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True) as connection:
+                connection.execute('PRAGMA query_only=ON')
+                if connection.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+                    raise ValueError('Release database integrity check failed')
+
+        self.maintenance = Mock(side_effect=maintenance)
+        self.interactive = Mock(side_effect=interactive)
+        self.passages = Mock()
+        self.model_client = MagicMock()
+        self.model_digest = Mock(return_value='a' * 64)
+        self.semantic_class = Mock(return_value=self.semantic)
+        modules = {name: ModuleType(name) for name in (
+            'app', 'app.library', 'app.library.index', 'app.library.semantic',
+            'scripts.publish_pdf_library', 'pypdf', 'sqlite_vec')}
+        modules['app'].__path__ = []
+        modules['app.library'].__path__ = []
+        index_module = modules['app.library.index']
+        index_module.PdfLibrary = Mock(return_value=self.library)
+        index_module._load_manifest = lambda path: json.loads(path.read_text())
+        index_module._read_only = self.interactive
+        semantic_module = modules['app.library.semantic']
+        semantic_module.SemanticSearch = self.semantic_class
+        semantic_module._client = self.model_client
+        semantic_module._digest = self.model_digest
+        semantic_module._endpoint = lambda value: value
+        semantic_module._model_name = lambda value: value
+        semantic_module._passages = self.passages
+        modules['scripts.publish_pdf_library']._integrity = self.maintenance
+        module_patch = patch.dict(sys.modules, modules)
+        module_patch.start()
+        self.addCleanup(module_patch.stop)
+        paths = list(sys.path)
+        self.addCleanup(lambda: sys.path.__setitem__(slice(None), paths))
+        script = Path(__file__).resolve().parent.parent / 'scripts' / 'probe_oasis_index.py'
+        spec = importlib.util.spec_from_file_location('synthetic_private_index_probe', script)
+        self.probe_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.probe_module)
+
+    def probe(self, *, artifacts_only=True):
+        arguments = ['probe', '--station-root', str(self.root), '--root', str(self.root)]
+        if artifacts_only:
+            arguments.append('--artifacts-only')
+        output = StringIO()
+        with patch('sys.argv', arguments), redirect_stdout(output):
+            self.probe_module.main()
+        return json.loads(output.getvalue())
+
+    def test_full_integrity_uses_maintenance_before_short_metadata_connection(self):
+        result = self.probe()
+        self.assertEqual(self.events[:4], ['maintenance_integrity', 'interactive_open',
+                                           'interactive_metadata', 'interactive_close'])
+        self.maintenance.assert_called_once_with(self.index)
+        self.passages.assert_called_once_with(self.library, self.index)
+        self.assertTrue(result['receipt']['lexical_valid'])
+        self.assertTrue(result['receipt']['vector_artifact_valid'])
+        self.assertEqual(result['receipt']['index_sha256'], hashlib.sha256(self.index.read_bytes()).hexdigest())
+        self.assertEqual(result['receipt']['documents'][0]['sha256'], self.manifest['documents'][0]['sha256'])
+        self.model_client.assert_not_called()
+
+    def test_corrupt_database_is_rejected_before_passage_original_or_vector_validation(self):
+        self.index.write_bytes(b'Corrupt synthetic SQLite database')
+        with self.assertRaises(self.sqlite3.DatabaseError):
+            self.probe()
+        self.interactive.assert_not_called()
+        self.passages.assert_not_called()
+        self.library.document.assert_not_called()
+        self.semantic_class.assert_not_called()
+
+    def test_native_sidecar_rejection_is_propagated_without_a_receipt(self):
+        self.maintenance.side_effect = ValueError('Release contains SQLite sidecars')
+        with self.assertRaisesRegex(ValueError, 'SQLite sidecars'):
+            self.probe()
+        self.interactive.assert_not_called()
+        self.passages.assert_not_called()
+
+    def test_index_version_binding_still_rejects_and_closes_the_interactive_connection(self):
+        with self.sqlite3.connect(self.index) as connection:
+            connection.execute("UPDATE metadata SET value='wrong-version'")
+        with self.assertRaisesRegex(ValueError, 'version binding failed'):
+            self.probe()
+        self.assertEqual(self.events[-1], 'interactive_close')
+        self.passages.assert_not_called()
+
+    def test_failed_original_hash_still_blocks_vector_validation(self):
+        self.record = None
+        with self.assertRaisesRegex(ValueError, 'original failed exact-hash validation'):
+            self.probe()
+        self.passages.assert_called_once()
+        self.semantic_class.assert_not_called()
+
+    def test_stale_vectors_are_reported_honestly_after_valid_full_integrity(self):
+        self.semantic.available = False
+        self.semantic.error = 'Synthetic mismatched passage/model binding'
+        result = self.probe()
+        self.assertFalse(result['receipt']['vector_valid'])
+        self.assertFalse(result['receipt']['vector_artifact_valid'])
+        self.assertEqual(result['receipt']['vector_state'], 'stale')
+        self.assertEqual(result['receipt']['vector_reason'], self.semantic.error)
+
+    def test_installed_model_digest_mismatch_still_invalidates_vectors(self):
+        self.model_digest.return_value = 'b' * 64
+        result = self.probe(artifacts_only=False)
+        self.model_client.assert_called_once()
+        self.assertFalse(result['receipt']['vector_valid'])
+        self.assertEqual(result['receipt']['vector_state'], 'stale')
+        self.assertIn('Installed model digest differs', result['receipt']['vector_reason'])

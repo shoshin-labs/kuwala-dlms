@@ -1,5 +1,6 @@
 """Read-only adapter probe using the configured station's existing validators."""
 import argparse
+from contextlib import closing
 import hashlib
 import json
 import sys
@@ -26,6 +27,7 @@ def main():
     sys.path.insert(0, args.station_root)
     from app.library.index import PdfLibrary, _load_manifest, _read_only
     from app.library.semantic import SemanticSearch, _client, _digest, _endpoint, _model_name, _passages
+    from scripts.publish_pdf_library import _integrity
     import pypdf  # noqa: F401; the configured importer must actually be installed.
     result = {'lexical_available': True, 'vector_available': False, 'vector_blocked_reason': None}
     if not args.artifacts_only:
@@ -46,9 +48,11 @@ def main():
             raise ValueError('Private draft passage index is missing or invalid.')
         snapshot = library._snapshot
         manifest = _load_manifest(snapshot / 'manifest.json')
-        with _read_only(snapshot / 'index.sqlite3') as connection:
-            if connection.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
-                raise ValueError('Private draft passage database integrity failed.')
+        # Full-database maintenance uses the station publication validator,
+        # including regular-file/sidecar checks. Its process is bounded by the
+        # existing run_probe timeout; interactive queries keep their 1.5s lease.
+        _integrity(snapshot / 'index.sqlite3')
+        with closing(_read_only(snapshot / 'index.sqlite3')) as connection:
             if dict(connection.execute('SELECT key,value FROM metadata')).get('library_version') != manifest['library_version']:
                 raise ValueError('Private draft index version binding failed.')
         _passages(library, snapshot / 'index.sqlite3')
