@@ -84,6 +84,16 @@ class BundleChecks(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'local'):
             target.validate_html_assets('<script src="https://cdn.invalid/script.js"></script>', {})
 
+    def test_relative_static_bundle_paths_are_local_and_normalized_for_readiness(self):
+        files = {'app/frontend/static/js/main.js': 'hash', 'app/frontend/static/images/icon.svg': 'hash'}
+        self.assertEqual(target.validate_html_assets(
+            '<link rel="icon" href="static/images/icon.svg"><script src="static/js/main.js"></script>', files),
+            ['/static/images/icon.svg', '/static/js/main.js'])
+        for value in ('//other/static/js/main.js', 'static/../private.js', 'https://other/static/js/main.js',
+                      '/manage/static/js/main.js', 'static//js/main.js'):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                target.validate_html_assets('<script src="' + value + '"></script>', files)
+
     def test_wheels_match_every_pin_and_arm64(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -492,6 +502,7 @@ class LifecycleChecks(unittest.TestCase):
             def __exit__(self, *args): self.close()
         with tempfile.TemporaryDirectory() as root:
             instance = target.Target(Path(root).resolve())
+            instance.operator_environment = lambda: {}
             code = Path(root) / 'release/app'
             (code / 'dlms').mkdir(parents=True)
             (code / 'frontend/static').mkdir(parents=True)
@@ -511,7 +522,10 @@ class LifecycleChecks(unittest.TestCase):
                 return original_resolve(path, *args, **kwargs)
             def exists(path):
                 return str(path) == '/proc/' + str(os.getpid()) + '/cwd' or original_exists(path)
-            for authenticated in (True, False):
+            for prefix, authenticated in (('', True), ('', False), ('/manage', True)):
+                instance.operator_environment = lambda: {'OASIS_DEVICE_BASE_PATH': prefix}
+                asset_path = 'static/fixture.js' if prefix else '/static/fixture.js'
+                (code / 'frontend/static/index.html').write_text('<script src="' + asset_path + '"></script>')
                 marker = code / 'dlms/curator_auth.py'
                 if authenticated: marker.write_text('# authenticated device runtime')
                 else: marker.unlink()
@@ -525,7 +539,8 @@ class LifecycleChecks(unittest.TestCase):
                         patch.object(target.urllib.request, 'urlopen', side_effect=lambda url, **kwargs: Response(
                             asset if url.endswith('/static/fixture.js') else json.dumps(result).encode())) as request:
                     instance.readiness(release, {})
-                    self.assertEqual(request.call_args_list[0].args[0], 'http://127.0.0.1:8790' + ('/healthz' if authenticated else '/api/oasis/config/'))
+                    self.assertEqual(request.call_args_list[0].args[0], 'http://127.0.0.1:8790' + prefix + ('/healthz' if authenticated else '/api/oasis/config/'))
+                    self.assertEqual(request.call_args_list[1].args[0], 'http://127.0.0.1:8790' + prefix + '/static/fixture.js')
 
     def fake_target(self, root, fail_migrate=False):
         owner = StateChecks()

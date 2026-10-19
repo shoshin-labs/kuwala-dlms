@@ -6,14 +6,14 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = {
     mode: 'development',
     devtool: 'source-map',
-    entry: ["babel-polyfill", './src/js/index.tsx'],
+    entry: ["babel-polyfill", './src/js/runtime_paths.ts', './src/js/index.tsx'],
     node: {
         fs: 'empty'
     },
     output: {
         filename: 'js/[name].[hash].bundle.js',
         path: path.resolve(__dirname, 'static'),
-        publicPath: "/static/",
+        publicPath: "static/",
         hashFunction: 'sha256'
     },
     resolve: {

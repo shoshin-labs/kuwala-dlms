@@ -1,4 +1,5 @@
 import { LibraryVersion, SerializedContent } from "./types";
+import { appUrl } from "./app_paths";
 
 export interface CatalogueFolder {
   id: number;
@@ -51,7 +52,7 @@ export function catalogueQuery(
   path: string,
   values: Record<string, string | number | undefined>,
 ) {
-  const url = new URL(path, window.location.origin);
+  const url = new URL(appUrl(path));
   Object.entries(values).forEach(([key, value]) => {
     if (value !== undefined && value !== "")
       url.searchParams.set(key, String(value));

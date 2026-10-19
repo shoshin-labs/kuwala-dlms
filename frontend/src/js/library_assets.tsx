@@ -1,3 +1,4 @@
+import { localResourceUrl } from "./app_paths";
 import React, { Component, RefObject } from "react";
 import { LibraryAssetsAPI, AssetGroup, LibraryAsset, field_info } from "./types";
 import { Grid, Button, TextField, Typography } from "@material-ui/core";
@@ -82,8 +83,8 @@ export default class LibraryAssets extends Component<LibraryAssetsProps, Library
                             const name = this.asset_name(asset);
                             return <Grid item xs={12} sm={6} md={4} key={asset.id}>
                                 <div className="advanced-asset-item">
-                                    {asset.image_file ? <a className="advanced-asset-preview" href={asset.image_file} target="_blank" rel="noopener noreferrer" aria-label={s.assets_open_image.replace("{name}", name)}>
-                                        <img src={asset.image_file} alt={name} />
+                                    {asset.image_file ? <a className="advanced-asset-preview" href={localResourceUrl(asset.image_file)} target="_blank" rel="noopener noreferrer" aria-label={s.assets_open_image.replace("{name}", name)}>
+                                        <img src={localResourceUrl(asset.image_file)} alt={name} />
                                     </a> : <p className="advanced-empty">{s.assets_missing_image}</p>}
                                     <p className="advanced-asset-name">{name}</p>
                                     <Button variant="outlined" onClick={() => this.update_state(draft => {

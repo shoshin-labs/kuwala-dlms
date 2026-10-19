@@ -2,12 +2,13 @@
 import json
 from functools import lru_cache
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from django.conf import settings
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordChangeDoneView, redirect_to_login
 from django.http import JsonResponse
+from django.urls import reverse_lazy
 from django.views.decorators.http import require_safe
 from django.views.generic import TemplateView
 
@@ -53,7 +54,7 @@ class CuratorProxyOriginMiddleware:
 
 class CuratorSessionMiddleware:
     """Guard the complete device application, including upstream legacy read endpoints."""
-    PUBLIC_VIEWS = frozenset(('oasis-login', 'oasis-health'))
+    PUBLIC_VIEWS = frozenset(('oasis-login', 'oasis-health', 'oasis-prefix-root'))
     NAVIGATION_VIEWS = frozenset(('oasis-home', 'oasis-password-change', 'oasis-password-change-done'))
 
     def __init__(self, get_response):
@@ -78,7 +79,11 @@ class CuratorSessionMiddleware:
             if not navigation and not PrivatePreviewMiddleware.browser_origin_allowed(request):
                 return PrivatePreviewMiddleware.denied(curator_ui()['invalid_browser_origin'])
             return None
-        if request.path.startswith('/api/') or request.path.startswith(('/media/', '/builds/')):
+        application_path = request.path_info
+        prefix = getattr(settings, 'OASIS_DEVICE_BASE_PATH', '')
+        if prefix and application_path.startswith(prefix + '/'):
+            application_path = application_path[len(prefix):]
+        if application_path.startswith(('/api/', '/media/', '/builds/')):
             return JsonResponse({'success': False, 'data': None, 'error': curator_ui()['session_required']},
                                 status=403 if user is not None and user.is_authenticated else 401,
                                 headers={'Cache-Control': 'no-store'})
@@ -98,6 +103,17 @@ class CuratorLoginView(CuratorContext, LoginView):
     template_name = 'curator/login.html'
     authentication_form = AdminAuthenticationForm
 
+    def get_success_url(self):
+        target = super().get_success_url()
+        prefix = getattr(settings, 'OASIS_DEVICE_BASE_PATH', '')
+        if prefix:
+            parsed = urlsplit(target)
+            decoded_path = unquote(parsed.path)
+            if (parsed.scheme or parsed.netloc or not decoded_path.startswith(prefix + '/')
+                    or '\\' in decoded_path or any(part in ('.', '..') for part in decoded_path.split('/'))):
+                return settings.LOGIN_REDIRECT_URL
+        return target
+
 
 class CuratorLogoutView(LogoutView):
     next_page = 'oasis-login'
@@ -105,7 +121,7 @@ class CuratorLogoutView(LogoutView):
 
 class CuratorPasswordChangeView(CuratorContext, PasswordChangeView):
     template_name = 'curator/password_change.html'
-    success_url = '/accounts/password-change/done/'
+    success_url = reverse_lazy('oasis-password-change-done')
 
 
 class CuratorPasswordChangeDoneView(CuratorContext, PasswordChangeDoneView):

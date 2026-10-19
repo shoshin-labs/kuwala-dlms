@@ -6,6 +6,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.http import FileResponse
+from django.urls import reverse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import Throttled, ValidationError
 from rest_framework.generics import get_object_or_404
@@ -122,7 +123,7 @@ def index_search(request):
                     current = original_record(current_document) if current_document else None
                     if current is None or (current['filename'], current['sha256']) != (item['filename'], item['original_sha256']):
                         raise ValueError('A matching original or library membership changed during search. Try again.')
-                    item['original_page_url'] = '/api/oasis/index-search/original/%s/%s/#page=%s' % (job.id, item['document_id'], item['page'])
+                    item['original_page_url'] = reverse('oasis-draft-original', args=(job.id, item['document_id'])) + '#page=%s' % item['page']
                 data['results'] = result['results']
         except (ValueError, OSError, KeyError, TypeError) as exc:
             data['lexical_available'], data['semantic_available'] = False, False

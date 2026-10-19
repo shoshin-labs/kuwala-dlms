@@ -1,5 +1,9 @@
 # Administrator access to Oasis Library
 
+For the physical box's `https://box001.kuwala.space/manage/` entrance, use the
+[explicit management mount](OASIS_BOX_MANAGEMENT_ROUTE.md). The root-hosted
+profiles below remain supported for existing installations and compatible rollback.
+
 The device manager uses Django's standard password hashing, staff accounts and
 server-side sessions. An account must be authenticated, active and marked as
 staff. Authoring `content_management.User` records are attribution records and
@@ -195,7 +199,7 @@ This reaches the same local catalogue; it does not publish private originals or
 move authoring data into cloud storage. Internet access is required for this
 remote entrance. Keep the existing private Tailscale and SSH entrances working.
 
-The public-origin setting defaults off and accepts only this exact value:
+The public-origin setting defaults off. This root-hosted profile uses:
 
 ```ini
 OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN=https://manage.kuwala.space
@@ -203,7 +207,9 @@ OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN=https://manage.kuwala.space
 
 Do not replace `OASIS_DEVICE_ADMIN_ORIGIN`: the two explicitly configured
 origins coexist. Alternate hosts, explicit ports, HTTP, credentials, trailing
-slashes, paths, queries and fragments are rejected. Enabling this setting does
+slashes, paths, queries and fragments are rejected. The explicitly supported box
+origin is `https://box001.kuwala.space`, paired with `OASIS_DEVICE_BASE_PATH=/manage`
+as described in the mount guide. Enabling these settings does
 not configure Cloudflare, create DNS or open a listener. Configure the external
 protection before exposing the hostname; the application still requires the
 existing active staff session for all private reads and writes.

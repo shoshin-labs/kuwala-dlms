@@ -1,3 +1,4 @@
+import { localResourceUrl } from "./app_paths";
 import React, { RefObject } from "react";
 import { Button, Grid, Link, TextField, Typography } from "@material-ui/core";
 import { field_info, LibraryAssetsAPI, LibraryAsset, LibraryModule, LibraryModulesAPI } from "./types";
@@ -5,7 +6,6 @@ import ActionPanel from "./reusable/action_panel";
 import { get_field_info_default, get_string_from_error, update_state } from "./utils";
 import { cloneDeep } from "lodash";
 import ActionDialog from "./reusable/action_dialog";
-import { APP_URLS } from "./urls";
 import s from "./locales/advanced-tabs.en.json";
 
 interface LibraryModulesProps {
@@ -91,7 +91,7 @@ export default class LibraryModules extends React.Component<LibraryModulesProps,
                     <div className="advanced-entry-description">
                         <h3>{row.module_name}</h3>
                         <dl className="advanced-entry-details"><div><dt>{s.filename}</dt><dd>
-                            {row.file_name ? <Link target="_blank" rel="noopener noreferrer" href={new URL(row.file_name, APP_URLS.MODULE_FOLDER).href} aria-label={s.modules_open_file.replace("{name}", row.module_name)}>{row.file_name}</Link> : s.modules_file_missing}
+                            {row.file_name ? <Link target="_blank" rel="noopener noreferrer" href={localResourceUrl("media/modules/" + encodeURIComponent(row.file_name))} aria-label={s.modules_open_file.replace("{name}", row.module_name)}>{row.file_name}</Link> : s.modules_file_missing}
                         </dd></div></dl>
                     </div>
                     <div className="advanced-entry-actions"><ActionPanel
@@ -113,7 +113,7 @@ export default class LibraryModules extends React.Component<LibraryModulesProps,
                         return <Grid item xs={12} sm={6} md={4} key={asset.id}>
                             <button type="button" className="advanced-image-choice" disabled={this.state.busy} aria-pressed={selected}
                                 aria-label={s.modules_use_logo.replace("{name}", name)} onClick={() => this.run_action(() => api.set_module_logo(modals.set_logo_image.to_change, asset))}>
-                                <img src={asset.image_file || undefined} alt="" />
+                                <img src={localResourceUrl(asset.image_file) || undefined} alt="" />
                                 <span>{name}</span>
                                 {selected && <strong>{s.modules_logo_selected}</strong>}
                             </button>

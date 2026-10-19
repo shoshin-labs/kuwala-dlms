@@ -30,7 +30,7 @@ test('the production build copies every approved asset without rewriting it', ()
     assert.deepEqual(bytes(resolve(builtImages, name)), bytes(resolve(images, name)), name);
   }
   const html = bytes(resolve(root, 'frontend/static/index.html')).toString('utf8');
-  for (const name of icons) assert.match(html, new RegExp(`href="/static/images/${name.replace('.', '\\.') }"`));
+  for (const name of icons) assert.match(html, new RegExp(`href="static/images/${name.replace('.', '\\.') }"`));
   assert.doesNotMatch(html, /href="[^"\s]*(?:https?:|\/\/)[^"\s]*favicon/);
 });
 
@@ -59,6 +59,6 @@ test('browser icons contain the expected native pixel sizes', () => {
 
 test('the app logo is decorative and retains the readable product label', () => {
   const shell = bytes(resolve(root, 'frontend/src/js/oasis_app.tsx')).toString('utf8');
-  assert.match(shell, /<img\s+className="brand-logo"\s+src="\/static\/images\/kuwala-oasis\.svg"\s+alt=""\s+aria-hidden="true"/);
+  assert.match(shell, /<img\s+className="brand-logo"\s+src=\{appPath\("static\/images\/kuwala-oasis\.svg"\)\}\s+alt=""\s+aria-hidden="true"/);
   assert.match(shell, /<span className="brand-name">\{s\("product"\)\}<\/span>/);
 });

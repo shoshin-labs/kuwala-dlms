@@ -131,12 +131,18 @@ def validate_html_assets(html, files):
     parser.feed(html)
     if not any(name.endswith('.js') for name in parser.paths):
         raise ValueError('Frontend HTML has no local JavaScript bundle.')
+    canonical_paths = []
     for asset in parser.paths:
-        if not asset.startswith('/static/') or not safe_relative(asset[8:]):
-            raise ValueError('Frontend runtime assets must use local /static/ URLs.')
-        if 'app/frontend/static/' + asset[8:] not in files:
+        # New bundles use relative static/ so the same source works at root or
+        # the explicitly configured /manage/ mount. Earlier rollback bundles
+        # retain their original root-absolute /static/ paths.
+        relative = asset[7:] if asset.startswith('static/') else asset[8:] if asset.startswith('/static/') else ''
+        if not relative or not safe_relative(relative):
+            raise ValueError('Frontend runtime assets must use local static/ URLs.')
+        if 'app/frontend/static/' + relative not in files:
             raise ValueError('Frontend HTML references an absent local asset.')
-    return parser.paths
+        canonical_paths.append('/static/' + relative)
+    return canonical_paths
 
 
 def requirements(path):
@@ -516,6 +522,8 @@ class Target:
             raise ValueError('OASIS_DEVICE_DATA_ROOT must point to persistent /opt/oasis-library/data.')
         if values.get('DJANGO_SETTINGS_MODULE', 'dlms.device_settings') != 'dlms.device_settings':
             raise ValueError('Device deployments must use dlms.device_settings.')
+        if values.get('OASIS_DEVICE_BASE_PATH', '') not in ('', '/manage'):
+            raise ValueError('OASIS_DEVICE_BASE_PATH must be empty or exactly /manage.')
         for name in ('OASIS_DEVICE_SECRET_KEY_FILE', 'OASIS_INDEXING_STATION_ROOT',
                      'OASIS_INDEXING_PYTHON', 'OASIS_INDEXING_MANIFEST', 'OASIS_INDEXING_DEPENDENCY_PATH'):
             if values.get(name):
@@ -701,6 +709,7 @@ class Target:
         subprocess.run(['systemctl', 'daemon-reload'], check=True)
 
     def readiness(self, release, fingerprint):
+        prefix = self.operator_environment().get('OASIS_DEVICE_BASE_PATH', '')
         deadline = time.monotonic() + 45
         last = None
         while time.monotonic() < deadline:
@@ -708,7 +717,7 @@ class Target:
                 if service_state(WEB).get('ActiveState') != 'active':
                     raise ValueError('Curator service is not active.')
                 authenticated_runtime = (release / 'app/dlms/curator_auth.py').is_file()
-                endpoint = '/healthz' if authenticated_runtime else '/api/oasis/config/'
+                endpoint = prefix + ('/healthz' if authenticated_runtime else '/api/oasis/config/')
                 with urllib.request.urlopen('http://127.0.0.1:8790' + endpoint, timeout=5) as response:
                     config = json.load(response)
                 data = config.get('data', config)
@@ -723,7 +732,7 @@ class Target:
                 html = (release / 'app/frontend/static/index.html').read_text()
                 manifest = read_json(release / 'manifest.json')
                 for asset in validate_html_assets(html, manifest['files']):
-                    with urllib.request.urlopen('http://127.0.0.1:8790' + asset, timeout=5) as response:
+                    with urllib.request.urlopen('http://127.0.0.1:8790' + prefix + asset, timeout=5) as response:
                         result = response.read(64 * 1024 * 1024)
                     if hashlib.sha256(result).hexdigest() != manifest['files']['app/frontend/static/' + asset[8:]]:
                         raise ValueError('Served frontend asset differs from the staged release.')

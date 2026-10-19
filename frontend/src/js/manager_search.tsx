@@ -3,6 +3,7 @@ import { catalogueQuery } from "./catalogue_tree";
 import { request } from "./manager_api";
 import { useIndexSearchState } from "./manager_indexing";
 import { useManagerStrings } from "./manager_strings";
+import { localResourceUrl } from "./app_paths";
 
 type Profile = "metadata" | "lexical" | "semantic";
 type Passage = {
@@ -47,6 +48,7 @@ type Props = {
 };
 function safeLink(value: string | undefined, local = false) {
   if (!value) return "";
+  if (local) return localResourceUrl(value);
   try {
     const url = new URL(value, window.location.origin);
     return ["http:", "https:"].includes(url.protocol) &&
