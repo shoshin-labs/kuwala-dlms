@@ -18,7 +18,7 @@ function compile(file, dependencies = {}) {
   }).code, context);
   return context.exports;
 }
-const tree = compile('../src/js/catalogue_tree.ts');
+const tree = compile('../src/js/catalogue_tree.ts', {'./app_paths': {appUrl: value => value}});
 const folder = (id, name, parent = null, count = 3) => ({
   id, folder_name: name, parent, document_count: count, direct_document_count: count, version: 9,
 });

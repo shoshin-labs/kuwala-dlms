@@ -1,5 +1,10 @@
 # Private Oasis Library device deployment
 
+The physical box's protected manager uses the optional
+[`/manage` application mount](OASIS_BOX_MANAGEMENT_ROUTE.md). Root and mounted
+profiles share this staged-release process; select their explicit compatible
+origin/base-path settings when commissioning or rolling back.
+
 This procedure installs the curator on the Jetson through existing SSH access.
 It does not deploy a public manager or replace the running visitor collection.
 Application, authoring data, reviewed library releases and models have separate

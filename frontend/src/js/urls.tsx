@@ -2,11 +2,12 @@ import Axios from "axios"
 import { isUndefined } from 'lodash'
 import { format } from 'date-fns'
 import { content_filters, LibraryVersion, SerializedContent, SerializedMetadata } from './types'
+import { appUrl } from './app_paths'
 
 const api_path = "api"
 
 function url_with_params(urlstr: string, params:[string, any][]=[]) {
-    const url = new URL(urlstr, window.location.origin)
+    const url = new URL(appUrl(urlstr))
     params.map(([key, value]) => {
         url.searchParams.append(key, value)
     })
@@ -130,7 +131,7 @@ const APP_URLS = {
 //Transforms url into a promise containing the data or error from that api call
 //Provide url argument from AP_URLS
 async function get_data(url: string) {
-    return Axios.get(url, {responseType: 'json'}).catch((err) => {
+    return Axios.get(appUrl(url), {responseType: 'json'}).catch((err) => {
         return Promise.reject(err.response)
     }).then((response) => {
         const data = response.data

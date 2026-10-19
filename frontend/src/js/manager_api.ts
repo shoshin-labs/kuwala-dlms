@@ -12,6 +12,7 @@ import {
   folderAncestors,
 } from "./catalogue_tree";
 import english from "./locales/manager.en.json";
+import { appUrl, originalDocumentUrl } from "./app_paths";
 
 export interface ManagedDocument extends CataloguedDocument {
   published_date?: string | null;
@@ -48,7 +49,7 @@ export async function request(
   }
   if (body && !(body instanceof FormData))
     headers["Content-Type"] = "application/json";
-  const response = await fetch(url, {
+  const response = await fetch(appUrl(url), {
     method,
     credentials: "same-origin",
     headers,
@@ -77,7 +78,7 @@ export async function allPages<T>(path: string): Promise<T[]> {
   const records: T[] = [];
   let page = 1;
   while (true) {
-    const url = new URL(path, window.location.origin);
+    const url = new URL(appUrl(path));
     url.searchParams.set("page", String(page++));
     url.searchParams.set("size", "100");
     const data = await request(url.toString());
@@ -130,9 +131,7 @@ export function docTitle(document: ManagedDocument) {
   return document.display_title || document.title || document.file_name;
 }
 export function originalUrl(document: ManagedDocument) {
-  return document.file_name
-    ? "/media/contents/" + encodeURIComponent(document.file_name)
-    : "";
+  return originalDocumentUrl(document);
 }
 export function folderPath(
   folder: CatalogueFolder,

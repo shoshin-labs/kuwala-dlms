@@ -28,7 +28,14 @@ def public_admin_origin(value):
     """Opt in to the one protected manager hostname, never a generic proxy."""
     if value == '':
         return ''
-    if value != 'https://manage.kuwala.space':
+    if value not in {'https://manage.kuwala.space', 'https://box001.kuwala.space'}:
         raise ImproperlyConfigured(
-            'OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN must be empty or exactly https://manage.kuwala.space.')
+            'OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN must be empty or an explicitly supported HTTPS manager origin.')
+    return value
+
+
+def manager_base_path(value):
+    """An explicit application mount, never a forwarded header or arbitrary path."""
+    if value not in ('', '/manage'):
+        raise ImproperlyConfigured('OASIS_DEVICE_BASE_PATH must be empty or exactly /manage.')
     return value

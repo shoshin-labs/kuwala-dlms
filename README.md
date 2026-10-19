@@ -171,3 +171,8 @@ second empty collection. Visitors read an immutable snapshot of that same
 catalogue; curator changes become visible after the existing publication process.
 Framework/dependency upgrades, full curator translation and enforced
 publication roles are [separate follow-ups](docs/OASIS_LIBRARY_FOLLOW_UPS.md).
+
+The box's protected manager can be mounted at
+**https://box001.kuwala.space/manage/** while retaining Django staff login.
+See the [box management route](docs/OASIS_BOX_MANAGEMENT_ROUTE.md) for its explicit
+mount, proxy and cookie boundaries and Central library navigation.

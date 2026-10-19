@@ -15,6 +15,7 @@ function harness(request, libraries = [{id: 10, folder_name: 'Farming'}]) {
       return [values[slot], next => {values[slot] = typeof next === 'function' ? next(values[slot]) : next;}];
     }};
     if (name === '@material-ui/core') return Object.fromEntries(['Button','Dialog','DialogActions','DialogContent','DialogTitle','TextField'].map(key=>[key,key]));
+    if (name === './app_paths') return {appUrl: value => value};
     if (name === './manager_api') return {request};
     if (name === './library_transfer_strings') return {useLibraryTransferStrings:()=>text};
     throw new Error('Unexpected import: '+name);

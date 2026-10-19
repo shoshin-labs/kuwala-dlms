@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 from django.core.exceptions import ImproperlyConfigured
 
 from dlms.private_paths import checked_directory, checked_path, require_disjoint
-from dlms.curator_config import admin_origin, public_admin_origin
+from dlms.curator_config import admin_origin, public_admin_origin, manager_base_path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -66,6 +66,7 @@ DEBUG = False
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '[::1]']
 OASIS_DEVICE_ADMIN_ORIGIN = admin_origin(os.environ.get('OASIS_DEVICE_ADMIN_ORIGIN', ''))
 OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN = public_admin_origin(os.environ.get('OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN', ''))
+OASIS_DEVICE_BASE_PATH = manager_base_path(os.environ.get('OASIS_DEVICE_BASE_PATH', ''))
 for origin in (OASIS_DEVICE_ADMIN_ORIGIN, OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN):
     if origin:
         ALLOWED_HOSTS.append(urlsplit(origin).hostname)
@@ -87,7 +88,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-ROOT_URLCONF = 'dlms.device_urls'
+ROOT_URLCONF = 'dlms.prefixed_device_urls' if OASIS_DEVICE_BASE_PATH else 'dlms.device_urls'
 TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
     'DIRS': [str(BASE_DIR / 'templates'), str(BASE_DIR / 'frontend/static')],
@@ -104,7 +105,7 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-STATIC_URL = '/static/'
+STATIC_URL = OASIS_DEVICE_BASE_PATH + '/static/'
 # Collect during staging into the individual release so rollback keeps its assets.
 STATIC_ROOT = str(BASE_DIR / 'collected-static')
 STATICFILES_DIRS = []
@@ -119,26 +120,26 @@ STORAGES = {
 def immutable_static_file(path, url):
     # Webpack 4 emits a 20-character SHA-256 build hash before `.bundle.js`.
     # Logo/favicon paths keep their short cache because their names are stable.
-    return re.fullmatch(r'/static/js/[A-Za-z0-9_~.-]+\.[0-9a-f]{20}\.bundle\.js', url) is not None
+    return re.fullmatch(re.escape(STATIC_URL) + r'js/[A-Za-z0-9_~.-]+\.[0-9a-f]{20}\.bundle\.js', url) is not None
 
 
 WHITENOISE_IMMUTABLE_FILE_TEST = immutable_static_file
 WHITENOISE_USE_FINDERS = False
 WHITENOISE_AUTOREFRESH = False
 MEDIA_ROOT = str(DEVICE_DATA_ROOT / 'media')
-MEDIA_URL = '/media/'
+MEDIA_URL = OASIS_DEVICE_BASE_PATH + '/media/'
 CONTENTS_ROOT = str(DEVICE_DATA_ROOT / 'media/contents')
-CONTENTS_URL = '/media/contents/'
+CONTENTS_URL = OASIS_DEVICE_BASE_PATH + '/media/contents/'
 BUILDS_ROOT = str(DEVICE_DATA_ROOT / 'builds')
-BUILDS_URL = '/builds/'
+BUILDS_URL = OASIS_DEVICE_BASE_PATH + '/builds/'
 OASIS_INDEXING_STATE_ROOT = str(DEVICE_DATA_ROOT / 'indexing')
 OASIS_INDEXING_PROTECTED_ROOTS = ('/opt/kuwala',)
 OASIS_CURATOR_ENABLED = True
 OASIS_SYNTHETIC_FIXTURES = False
 OASIS_LOOPBACK_ONLY = True
 OASIS_REQUIRE_CURATOR_AUTH = True
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/?workspace=curator&tab=contents'
+LOGIN_URL = 'oasis-login'
+LOGIN_REDIRECT_URL = OASIS_DEVICE_BASE_PATH + '/?workspace=curator&tab=contents'
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -159,10 +160,12 @@ SECURE_PROXY_SSL_HEADER = None
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_NAME = 'oasis_curator_session'
+SESSION_COOKIE_PATH = OASIS_DEVICE_BASE_PATH + '/'
 SESSION_COOKIE_AGE = 14400
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_SAMESITE = 'Strict'
 CSRF_COOKIE_NAME = 'oasis_curator_csrf'
+CSRF_COOKIE_PATH = OASIS_DEVICE_BASE_PATH + '/'
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Strict'
 SECURE_CONTENT_TYPE_NOSNIFF = True

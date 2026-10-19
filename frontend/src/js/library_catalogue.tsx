@@ -11,6 +11,7 @@ import {
 import { useStrings } from "./i18n";
 import DocumentUpdated from "./document_updated";
 import CatalogueNavigation from "./catalogue_navigation";
+import { originalDocumentUrl } from "./app_paths";
 import "../css/catalogue.css";
 
 interface CatalogueLocation {
@@ -39,13 +40,7 @@ function documentTitle(document: CataloguedDocument) {
   return document.display_title || document.title || document.file_name;
 }
 function originalURL(document: CataloguedDocument) {
-  if (document.content_file) {
-    const url = new URL(document.content_file, window.location.origin);
-    if (url.pathname.startsWith("/media/contents/")) return url.pathname;
-  }
-  return document.file_name
-    ? "/media/contents/" + encodeURIComponent(document.file_name)
-    : "";
+  return originalDocumentUrl(document);
 }
 export default function LibraryCatalogue() {
   const s = useStrings();

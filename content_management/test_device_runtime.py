@@ -49,6 +49,9 @@ class DeviceConfigurationTests(SimpleTestCase):
               '"static":s["STATIC_ROOT"],"curator":s["OASIS_CURATOR_ENABLED"],"loopback":s["OASIS_LOOPBACK_ONLY"],'
               '"authentication_required":s["OASIS_REQUIRE_CURATOR_AUTH"],"admin_origin":s["OASIS_DEVICE_ADMIN_ORIGIN"],'
               '"admin_public_origin":s["OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN"],"allowed_hosts":s["ALLOWED_HOSTS"],'
+              '"base_path":s["OASIS_DEVICE_BASE_PATH"],"root_urlconf":s["ROOT_URLCONF"],'
+              '"static_url":s["STATIC_URL"],"media_url":s["MEDIA_URL"],'
+              '"session_path":s["SESSION_COOKIE_PATH"],"csrf_path":s["CSRF_COOKIE_PATH"],'
               '"forwarded_host":s["USE_X_FORWARDED_HOST"],"proxy_ssl_header":s["SECURE_PROXY_SSL_HEADER"]}))'
         )
         return subprocess.run([sys.executable, '-B', '-c', script], cwd=REPOSITORY,
@@ -96,6 +99,28 @@ class DeviceConfigurationTests(SimpleTestCase):
                 result = self.load({**self.env, 'OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN': origin})
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn('OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN', result.stderr)
+
+    def test_explicit_manager_mount_scopes_urls_and_cookies_without_script_rewriting(self):
+        result = self.load({**self.env, 'OASIS_DEVICE_BASE_PATH': '/manage',
+            'OASIS_DEVICE_ADMIN_PUBLIC_ORIGIN': 'https://box001.kuwala.space'})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        config = json.loads(result.stdout)
+        self.assertEqual(config['base_path'], '/manage')
+        self.assertEqual(config['root_urlconf'], 'dlms.prefixed_device_urls')
+        self.assertEqual(config['static_url'], '/manage/static/')
+        self.assertEqual(config['media_url'], '/manage/media/')
+        self.assertEqual((config['session_path'], config['csrf_path']), ('/manage/', '/manage/'))
+        self.assertIn('box001.kuwala.space', config['allowed_hosts'])
+        root = self.load()
+        self.assertEqual(root.returncode, 0, root.stderr)
+        config = json.loads(root.stdout)
+        self.assertEqual((config['base_path'], config['root_urlconf']), ('', 'dlms.device_urls'))
+        self.assertEqual((config['static_url'], config['session_path']), ('/static/', '/'))
+        for value in ('manage', '/manage/', '/other', '//manage'):
+            with self.subTest(value=value):
+                rejected = self.load({**self.env, 'OASIS_DEVICE_BASE_PATH': value})
+                self.assertNotEqual(rejected.returncode, 0)
+                self.assertIn('OASIS_DEVICE_BASE_PATH', rejected.stderr)
 
     def test_missing_weak_permissive_and_symlink_secrets_fail_without_key_disclosure(self):
         bad = self.root / 'bad-key'

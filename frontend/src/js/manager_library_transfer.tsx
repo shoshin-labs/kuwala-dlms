@@ -3,6 +3,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } 
 import { CatalogueFolder } from "./catalogue_tree";
 import { message, request } from "./manager_api";
 import { useLibraryTransferStrings } from "./library_transfer_strings";
+import { appUrl } from "./app_paths";
 
 interface TransferPlan {
   target_version?: number;
@@ -82,7 +83,7 @@ export default function LibraryTransferControls({ versionId, libraries, selected
     if (!selected || busy) return;
     setBusy(true); setError("");
     try {
-      const response = await fetch(`/api/oasis/libraries/${selected.id}/bundle/`, { credentials: "same-origin" });
+      const response = await fetch(appUrl(`/api/oasis/libraries/${selected.id}/bundle/`), { credentials: "same-origin" });
       if (!response.ok) {
         const result = await response.json().catch(() => null);
         throw new Error(message(result?.error || result) || text.export_failed);

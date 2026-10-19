@@ -42,6 +42,7 @@ function page(filename, props) {
     if (name === './reusable/action_panel') return ActionPanel;
     if (name === './reusable/kebab_menu') return KebabMenu;
     if (name === './utils') return utils;
+    if (name === './app_paths') return {localResourceUrl: value => value || ''};
     if (name === './urls') return { APP_URLS: { MODULE_FOLDER: 'http://127.0.0.1/media/modules/', METADATA_SHEET: name => '/metadata/' + encodeURIComponent(name) } };
     if (name === './locales/advanced-tabs.en.json') return strings;
     if (name === './locales/curator.en.json') return require('../src/js/locales/curator.en.json');

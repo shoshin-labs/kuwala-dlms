@@ -1,3 +1,4 @@
+import { localResourceUrl } from "./app_paths";
 import React from 'react';
 import viewStrings from './locales/versions-view.en.json';
 import strings from './locales/curator.en.json';
@@ -806,7 +807,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                         onClick={() => this.run_dialog(() => this.props.library_versions_api.set_version_image(
                                             this.state.modals.set_banner.to_set, asset))}
                                     >
-                                        <img src={asset.image_file || ""} alt=""
+                                        <img src={localResourceUrl(asset.image_file)} alt=""
                                             style={{maxHeight: "100px", maxWidth: "100px"}} />
                                         <Typography style={{overflowWrap: "anywhere"}}>{asset.file_name || versionsStrings.unnamed_image}</Typography>
                                     </Button>
@@ -850,7 +851,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                             await this.props.library_versions_api.refresh_current_directory();
                                         })}
                                     >
-                                        <img src={asset.image_file || ""} alt=""
+                                        <img src={localResourceUrl(asset.image_file)} alt=""
                                             style={{maxHeight: "100px", maxWidth: "100px"}} />
                                         <Typography style={{overflowWrap: "anywhere"}}>{asset.file_name || versionsStrings.unnamed_image}</Typography>
                                     </Button>

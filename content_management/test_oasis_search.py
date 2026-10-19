@@ -78,6 +78,15 @@ class PrivatePassageSearchTests(TestCase):
         with patch('content_management.oasis_search.run_search', return_value=self.result(self.first)):
             self.assertEqual(self.search(folder_id=self.water.id, q='crop').status_code, 409)
 
+    @override_settings(ROOT_URLCONF='dlms.prefixed_device_urls', OASIS_DEVICE_BASE_PATH='/manage')
+    def test_mounted_search_original_page_links_keep_the_manager_prefix(self):
+        with patch('content_management.oasis_search.run_search', return_value=self.result(self.second)):
+            response = self.client.get('/manage/api/oasis/index-search/', {
+                'catalogue_version': self.version.id, 'folder_id': self.water.id, 'q': 'synthetic water', 'profile': 'lexical'})
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()['data']['results'][0]['original_page_url'],
+            '/manage/api/oasis/index-search/original/%s/%s/#page=1' % (self.job.id, self.second.id))
+
     def test_explicit_semantic_mode_never_labels_keyword_fallback_as_ai(self):
         with patch('content_management.oasis_search.run_search') as provider:
             response = self.search(q='water', profile='semantic')
