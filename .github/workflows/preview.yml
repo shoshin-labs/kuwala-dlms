@@ -53,6 +53,7 @@ jobs:
           content_management.test_curator_auth
           content_management.test_manage_prefix
           content_management.test_document_saved_at
+          content_management.test_curator_integrity
           content_management.test_oasis_indexing
           content_management.test_oasis_search
           content_management.test_oasis_catalogue_transfer
