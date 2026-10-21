@@ -25,7 +25,7 @@ jobs:
         working-directory: frontend
       - run: npm run build-prod
         working-directory: frontend
-      - run: node --test scripts/test-document-updated.js scripts/test-brand.js scripts/test-version-move-safety.js scripts/test-advanced-state.js scripts/test-advanced-dialogs.js scripts/test-library-transfer-ui.js scripts/test-catalogue-navigation.js scripts/test-app-paths.js scripts/test-curator-links.js
+      - run: node --test scripts/test-document-updated.js scripts/test-brand.js scripts/test-version-move-safety.js scripts/test-advanced-state.js scripts/test-advanced-dialogs.js scripts/test-library-transfer-ui.js scripts/test-catalogue-navigation.js scripts/test-app-paths.js scripts/test-curator-links.js scripts/test-pack-installation-ui.js
         working-directory: frontend
       - run: python scripts/preview.py prepare
       - run: python scripts/preview.py check
@@ -54,6 +54,7 @@ jobs:
           content_management.test_manage_prefix
           content_management.test_document_saved_at
           content_management.test_curator_integrity
+          content_management.test_oasis_packs
           content_management.test_oasis_indexing
           content_management.test_oasis_search
           content_management.test_oasis_catalogue_transfer

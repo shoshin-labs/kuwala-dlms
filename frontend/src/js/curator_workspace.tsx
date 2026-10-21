@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useRef, useState } from "react";
+import PackInstallation from "./manager_packs";
 import {
   Dialog,
   DialogActions,
@@ -954,6 +955,7 @@ export default function CuratorWorkspace() {
               </div>
             </div>
             <IndexingSummary />
+            <PackInstallation />
           </IndexingProvider>
         )
       )}
