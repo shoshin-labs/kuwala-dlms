@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import re
 import shutil
 import time
 from pathlib import Path
@@ -21,6 +22,7 @@ from content_management.validators import validate_unique_filename, validate_uni
 import hashlib
 
 from django.conf import settings
+from dlms.private_paths import checked_directory, checked_path
 
 
 class ContentSheetUtil:
@@ -66,7 +68,7 @@ class ContentSheetUtil:
                             content.additional_notes = each_content.get("Additional Notes")
                             
                             active = each_content.get("Active")
-                            if active:
+                            if active is not None and active != "":
                                 if type(active) == bool:
                                     content.active = active
                                 elif hasattr(active, "lower"):
@@ -76,7 +78,7 @@ class ContentSheetUtil:
                                     else:
                                         content.active = False
                             duplicatable = each_content.get("Duplicatable")
-                            if duplicatable:
+                            if duplicatable is not None and duplicatable != "":
                                 if type(duplicatable) == bool:
                                     content.duplicatable = duplicatable
                                 elif hasattr(duplicatable, "lower"):
@@ -133,20 +135,16 @@ class ContentSheetUtil:
             # if no path is provided, edit the metadata of existing content
             else:
                 for each_content in content_data:
-                    # if title is not found, don't upload its metadata
-                    content = Content.objects.filter(title=each_content.get("Title")).first()
-                    print(content)
-                    if content is None:
-                        unsuccessful_uploads.append({'file_name': each_content.get("Title"),
-                                                     'error': 'content does not exist'})
-                        continue
-                    else:
-                        try:
+                    try:
+                        # Validate before changing an existing record. A bad row
+                        # must never use new-upload cleanup on a saved original.
+                        metadata = self.get_associated_meta(each_content)
+                        with transaction.atomic():
+                            content = Content.objects.select_for_update().filter(title=each_content.get("Title")).first()
+                            if content is None:
+                                raise ValidationError('content does not exist')
                             content.description = each_content.get("Description")
-                            if each_content.get("Display Title"):
-                                content.display_title = each_content.get("Display Title")
-                            else:
-                                content.display_title = each_content.get("Title")
+                            content.display_title = each_content.get("Display Title") or each_content.get("Title")
                             content.copyright_notes = each_content.get("Copyright Notes")
                             content.reviewed_on = datetime.datetime.now()
                             content.rights_statement = each_content.get("Rights Statement")
@@ -157,52 +155,26 @@ class ContentSheetUtil:
                                     content.published_date = None
                             content.modified_on = timezone.now()
                             content.additional_notes = each_content.get("Additional Notes")
-
-                            active = each_content.get("Active")
-                            if active:
-                                if type(active) == bool:
-                                    content.active = active
-                                elif hasattr(active, "lower"):
-                                    active = active.lower()
-                                    if active == "true" or active == "yes":
-                                        content.active = True
-                                    else:
-                                        content.active = False
-                            duplicatable = each_content.get("Duplicatable")
-                            if duplicatable:
-                                if type(duplicatable) == bool:
-                                    content.duplicatable = duplicatable
-                                elif hasattr(duplicatable, "lower"):
-                                    duplicatable = duplicatable.lower()
-                                    if duplicatable == "true" or duplicatable == "yes":
-                                        content.duplicatable = True
-                                    else:
-                                        content.duplicatable = False
-
-                            try:
-                                content.save()
-                            except Exception as e:
-                                raise Exception(str(e))
-                            try:
-                                # clear previous metadata association and add new ones
-                                content.metadata.clear()
-                                metadata = self.get_associated_meta(each_content)
-                                for metadata_item in metadata:
-                                    try:
-                                        obj, created = Metadata.objects.get_or_create(defaults={'name': metadata_item.name},
-                                                                                      name__iexact=metadata_item.name,
-                                                                                      type_id=metadata_item.type.id)
-                                    except MultipleObjectsReturned:
-                                        obj = Metadata.objects.filter(name__iexact=metadata_item.name, type_id=metadata_item.type.id)[0]
-                                    content.metadata.add(obj)
-                                content.save()
-                                successful_uploads_count = successful_uploads_count + 1
-                            except Exception as e:
-                                content.delete()
-                                raise e
-                        except (Exception, ValidationError) as e:
-                            unsuccessful_uploads.append({'file_name': each_content.get("Title"), 'error': str(e)})
-                            continue
+                            for heading, field in (("Active", "active"), ("Duplicatable", "duplicatable")):
+                                value = each_content.get(heading)
+                                if type(value) is bool:
+                                    setattr(content, field, value)
+                                elif isinstance(value, str) and value:
+                                    setattr(content, field, value.lower() in ("true", "yes"))
+                            content.save()
+                            content.metadata.clear()
+                            for metadata_item in metadata:
+                                try:
+                                    obj, _ = Metadata.objects.get_or_create(
+                                        defaults={'name': metadata_item.name}, name__iexact=metadata_item.name,
+                                        type_id=metadata_item.type.id)
+                                except MultipleObjectsReturned:
+                                    obj = Metadata.objects.filter(name__iexact=metadata_item.name,
+                                                                  type_id=metadata_item.type.id).first()
+                                content.metadata.add(obj)
+                        successful_uploads_count += 1
+                    except Exception as error:
+                        unsuccessful_uploads.append({'file_name': each_content.get("Title"), 'error': str(error)})
 
             data = {
                 'success_count': successful_uploads_count,
@@ -224,6 +196,8 @@ class ContentSheetUtil:
         for metadata_type in MetadataType.objects.all():
             if sheet_row.get(metadata_type.name) == '' or sheet_row.get(metadata_type.name) is None:
                 continue
+            if not isinstance(sheet_row[metadata_type.name], str):
+                raise ValidationError(metadata_type.name + ' must contain text.')
             meta_values = sheet_row[metadata_type.name].split(' | ')
             for each_value in meta_values:
                 metadata = Metadata(name=each_value, type=metadata_type)
@@ -279,11 +253,15 @@ class LibraryBuildUtil:
         db_util = LibraryDbUtil(metadata_types, metadata, folders, modules, contents, contents_metadata,
                                 contents_folder)
         try:
-            build_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number)
+            identifier = self.version.version_number
+            if not isinstance(identifier, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,159}', identifier):
+                raise ValidationError('Use a safe catalogue version identifier before exporting.')
+            root = checked_directory(settings.BUILDS_ROOT, 'Library export root', create=True)
+            build_path = str(checked_path(root / identifier, 'Library export directory'))
             if not os.path.isdir(build_path):
                 os.makedirs(build_path)
             else:
-                build_path = build_path + "_" + str(int(time.time()))
+                build_path = str(checked_path(root / (identifier + "_" + str(time.time_ns())), 'Library export directory'))
                 os.makedirs(build_path)
                 print("Directory '% s' successfully created" % build_path)
             self.create_asset_folder(folders.filter(parent_id=None), modules, build_path)
